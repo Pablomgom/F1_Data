@@ -11,8 +11,8 @@ def driver_ahead():
     session = fastf1.get_session(2022, 'Monaco', 'R')
     session.load()
 
-    DRIVER = 'SAI'  # which driver; need to specify number and abbreviation
-    DRIVER_NUMBER = '55'
+    DRIVER = 'LEC'  # which driver; need to specify number and abbreviation
+    DRIVER_NUMBER = '16'
     LAP_N = 22 # which lap number to plot
 
     drv_laps = session.laps.pick_driver(DRIVER)
