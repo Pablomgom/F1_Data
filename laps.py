@@ -111,10 +111,6 @@ def show_fastest_lap_qualy(year, gp, driver_1):
     plt.show()
 
 
-
-
-
-
 def show_speed_changes(year,gp):
     fastf1.Cache.enable_cache('Cache')
 
@@ -157,11 +153,6 @@ def show_speed_changes(year,gp):
 
     plt.show()
 
-
-
-
-
-
 def compare_two_laps(year,gp,driver_1,driver_2):
     fastf1.Cache.enable_cache('Cache')
 
@@ -187,8 +178,10 @@ def compare_two_laps(year,gp,driver_1,driver_2):
     new_x = np.linspace(x_interpol.min(), x_interpol.max(), new_length)
     new_y = sp.interpolate.interp1d(x_interpol, delta_time, kind='cubic')(new_x)
 
+    new_y=new_y*-1
+
     cmap = cm.get_cmap('Paired')
-    lc_comp = LineCollection(segments, norm=colors.CenteredNorm(), cmap='jet')
+    lc_comp = LineCollection(segments, norm=colors.CenteredNorm(), cmap='jet_r')
     lc_comp.set_array(new_y)
     lc_comp.set_linewidth(4)
 
@@ -196,10 +189,10 @@ def compare_two_laps(year,gp,driver_1,driver_2):
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
 
-    title = plt.suptitle("Comparation")
+    plt.suptitle("Comparation")
 
-    ticks=np.arange(-1.5, 1.6,0.2)
-    ticks=np.around(ticks, decimals=1)
+    ticks=np.arange(min(new_y)-0.3, max(new_y)+0.3 , 0.1)
+    ticks=np.around(ticks,decimals=2)
 
     cbar = plt.colorbar(mappable=lc_comp, label="Delta", boundaries=ticks)
     cbar.set_ticks(ticks)
