@@ -16,14 +16,14 @@ if __name__ == '__main__':
 
     #print(race.laps.loc[race.laps['DriverNumber']=='11'])
 
-    #laps.show_race(2022,'Australia','R','PER')
+    laps.show_race(2022,'Australia','R','PER')
 
-    #laps.show_fastest_lap_qualy(2019,'Monza','LEC')
-    laps.show_fastest_lap_qualy(2022,'Monaco','LEC')
+    laps.show_fastest_lap_qualy(2021,'Monza','LEC')
+    laps.show_fastest_lap_qualy(2021,'Abu dhabi','LEC')
 
-    #laps.show_speed_changes(2021,'Monaco')
-    #laps.show_speed_changes(2021, 'Monza')
+    laps.show_speed_changes(2021,'Monaco')
+    laps.show_speed_changes(2021, 'Monza')
 
-    #laps.compare_two_laps(2021,'Imola','LEC','HAM')
+    laps.compare_two_laps(2021,'Imola','LEC','HAM')
 
 

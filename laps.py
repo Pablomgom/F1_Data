@@ -95,10 +95,15 @@ def show_fastest_lap_qualy(year, gp, driver_1):
     peaks, _ = find_peaks(vCar)
     mins, _ = find_peaks(vCar * -1)
 
-    plt.plot(t[mins], vCar[mins], 'x', label='mins')
-    plt.plot(t[peaks], vCar[peaks], '*', label='peaks')
+    mins_filtered=[]
 
-    for i, j in zip(t[mins], vCar[mins]):
+    for minimuns in mins:
+        if vCar[minimuns] <= 260:
+            mins_filtered.append(minimuns)
+
+    plt.plot(t[mins_filtered], vCar[mins_filtered], 'x', label='mins')
+
+    for i, j in zip(t[mins_filtered], vCar[mins_filtered]):
         ax.annotate('HOLA ADIOS', xy=(i, j), xytext=(-30, -10), textcoords='offset points')
 
     plt.grid()
