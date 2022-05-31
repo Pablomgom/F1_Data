@@ -10,3 +10,12 @@ color_dict = {
     "Williams":"#OOFFFF",
     "Haas F1 Team":"#FFFFFF"
 }
+
+track_status_dict = {
+    "1":"Green flag",
+    "2":"Yellow flag",
+    "4":"SC",
+    "5":"Red Flag",
+    "6":"VSC deployed",
+    "7":"VSC Ending"
+}
