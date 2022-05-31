@@ -1,11 +1,14 @@
 import fastf1
-from fastf1 import plotting
+from fastf1 import plotting, utils
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 from init import *
 from matplotlib.collections import LineCollection
 from matplotlib import cm
 import numpy as np
+import matplotlib.colors as colors
+import scipy as sp
+from scipy.signal import find_peaks
 
 def overlay_race(year, gp, session, driver_1, driver_2):
     plotting.setup_mpl()
@@ -87,7 +90,25 @@ def show_fastest_lap_qualy(year, gp, driver_1):
     ax.set_ylabel('Speed [Km/h]')
     ax.set_title(driver_1)
     ax.legend()
+    ax.set_ylim([25, max(vCar)+20])
+
+    peaks, _ = find_peaks(vCar)
+    mins, _ = find_peaks(vCar * -1)
+
+    plt.plot(t[mins], vCar[mins], 'x', label='mins')
+    plt.plot(t[peaks], vCar[peaks], '*', label='peaks')
+
+    for i, j in zip(t[mins], vCar[mins]):
+        ax.annotate('HOLA ADIOS', xy=(i, j), xytext=(-30, -10), textcoords='offset points')
+
+    plt.grid()
+
     plt.show()
+
+
+
+
+
 
 def show_speed_changes(year,gp):
     fastf1.Cache.enable_cache('Cache')
@@ -97,6 +118,8 @@ def show_speed_changes(year,gp):
 
     lap = session.laps.pick_fastest()
     tel = lap.get_telemetry()
+
+    alo_lap = session.laps.pick_driver('ALO').pick_fastest()
 
     x = np.array(tel['X'].values)
     y = np.array(tel['Y'].values)
@@ -110,7 +133,6 @@ def show_speed_changes(year,gp):
     lc_comp.set_array(speed)
     lc_comp.set_linewidth(4)
 
-
     plt.gca().add_collection(lc_comp)
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
@@ -123,5 +145,63 @@ def show_speed_changes(year,gp):
     cbar = plt.colorbar(mappable=lc_comp, label="Speed", boundaries=np.arange(0, int(max(speed))+30,30))
     cbar.set_ticks(np.arange(0, int(max(speed))+30,30))
     cbar.set_ticklabels(np.arange(0, int(max(speed))+30,30))
+
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap, alo_lap)
+
+    print(delta_time)
+
+    plt.show()
+
+
+
+
+
+
+def compare_two_laps(year,gp,driver_1,driver_2):
+    fastf1.Cache.enable_cache('Cache')
+
+    session = fastf1.get_session(year, gp, 'Q')
+    session.load()
+
+    lap_driver_1 = session.laps.pick_driver(driver_1).pick_fastest()
+    tel_driver_1 = lap_driver_1.get_telemetry()
+
+    lap_driver_2 = session.laps.pick_driver(driver_2).pick_fastest()
+
+    x = np.array(tel_driver_1['X'].values)
+    y = np.array(tel_driver_1['Y'].values)
+
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_driver_1, lap_driver_2)
+    delta_time=delta_time.to_numpy().astype(float)
+
+    points = np.array([x, y]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+    new_length = len(segments)
+    x_interpol=np.arange(delta_time.size)
+    new_x = np.linspace(x_interpol.min(), x_interpol.max(), new_length)
+    new_y = sp.interpolate.interp1d(x_interpol, delta_time, kind='cubic')(new_x)
+
+    cmap = cm.get_cmap('Paired')
+    lc_comp = LineCollection(segments, norm=colors.CenteredNorm(), cmap='jet')
+    lc_comp.set_array(new_y)
+    lc_comp.set_linewidth(4)
+
+    plt.gca().add_collection(lc_comp)
+    plt.axis('equal')
+    plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
+
+    title = plt.suptitle("Comparation")
+
+    ticks=np.arange(-1.5, 1.6,0.2)
+    ticks=np.around(ticks, decimals=1)
+
+    cbar = plt.colorbar(mappable=lc_comp, label="Delta", boundaries=ticks)
+    cbar.set_ticks(ticks)
+    cbar.set_ticklabels(ticks)
+
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_driver_1, lap_driver_2)
+
+    print(delta_time)
 
     plt.show()
