@@ -1,5 +1,6 @@
 import fastf1
 import numpy as np
+import pandas as pd
 from fastf1 import plotting
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
@@ -47,6 +48,8 @@ def time_distance_in_race(year, gp, driver_1, driver_2):
     driver_1_team = driver_1_race['Team'].unique()[0]
     driver_2_team = driver_2_race['Team'].unique()[0]
 
+    delta_time = pd.DataFrame()
+
     for i in range(len(driver_1_race)):
         if (driver_1_race.iat[i,0]<=driver_2_race.iat[i,0]):
             print(driver_1_race.iat[i,0]-driver_2_race.iat[i,0])
@@ -55,26 +58,35 @@ def time_distance_in_race(year, gp, driver_1, driver_2):
             print(driver_1_race.iat[i,0]-driver_2_race.iat[i,0])
             print(driver_2)
         print("LAP: " + str(i+1))
+        dict = {'delta_time':(driver_1_race.iat[i,0]-driver_2_race.iat[i,0]).total_seconds()}
+        delta_time=delta_time.append(dict,ignore_index = True)
 
-
-
-    print(race.laps['Driver'].unique())
 
     fig, ax = plt.subplots()
-    ax.plot(driver_1_race['LapNumber'], driver_1_race['LapTime'], color=color_dict.get(driver_1_team))
+
+    #ax.plot(driver_1_race['LapNumber'], delta_time['delta_time'], color=color_dict.get(driver_1_team))
+
+    x=driver_1_race['LapNumber']
+    y=delta_time['delta_time']
+
+    for x1, x2, y1, y2 in zip(x, x[1:], y, y[1:]):
+        if y1 > 0:
+            plt.plot([x1, x2], [y1, y2], 'r')
+        else:
+            plt.plot([x1, x2], [y1, y2], 'b')
 
     driver_1_patch = mpatches.Patch(color=color_dict.get(driver_1_team), label=driver_1)
     if (driver_1_team != driver_2_team):
-        ax.plot(driver_2_race['LapNumber'], driver_2_race['LapTime'], color=color_dict.get(driver_2_team))
+        driver_2_patch = mpatches.Patch(color=color_dict.get(driver_2_team), label=driver_2)
     elif (driver_1_team != 'Haas F1 Team'):
-        ax.plot(driver_2_race['LapNumber'], driver_2_race['LapTime'], color='#FFFFFF')
         driver_2_patch = mpatches.Patch(color='blue', label=driver_2)
     else:
         ax.plot(driver_2_race['LapNumber'], driver_2_race['LapTime'], color='#FFFF00')
-        driver_2_patch = mpatches.Patch(color='#FFFF00', label=driver_2)
 
-    plt.legend(handles=[driver_1_patch,driver_2_patch])
+
+    plt.legend(handles=[driver_1_patch, driver_2_patch])
     ax.set_title(driver_1+" vs "+driver_2)
     ax.set_xlabel("Lap Number")
-    ax.set_ylabel("Lap Time")
+    ax.set_ylabel("Seconds")
+    ax.set_yticklabels([str(abs(x)) for x in ax.get_yticks()])
     plt.show()

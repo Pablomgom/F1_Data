@@ -69,6 +69,7 @@ def overlay_race_by_lap_time(year, gp, session, driver_1, driver_2):
     driver_1_patch = mpatches.Patch(color=color_dict.get(driver_1_team), label=driver_1)
     if (driver_1_team != driver_2_team):
         ax.plot(driver_2_race['LapNumber'], driver_2_race['LapTime'], color=color_dict.get(driver_2_team))
+        driver_2_patch = mpatches.Patch(color=color_dict.get(driver_1_team), label=driver_2)
     elif (driver_1_team != 'Haas F1 Team'):
         ax.plot(driver_2_race['LapNumber'], driver_2_race['LapTime'], color='#FFFFFF')
         driver_2_patch = mpatches.Patch(color='blue', label=driver_2)
