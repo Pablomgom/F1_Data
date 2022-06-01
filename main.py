@@ -2,6 +2,7 @@ import laps
 import fastf1
 import track
 import pandas as pd
+import datetime
 import numpy as np
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -28,8 +29,11 @@ if __name__ == '__main__':
     carlos = carlos[carlos['LapNumber'].between(15, 25)]
     checo = checo[checo['LapNumber'].between(15, 25)]
 
-    print(carlos)
+    print(str(carlos))
     print(checo)
+
+    track.time_distance_in_race(2022,'Monaco','SAI','PER')
+
     #track.driver_ahead()
 
     #laps.show_race(2022,'Australia','R','PER')
