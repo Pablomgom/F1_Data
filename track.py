@@ -71,9 +71,9 @@ def time_distance_in_race(year, gp, driver_1, driver_2):
 
     for x1, x2, y1, y2 in zip(x, x[1:], y, y[1:]):
         if y1 > 0:
-            plt.plot([x1, x2], [y1, y2], 'r')
+            plt.plot([x1, x2], [y1, y2], color_dict.get(driver_2_team))
         else:
-            plt.plot([x1, x2], [y1, y2], 'b')
+            plt.plot([x1, x2], [y1, y2], color_dict.get(driver_1_team))
 
     driver_1_patch = mpatches.Patch(color=color_dict.get(driver_1_team), label=driver_1)
     if (driver_1_team != driver_2_team):
@@ -89,4 +89,7 @@ def time_distance_in_race(year, gp, driver_1, driver_2):
     ax.set_xlabel("Lap Number")
     ax.set_ylabel("Seconds")
     ax.set_yticklabels([str(abs(x)) for x in ax.get_yticks()])
+
+
+
     plt.show()
