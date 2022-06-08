@@ -1,3 +1,5 @@
+import fastf1
+from fastf1 import plotting
 color_dict = {
     "Ferrari":"#FF0000",
     "Red Bull Racing":"#00008B",
@@ -19,3 +21,7 @@ track_status_dict = {
     "6":"VSC deployed",
     "7":"VSC Ending"
 }
+
+def init():
+    plotting.setup_mpl()
+    fastf1.Cache.enable_cache('Cache')

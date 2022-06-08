@@ -1,16 +1,11 @@
-import fastf1
-import numpy as np
 import pandas as pd
-from fastf1 import plotting
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 from init import *
-import datetime
+
 
 
 def driver_ahead():
-    fastf1.plotting.setup_mpl()
-    # fastf1.Cache.enable_cache("path/to/cache")
 
     session = fastf1.get_session(2022, 'Monaco', 'R')
     session.load()
@@ -35,10 +30,6 @@ def driver_ahead():
     plt.show()
 
 def time_distance_in_race(year, gp, driver_1, driver_2):
-    plotting.setup_mpl()
-
-    fastf1.Cache.enable_cache('Cache')  # optional but recommended
-
     race = fastf1.get_session(year, gp, 'R')
     race.load()
 
@@ -51,23 +42,22 @@ def time_distance_in_race(year, gp, driver_1, driver_2):
     delta_time = pd.DataFrame()
 
     for i in range(len(driver_1_race)):
-        if (driver_1_race.iat[i,0]<=driver_2_race.iat[i,0]):
-            print(driver_1_race.iat[i,0]-driver_2_race.iat[i,0])
+        if (driver_1_race.iat[i, 0] <= driver_2_race.iat[i, 0]):
+            print(driver_1_race.iat[i, 0] - driver_2_race.iat[i, 0])
             print(driver_1)
         else:
-            print(driver_1_race.iat[i,0]-driver_2_race.iat[i,0])
+            print(driver_1_race.iat[i, 0] - driver_2_race.iat[i, 0])
             print(driver_2)
-        print("LAP: " + str(i+1))
-        dict = {'delta_time':(driver_1_race.iat[i,0]-driver_2_race.iat[i,0]).total_seconds()}
-        delta_time=delta_time.append(dict,ignore_index = True)
-
+        print("LAP: " + str(i + 1))
+        dict = {'delta_time': (driver_1_race.iat[i, 0] - driver_2_race.iat[i, 0]).total_seconds()}
+        delta_time = delta_time.append(dict, ignore_index=True)
 
     fig, ax = plt.subplots()
 
-    #ax.plot(driver_1_race['LapNumber'], delta_time['delta_time'], color=color_dict.get(driver_1_team))
+    # ax.plot(driver_1_race['LapNumber'], delta_time['delta_time'], color=color_dict.get(driver_1_team))
 
-    x=driver_1_race['LapNumber']
-    y=delta_time['delta_time']
+    x = driver_1_race['LapNumber']
+    y = delta_time['delta_time']
 
     for x1, x2, y1, y2 in zip(x, x[1:], y, y[1:]):
         if y1 > 0:
@@ -83,13 +73,29 @@ def time_distance_in_race(year, gp, driver_1, driver_2):
     else:
         ax.plot(driver_2_race['LapNumber'], driver_2_race['LapTime'], color='#FFFF00')
 
+    paradas_driver_2 = driver_2_race[pd.notnull(driver_2_race['PitInTime'])]
+    paradas_driver_2 = paradas_driver_2[pd.notnull(paradas_driver_2['LapTime'])]
+    print(paradas_driver_2)
+
+    box_laps = paradas_driver_2['LapNumber'].to_numpy()
+    print(box_laps)
+    delta_array = delta_time.to_numpy()
+    arrowprops = {'facecolor': 'green','shrink' : 0.05}
+    for i in range(len(box_laps)):
+        arrow_direction=0
+        if delta_array[box_laps[i]]>0:
+            arrow_direction=5
+        else:
+            arrow_direction=-5
+
+        ax.annotate('Pit Stops Checo', xy=(box_laps[i], delta_array[box_laps[i]]),
+                    xytext=(box_laps[i], delta_array[box_laps[i]]+ arrow_direction),
+                    arrowprops=arrowprops)
 
     plt.legend(handles=[driver_1_patch, driver_2_patch])
-    ax.set_title(driver_1+" vs "+driver_2)
+    ax.set_title(driver_1 + " vs " + driver_2)
     ax.set_xlabel("Lap Number")
     ax.set_ylabel("Seconds")
     ax.set_yticklabels([str(abs(x)) for x in ax.get_yticks()])
-
-
 
     plt.show()

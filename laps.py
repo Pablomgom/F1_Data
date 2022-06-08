@@ -1,5 +1,4 @@
-import fastf1
-from fastf1 import plotting, utils
+from fastf1 import utils
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 from init import *
@@ -11,9 +10,6 @@ import scipy as sp
 from scipy.signal import find_peaks
 
 def overlay_race_by_lap_time(year, gp, session, driver_1, driver_2):
-    plotting.setup_mpl()
-
-    fastf1.Cache.enable_cache('Cache')  # optional but recommended
 
     race = fastf1.get_session(year, gp, session)
     race.load()
@@ -48,9 +44,7 @@ def overlay_race_by_lap_time(year, gp, session, driver_1, driver_2):
 
 
 def overlay_race_by_lap_time(year, gp, session, driver_1, driver_2):
-    plotting.setup_mpl()
 
-    fastf1.Cache.enable_cache('Cache')  # optional but recommended
 
     race = fastf1.get_session(year, gp, session)
     race.load()
@@ -84,9 +78,7 @@ def overlay_race_by_lap_time(year, gp, session, driver_1, driver_2):
     plt.show()
 
 def show_race(year, gp, session, driver_1):
-    plotting.setup_mpl()
 
-    fastf1.Cache.enable_cache('Cache')  # optional but recommended
 
     race = fastf1.get_session(year, gp, session)
     race.load()
@@ -111,7 +103,6 @@ def show_race(year, gp, session, driver_1):
 
 
 def show_fastest_lap_qualy(year, gp, driver_1):
-    fastf1.plotting.setup_mpl()
 
     session = fastf1.get_session(year, gp, 'Q')
 
@@ -150,7 +141,6 @@ def show_fastest_lap_qualy(year, gp, driver_1):
 
 
 def show_speed_changes(year,gp):
-    fastf1.Cache.enable_cache('Cache')
 
     session = fastf1.get_session(year, gp, 'Q')
     session.load()
@@ -192,7 +182,6 @@ def show_speed_changes(year,gp):
     plt.show()
 
 def compare_two_laps(year,gp,driver_1,driver_2):
-    fastf1.Cache.enable_cache('Cache')
 
     session = fastf1.get_session(year, gp, 'Q')
     session.load()
