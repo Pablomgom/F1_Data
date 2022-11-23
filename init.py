@@ -1,6 +1,6 @@
 color_dict = {
     "Ferrari":"#FF0000",
-    "Red Bull Racing":"#00008B",
+    "Red Bull Racing":"#4B5DEF",
     "Mercedes":"#C5C9C7",
     "Mclaren":"#FFA500",
     "Alpine":"#FF81C0",
