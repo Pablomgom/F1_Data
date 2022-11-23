@@ -1,11 +1,12 @@
-import laps
+
 import fastf1
 import track
 import pandas as pd
-import datetime
-import numpy as np
+import init
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    init.init()
     #laps.overlay_race(2022,'Australia','R','MAG','MSC')
     pd.set_option('display.max_rows', 500)
     pd.set_option('display.max_columns', 500)
