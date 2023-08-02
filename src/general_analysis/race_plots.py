@@ -96,6 +96,10 @@ def bar_race(races, sprints, schedule):
             round += 1
 
     index.insert(len(races_df), 'Final results')
+    index.insert(len(races_df), 'Final results')
+
+    for key in family_points_dict:
+        family_points_dict[key].append(0.0)
 
     # Create a sample DataFrame.
     df = pd.DataFrame(family_points_dict, index=index)

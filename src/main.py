@@ -21,8 +21,8 @@ if __name__ == '__main__':
     # qualy_results(session)
 
     ergast = Ergast()
-    races = ergast.get_race_results(season=1952, limit=1000)
-    sprints = ergast.get_sprint_results(season=1952, limit=1000)
-    schedule = ergast.get_race_schedule(season=1952, limit=1000)
+    races = ergast.get_race_results(season=1951, limit=1000)
+    sprints = ergast.get_sprint_results(season=1951, limit=1000)
+    schedule = ergast.get_race_schedule(season=1951, limit=1000)
 
     bar_race(races, sprints, schedule)
