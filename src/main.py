@@ -5,13 +5,13 @@ from src.general_analysis.qualy import qualy_results, gear_changes, fastest_by_p
 from src.general_analysis.race_plots import *
 from src.general_analysis.race_videos import bar_race
 from src.general_analysis.wdc import wdc_comparation
-from src.onetime_analysis.onetime_analysis import get_circuitos
+from src.onetime_analysis.onetime_analysis import get_circuitos, get_topspeed
 
 if __name__ == '__main__':
     fastf1.Cache.enable_cache('../cache')
 
     session = fastf1.get_session(2022, 15, 'R')
-    session.load(telemetry=True, weather=False)
+    #session.load(telemetry=True, weather=False)
 
     # win_wdc(standings)
 
@@ -55,4 +55,6 @@ if __name__ == '__main__':
 
     #get_retirements()
 
-    wdc_comparation('Alonso', 2001)
+    #wdc_comparation('Alonso', 2001)
+
+    get_topspeed()

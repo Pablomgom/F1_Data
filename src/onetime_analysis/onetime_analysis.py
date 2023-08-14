@@ -1,4 +1,4 @@
-
+import fastf1
 import numpy as np
 import pandas as pd
 
@@ -144,3 +144,35 @@ def get_circuitos():
         plt.tight_layout()
         plt.savefig(f'../PNGs/TOP {start} - {end - 1} countries', dpi=600)
         plt.show()
+
+
+def get_topspeed():
+
+    top_speed_array = []
+
+    for i in range(12):
+
+        session = fastf1.get_session(2023, i+1, 'Q')
+        session.load(telemetry=True, weather=False)
+        circuit_speed = {}
+
+        for lap in session.laps.pick_quicklaps().iterrows():
+            top_speed = max(lap[1].telemetry['Speed'])
+            driver = lap[1]['Driver']
+            driver_speed = circuit_speed.get(driver)
+            if driver_speed is not None:
+                if top_speed > driver_speed:
+                    circuit_speed[driver] = top_speed
+            else:
+                circuit_speed[driver] = top_speed
+
+            print(circuit_speed)
+
+        max_key = max(circuit_speed, key=circuit_speed.get)
+        driver_top_speed = f'{max_key} - {circuit_speed[max_key]} - {session.event["EventName"]}'
+
+        top_speed_array.append(driver_top_speed)
+
+        print(top_speed_array)
+
+    print(top_speed_array)
