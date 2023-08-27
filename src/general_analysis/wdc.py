@@ -2,6 +2,7 @@ import fastf1
 import numpy as np
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
+import re
 
 
 def win_wdc(standings):
@@ -50,9 +51,31 @@ def win_wdc(standings):
     plt.show()
 
 
+def process_race_data(content, driver, points, team_mate_points, team_mates_names, DNFs = None):
+    append = False
+    for race in content:
+        race_data = race[race['familyName'] == driver]
+        if len(race_data) > 0:
+            driver_team = race_data['constructorName'].values[0]
+            if re.search(r'(Spun off|Accident|Finished|Collision|\+)', race_data['status'].max()) and DNFs is not None:
+                team_mates = race[race['constructorName'] == driver_team]
+                team_mates = team_mates[team_mates['familyName'] != driver]
+                if re.search(r'(Spun off|Accident|Finished|Collision|\+)', team_mates['status'].max()):
+                    points += race_data['points'].values[0]
+                    team_mate_points += team_mates['points'].values[0]
+                    team_mates_names.append(team_mates['driverCode'].values[0])
+                    append = True
+            elif DNFs is None:
+                team_mates = race[race['constructorName'] == driver_team]
+                team_mates = team_mates[team_mates['familyName'] != driver]
+                points += race_data['points'].values[0]
+                team_mate_points += team_mates['points'].values[0]
+                team_mates_names.append(team_mates['driverCode'].values[0])
+                append = True
 
+    return points, team_mate_points, team_mates_names, append
 
-def wdc_comparation(driver, start=None, end=None):
+def wdc_comparation(driver, start=None, end=None, DNFs = None):
 
     ergast = Ergast()
 
@@ -72,30 +95,15 @@ def wdc_comparation(driver, start=None, end=None):
         points = 0
         team_mate_points = 0
         team_mates_names = []
-        append = False
 
-        for race in races.content:
-            race_data = race[race['familyName'] == driver]
-            if len(race_data) > 0:
-                driver_team = race[race['familyName'] == driver]['constructorName'].values[0]
-                team_mates = race[race['constructorName'] == driver_team]
-                team_mates = team_mates[team_mates['familyName'] != driver]
-                points += race_data['points'].values[0]
-                team_mate_points += team_mates['points'].values[0]
-                team_mates_names.append(team_mates['driverCode'].values[0])
-                append = True
+        (points, team_mate_points,
+         team_mates_names, append_races) = process_race_data(
+                                    races.content, driver, points, team_mate_points, team_mates_names, DNFs)
+        (points, team_mate_points,
+         team_mates_names, append_sprints) = process_race_data(
+                                    sprints.content, driver, points, team_mate_points, team_mates_names, DNFs)
 
-        for race in sprints.content:
-            race_data = race[race['familyName'] == driver]
-            if len(race_data) > 0:
-                driver_team = race[race['familyName'] == driver]['constructorName'].values[0]
-                team_mates = race[race['constructorName'] == driver_team]
-                team_mates = team_mates[team_mates['familyName'] != driver]
-                points += race_data['points'].values[0]
-                team_mate_points += team_mates['points'].values[0]
-                team_mates_names.append(team_mates['driverCode'].values[0])
-                append = True
-        if append:
+        if append_races or append_sprints:
             points_per_year.append(points)
             team_mates_points_per_year.append(team_mate_points)
             if driver == 'Alonso' and i == 2001:
@@ -159,11 +167,11 @@ def wdc_comparation(driver, start=None, end=None):
 
     plt.legend(loc='best')
 
-    plt.title(f'{driver} points comparation per year with his teammates')
+    plt.title(f'{driver} points comparison per year with his teammates {"- excluding mechanical DNFs" if DNFs else ""}')
     plt.gca().yaxis.grid(True, linestyle='dashed')
     plt.gca().xaxis.grid(False)
     plt.tick_params(axis='x', which='both', pad=15)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver} POINTS COMPARATION WDC.png', dpi=300)
+    plt.savefig(f'../PNGs/{driver} POINTS COMPARATION WDC {"DNFs" if DNFs is True else ""}.png', dpi=300)
 
     plt.show()

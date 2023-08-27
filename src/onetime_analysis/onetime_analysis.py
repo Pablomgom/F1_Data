@@ -1,12 +1,155 @@
 import fastf1
 import numpy as np
 import pandas as pd
-
+import re
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
-
+from collections import Counter
+import matplotlib.patches as mpatches
+from matplotlib.ticker import FuncFormatter
 
 from src.general_analysis.table import render_mpl_table
+
+
+def get_retirements_per_driver(driver, start=None, end=None):
+
+    ergast = Ergast()
+    positions = pd.Series(dtype=object)
+
+    for i in range(start, end):
+        races = ergast.get_race_results(season=i, limit=1000)
+        sprints = ergast.get_sprint_results(season=i, limit=1000)
+        total_races = races.content + sprints.content
+        for race in total_races:
+            race = race[race['familyName'] == driver]
+            if not pd.isna(race['status'].max()):
+                if re.search(r'(Spun off|Accident|Collision)', race['status'].max()):
+                    positions = pd.concat([positions, pd.Series(['Accident DNF'])], ignore_index=True)
+                elif re.search(r'(Finished|\+)', race['status'].max()):
+                    positions = pd.concat([positions, pd.Series(['P'+str(race['position'].max())])], ignore_index=True)
+                else:
+                    positions = pd.concat([positions, pd.Series(['Mechanical DNF'])], ignore_index=True)
+        print(i)
+
+
+    positions = positions.value_counts()
+    N = 12
+    top_N = positions.nlargest(N)
+    top_N['Other'] = positions.iloc[N:].sum()
+
+    figsize = (10, 10)
+    fig, ax = plt.subplots(figsize=figsize)
+
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('black')
+
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+
+    colormap = cm.get_cmap('tab20', len(top_N))
+    colors = [colormap(i) for i in range(len(top_N))]
+
+    def func(pct, allvalues):
+        absolute = int(round(pct / 100. * np.sum(allvalues), 2))
+        return "{:.1f}%\n({:d})".format(pct, absolute)
+
+    top_N.plot.pie(ax=ax, autopct=lambda pct: func(pct, top_N), labels=['' for _ in top_N.index], legend=False,
+                   wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors)  # Set line color to black
+
+    ax.legend(title="Finish legend", loc="center left", labels=top_N.index, bbox_to_anchor=(0.8, 0.1))
+
+    plt.title(f'{driver} finish history (Total races: {positions.sum()})', fontsize=16, color='white')
+    plt.ylabel('')
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{driver} finish history', dpi=400)
+    plt.show()
+    print(positions)
+
+
+def compare_drivers_season(d_1, d_2, season):
+
+    ergast = Ergast()
+
+    schedule = ergast.get_race_schedule(season=season, limit=1000)
+    races = ergast.get_race_results(season=season, limit=1000)
+    sprints = ergast.get_sprint_results(season=season, limit=1000)
+    qualys = ergast.get_qualifying_results(season=season, limit=1000)
+    total_races = races.content + sprints.content
+
+    race_result = []
+    qualy_result = []
+
+    for race in total_races:
+        best_pos = race[race['familyName'].isin([d_1, d_2])]['position'].min()
+        driver = race[race['position'] == best_pos]['driverCode'].min()
+        if race.shape[1] == 26:
+            race_result.append(driver + ' - Race')
+        elif race.shape[1] == 23:
+            race_result.append(driver + ' - Sprint')
+
+    for qualy in qualys.content:
+        best_pos = qualy[qualy['familyName'].isin([d_1, d_2])]['position'].min()
+        driver = qualy[qualy['position'] == best_pos]['driverCode'].min()
+        qualy_result.append(driver)
+
+    print(Counter(race_result))
+    print(Counter(qualy_result))
+
+
+
+def get_pit_stops(year):
+
+    ergast = Ergast()
+    schedule = ergast.get_race_schedule(season=year, limit=1000)
+    circuits = schedule.circuitId.values
+    circuits = [item.replace("_", " ").title() for item in circuits]
+
+    n_pit_stops = []
+    for i in range(len(schedule)):
+        pit_stop = ergast.get_pit_stops(season=year, round=i+1, limit=1000)
+        n_pit_stops.append(len(pit_stop.content[0]))
+
+    fig, ax1 = plt.subplots(figsize=(32, 8))
+
+    total = sum(n_pit_stops)
+    mean = round(total / len(n_pit_stops), 2)
+
+    bars = ax1.bar(circuits, n_pit_stops, color="#AED6F1", edgecolor='white', label='Total Pitstops')
+    ax1.set_title(f'PIT STOPS IN {year} (Total: {total} - Avg: {mean})')
+    ax1.set_xlabel('Circuit', fontweight='bold')
+    ax1.set_ylabel('Total Pitstops', fontweight='bold')
+    ax1.yaxis.grid(False)
+    ax1.xaxis.grid(False)
+
+    for bar in bars:
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + 1, f'{height}', ha='center', va='bottom', fontsize=10)
+
+    ax2 = ax1.twinx()
+    mean_pits = [round(i/22, 2) for i in n_pit_stops]
+
+    total = sum(mean_pits)
+    mean = round(total / len(mean_pits), 2)
+
+    ax2.plot(circuits, mean_pits, color='blue', marker='o', linestyle='dashed', linewidth=2, markersize=8,
+             label='Avg PitStops per driver')
+    ax2.set_ylabel(f'PitStops per driver (Avg per race: {mean})', fontweight='bold')
+    ax2.yaxis.grid(True, linestyle='dashed')
+
+    for i, value in enumerate(mean_pits):
+        ax2.annotate(f'{value}', (i, value), textcoords="offset points", xytext=(0, -18), ha='center',
+                     fontsize=10, bbox=dict(boxstyle='round,pad=0.3', edgecolor='white', facecolor='white'))
+
+    # Add a legend
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper left')
+
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/PIT STOPS IN {year}.png', dpi=400)
+
+    plt.show()
+
 
 
 def get_retirements():
@@ -176,3 +319,290 @@ def get_topspeed():
         print(top_speed_array)
 
     print(top_speed_array)
+
+
+def get_topspeed_in_session(session, column='Speed', DRS=None):
+
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    circuit_speed = {}
+    colors_dict = {}
+
+    if DRS is not None:
+        drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
+
+        drivers = list(drivers.reset_index(name='Count')['Driver'].values)
+
+        for driver in drivers:
+            lap = session.laps.pick_driver(driver).pick_fastest()
+            top_speed = max(lap.telemetry[column])
+            driver_speed = circuit_speed.get(driver)
+            team = lap.Team.lower()
+            if team == 'red bull racing':
+                team = 'red bull'
+            elif team == 'haas f1 team':
+                team = 'haas'
+            if driver_speed is not None:
+                if top_speed > driver_speed and column == 'Speed':
+                    circuit_speed[driver] = top_speed
+                    colors_dict[driver] = team
+                elif top_speed < driver_speed and column != 'Speed':
+                    circuit_speed[driver] = top_speed
+                    colors_dict[driver] = team
+            else:
+                circuit_speed[driver] = top_speed
+                colors_dict[driver] = team
+
+            print(circuit_speed)
+    else:
+        laps = session.laps.pick_quicklaps()
+
+        for lap in laps.iterrows():
+            try:
+                if column == 'Speed':
+                    if DRS is not None:
+                        lap[1].telemetry = lap[1].telemetry[~lap[1].telemetry['DRS'].isin([10, 12, 14])]
+                    top_speed = max(lap[1].telemetry[column])
+                else:
+                    top_speed = round(lap[1][column].total_seconds(), 3)
+            except ValueError as e:
+                continue
+            driver = lap[1]['Driver']
+            driver_speed = circuit_speed.get(driver)
+            team = lap[1].Team.lower()
+            if team == 'red bull racing':
+                team = 'red bull'
+            elif team == 'haas f1 team':
+                team = 'haas'
+            if driver_speed is not None:
+                if top_speed > driver_speed and column == 'Speed':
+                    circuit_speed[driver] = top_speed
+                    colors_dict[driver] = team
+                elif top_speed < driver_speed and column != 'Speed':
+                    circuit_speed[driver] = top_speed
+                    colors_dict[driver] = team
+            else:
+                circuit_speed[driver] = top_speed
+                colors_dict[driver] = team
+
+            print(circuit_speed)
+
+    if column == 'Speed':
+        order = True
+        if DRS is not None:
+            column = 'Top Speeds (only the fastest lap from each driver)'
+        else:
+            column = 'Top Speeds'
+        x_fix = 5
+        y_fix = 0.25
+    else:
+        y_fix = 0.025
+        x_fix = 0.75
+        order = False
+        column = f"{column[:-5]} {column[-5:-4]} Times"
+
+    circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=order)}
+
+    fig, ax1 = plt.subplots(figsize=(20, 8))
+
+    colors = []
+    for i in range(len(circuit_speed)):
+        colors.append(fastf1.plotting.TEAM_COLORS[colors_dict[list(circuit_speed.keys())[i]]])
+
+    bars = ax1.bar(list(circuit_speed.keys()), list(circuit_speed.values()), color=colors,
+                   edgecolor='white')
+    ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}')
+    ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
+    ax1.set_ylabel('Max speed', fontweight='bold', fontsize=12)
+    ax1.yaxis.grid(True, linestyle='--')
+    ax1.xaxis.grid(False)
+
+    max_value = max(circuit_speed.values())
+
+    # Adjust the y-axis limits
+    ax1.set_ylim(min(circuit_speed.values()) - x_fix, max_value + x_fix)
+
+    for bar in bars:
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + y_fix, f'{height}', ha='center', va='bottom', fontsize=14)
+
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+
+    def format_ticks(val, pos):
+        return '{:.0f}'.format(val)
+
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(format_ticks))
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{column} IN {str(session.event.year) + " " + session.event.Country + " " + session.name}', dpi=400)
+    plt.show()
+
+
+def wins_in_circuit(circuit):
+
+    ergast = Ergast()
+    winners = pd.Series(dtype=str)
+    poles = pd.Series(dtype=str)
+    years = []
+    for i in range(1950, 2024):
+        races = ergast.get_race_results(season=i, limit=1000)
+        has_raced = races.description[races.description['circuitId'] == circuit]
+        if len(has_raced) > 0:
+            index = has_raced['circuitId'].index[0]
+            actual_race = races.content[index]
+            data = actual_race[actual_race['position'] == 1]
+            qualy_data = actual_race[actual_race['grid'] == 1]
+            driver_win = str(data['givenName'].min() + ' ' + data['familyName'].min())
+            driver_pole = str(qualy_data['givenName'].min() + ' ' + qualy_data['familyName'].min())
+            winners = pd.concat([winners, pd.Series([driver_win])], ignore_index=True)
+            poles = pd.concat([poles, pd.Series([driver_pole])], ignore_index=True)
+            years.append(i)
+        print(years)
+
+    winners.index = years
+    poles.index = years
+
+    winners = (winners.groupby(winners).agg(["count", lambda x: list(x.index)])
+               .rename(columns={"count": "Times", "<lambda_0>": "Years"}))
+
+    poles = (poles.groupby(poles).agg(["count", lambda x: list(x.index)])
+               .rename(columns={"count": "Times", "<lambda_0>": "Years"}))
+
+    winners = winners.sort_values("Times", ascending=False)
+    poles = poles.sort_values("Times", ascending=False)
+
+    print('POLES')
+    print(poles)
+    print('WINNERS')
+    print(winners)
+
+
+def day_all_races():
+
+    dict = {}
+    ergast = Ergast()
+    for i in range(1950, 2024):
+        schedule = ergast.get_race_schedule(season=i, limit=1000)
+        for j in range(len(schedule)):
+            date = schedule.raceDate[j]
+            event = schedule.raceName[j] + ' - ' + str(i)
+            dict[event] = date
+
+        print(i)
+
+    # Function to get month and day
+    def get_month_day(timestamp):
+        return timestamp.month, timestamp.day
+
+    sorted_items = sorted(dict.items(), key=lambda item: get_month_day(item[1]))
+
+    n_days = {}
+    with open('../resources/Races by day.txt', 'w') as file:
+        for key, value in sorted_items:
+            month, day = get_month_day(value)
+            race_date = f'{month:02d}-{day:02d}'
+            file.write(f'{race_date}: {key}\n')
+
+            if race_date in n_days:
+                current = n_days[race_date]
+                n_days[race_date] = current + 1
+            else:
+                n_days[race_date] = 1
+
+    # Sort items by value in descending order
+    sorted_days = sorted(n_days.items(), key=lambda item: item[1], reverse=True)
+
+    # Print each key-value pair on a new line
+    with open('../resources/Grouped races by day.txt', 'w') as file:
+        for key, value in sorted_days:
+            file.write(f'{key}: {value}\n')
+
+
+def overtakes():
+    df = pd.read_csv('../resources/Overtakes.csv')
+    df = df[df['Season'] >= 1999]
+    df = df[~df['Race'].str.contains('Sprint')]
+    df = df[~df['Race'].str.contains('Season')]
+
+    df = (df.groupby('Season').agg({'Season': 'count', 'Overtakes': 'sum'})
+          .rename(columns={'Season': 'Races'}))
+
+    years = df.index.values
+
+    fig, ax1 = plt.subplots(figsize=(24, 10))
+
+    bars = ax1.bar(years, df['Overtakes'], color="#AED6F1", edgecolor='white')
+    ax1.set_title(f'OVERTAKES IN F1 HISTORY', fontsize=24)
+    ax1.set_xlabel('YEAR', fontweight='bold')
+    ax1.set_ylabel('TOTAL OVERTAKES', fontweight='bold')
+    ax1.yaxis.grid(False)
+    ax1.xaxis.grid(False)
+
+    for bar in bars:
+        height = bar.get_height()
+        x_value = bar.get_x() + bar.get_width() / 2
+
+        # Customize color and label based on the x-value
+        if x_value < 2010:
+            color = 'orange'
+        elif x_value < 2023:
+            color = 'green'
+        else:
+            color = 'green'
+        if x_value == 2005:
+            color = 'red'
+        if x_value == 2010:
+            color = 'yellow'
+
+
+        bar.set_color(color)
+        ax1.text(x_value, height + 10, f'{height}', ha='center', va='bottom', fontsize=10, zorder=100)
+
+    # Create custom legend entries
+    legend_entries = [mpatches.Patch(color='orange', label='WITH refueling'),
+                      mpatches.Patch(color='red', label='WITH refueling, NO TYRE CHANGES'),
+                      mpatches.Patch(color='yellow', label='NO refueling'),
+                      mpatches.Patch(color='green', label='NO refueling, WITH DRS')]
+
+    ax2 = ax1.twinx()
+    mean_overtakes = round(df['Overtakes'] / df['Races'], 2)
+    ax2.axhline(y=round(mean_overtakes.mean(), 2), color='red', linestyle='--',
+                label='Avg overtakes per race since 1999', zorder=-1000)
+    ax2.plot(years, mean_overtakes, color='blue', marker='o', linestyle='dashed', linewidth=2, markersize=8,
+             label='Avg overtakes per race in that season')
+    ax2.set_ylabel(f'Overtakes per season (Avg per season: {round(mean_overtakes.mean(), 2)})', fontweight='bold')
+    ax2.yaxis.grid(True, linestyle='dashed')
+
+    for year, value in mean_overtakes.items():
+        ax2.annotate(f'{value}', (year, value), textcoords="offset points", xytext=(0, -20), ha='center',
+                     fontsize=10, bbox=dict(boxstyle='round,pad=0.3', edgecolor='white', facecolor='white'))
+
+    # Add a legend
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(handles1 + handles2 + legend_entries,
+               labels1 + labels2 + [entry.get_label() for entry in legend_entries], loc='upper right')
+    plt.xticks(years, rotation=45)
+
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/OVERTAKES IN F1.png', dpi=400)
+
+    plt.show()
+
+
+def races_by_number(number):
+
+    ergast = Ergast()
+    drivers = pd.Series(dtype=str)
+    for i in range(1950, 2024):
+        season = ergast.get_race_results(season=i, limit=1000)
+        for race in season.content:
+            filter_number = race[race['number'] == number]
+            if len(filter_number) > 0:
+                driver = filter_number['givenName'].values[0] + ' ' + filter_number['familyName'].values[0]
+                driver_series = pd.Series([driver])
+                drivers = drivers._append(driver_series, ignore_index=True)
+        print(i)
+
+    drivers = drivers.value_counts()
+    print(drivers)

@@ -1,6 +1,9 @@
-import fastf1
+import re
 
-from fastf1 import utils, plotting
+import fastf1
+import pandas as pd
+from matplotlib.patches import Patch
+from fastf1 import plotting
 
 from matplotlib import pyplot as plt
 import seaborn as sns
@@ -11,6 +14,8 @@ import matplotlib.patches as mpatches
 
 from datetime import timedelta
 import math
+
+from matplotlib.ticker import FuncFormatter
 
 
 def position_changes(session):
@@ -28,6 +33,8 @@ def position_changes(session):
             color = '#006f62'
         elif abb == 'LAT':
             color = '#012564'
+        elif abb == 'LAW':
+            color = '#2b4562'
         else:
             color = plotting.driver_color(abb)
 
@@ -57,9 +64,96 @@ def position_changes(session):
     plt.show()
 
 
-def driver_lap_times(race, driver):
+def driver_lap_times(race, driver, fastest_laps=True):
     plotting.setup_mpl(misc_mpl_mods=False)
 
+    driver_laps = race.laps.pick_driver(driver)
+    max_stint = max(driver_laps['Stint'])
+    driver_laps_filter = driver_laps[driver_laps['Stint'] == 4]
+
+    # Convert to timedelta series
+    series = driver_laps_filter['LapTime']
+
+    # Calculate Q1 and Q3
+    Q1 = series.quantile(0.25)
+    Q3 = series.quantile(0.75)
+    IQR = Q3 - Q1
+
+    filtered_series = series[~((series < (Q1 - 1.5 * IQR)) | (series > (Q3 + 1.5 * IQR)))]
+    driver_laps_filter['LapTime'] = filtered_series
+    driver_laps_filter = driver_laps_filter[driver_laps_filter['LapTime'].notna()]
+    driver_laps_filter['LapNumber'] = driver_laps_filter['LapNumber'] - driver_laps_filter['LapNumber'].min() + 1
+    driver_laps_filter['LapTime_seconds'] = driver_laps_filter['LapTime'].dt.total_seconds()
+    driver_laps_filter['MovingAverage'] = driver_laps_filter['LapTime_seconds'].rolling(window=3, min_periods=1).mean()
+    driver_laps_filter = driver_laps_filter.reset_index()
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    sns.scatterplot(data=driver_laps_filter,
+                    x="LapNumber",
+                    y="LapTime_seconds",
+                    ax=ax,
+                    hue="Compound",
+                    palette=plotting.COMPOUND_COLORS,
+                    s=125,
+                    linewidth=0,
+                    legend='auto')
+
+    ax.set_xlabel("Lap Number")
+    ax.set_ylabel("Lap Time")
+    plt.grid(color='w', which='major', axis='both', linestyle='--')
+    # The y-axis increases from bottom to top by default
+    # Since we are plotting time, it makes sense to invert the axis
+    text = 'Laptimes in Long Stints'
+
+    def format_func(value, tick_number):
+        minutes = np.floor(value / 60)
+        seconds = int(value % 60)
+        milliseconds = int((value * 1000) % 1000)  # multiplying by 1000 to get milliseconds
+        return f"{int(minutes)}:{seconds:02}.{milliseconds:03}"
+
+    ax.plot(driver_laps_filter['LapNumber'], driver_laps_filter['MovingAverage'], label="Avg of the last 3 laps",
+            color=(0, 191 / 255, 255 / 255))
+
+    # 1. Plot the MA points
+    sns.scatterplot(data=driver_laps_filter,
+                    x="LapNumber",
+                    y="MovingAverage",
+                    ax=ax,
+                    color=(0, 191 / 255, 255 / 255),
+                    s=125,
+                    linewidth=0,
+                    legend=False,
+                    zorder=-5)
+
+    # Annotate the moving average values:
+    bbox_props = dict(boxstyle="square,pad=0.3", fc="white", ec="none", lw=0)
+
+    for lap, time in zip(driver_laps_filter['LapNumber'], driver_laps_filter['LapTime_seconds']):
+        if not np.isnan(time):
+            ax.annotate(f"{format_func(time, None)}",
+                        (lap, time),
+                        textcoords="offset points",
+                        xytext=(0, 10),
+                        ha='center',
+                        fontsize=8,
+                        color='red',
+                        bbox=bbox_props)  # Adding the white box here
+
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
+    ax.legend()
+    # Turn on major grid lines
+    sns.despine(left=True, bottom=True)
+
+
+    plt.tight_layout()
+    plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=400)
+    plt.show()
+
+
+def driver_race_times_per_tyre(race, driver):
+    # The misc_mpl_mods option enables minor grid lines which clutter the plot
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     driver_laps = race.laps.pick_driver(driver).pick_quicklaps().reset_index()
 
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -69,7 +163,7 @@ def driver_lap_times(race, driver):
                     y="LapTime",
                     ax=ax,
                     hue="Compound",
-                    palette=plotting.COMPOUND_COLORS,
+                    palette=fastf1.plotting.COMPOUND_COLORS,
                     s=80,
                     linewidth=0,
                     legend='auto')
@@ -87,9 +181,8 @@ def driver_lap_times(race, driver):
     sns.despine(left=True, bottom=True)
 
     plt.tight_layout()
-    plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=400)
+    plt.savefig(f"../PNGs/RACE LAPS {driver} {race.event.OfficialEventName}.png", dpi=400)
     plt.show()
-
 
 def tyre_strategies(session):
     laps = session.laps
@@ -238,14 +331,12 @@ def race_diff(team_1, team_2, session):
 
     races = []
     session_names = []
-    total_laps = []
 
     for i in range(session):
         session = fastf1.get_session(2023, i + 1, 'R')
         session.load(telemetry=True)
         races.append(session)
         session_names.append(session.event['Location'].split('-')[0])
-        total_laps.append(session.total_laps)
 
     team_1_times = []
     team_2_times = []
@@ -254,28 +345,33 @@ def race_diff(team_1, team_2, session):
     team_2_total_laps = []
 
     for race in races:
-        team_1_laps = race.laps.pick_team(team_1)
+        min_pos_t1 = race.results[race.results['TeamName'] == team_1]['Position'].min()
+        d_t1 = race.results[race.results['Position'] == min_pos_t1]['Abbreviation'].min()
+
+        min_pos_t2 = race.results[race.results['TeamName'] == team_2]['Position'].min()
+        d_t2 = race.results[race.results['Position'] == min_pos_t2]['Abbreviation'].min()
+
+        team_1_laps = race.laps.pick_driver(d_t1)
+        team_2_laps = race.laps.pick_driver(d_t2)
         team_1_laps = team_1_laps.dropna(subset='LapTime')
-        #team_1_laps = team_1_laps[team_1_laps['PitOutTime'].isna()]
-        #team_1_laps = team_1_laps[team_1_laps['PitInTime'].isna()]
         team_1_laps = team_1_laps[team_1_laps['TrackStatus'].astype(str).apply(lambda x: set(x) <= {'1', '2'})]
 
-        if team_1 == 'Alpine' and race.event['Location'] == 'Budapest':
-            team_1_times.append(timedelta(hours=0, minutes=0, seconds=0, milliseconds=0))
-            team_1_total_laps.append(0)
-        else:
-            team_1_times.append(team_1_laps['LapTime'].sum())
-            team_1_total_laps.append(team_1_laps['LapTime'].count())
-
-
-        team_2_laps = race.laps.pick_team(team_2)
         team_2_laps = team_2_laps.dropna(subset='LapTime')
-        #team_2_laps = team_2_laps[team_2_laps['PitOutTime'].isna()]
-        #team_2_laps = team_2_laps[team_2_laps['PitInTime'].isna()]
         team_2_laps = team_2_laps[team_2_laps['TrackStatus'].astype(str).apply(lambda x: set(x) <= {'1', '2'})]
 
-        team_2_times.append(team_2_laps['LapTime'].sum())
-        team_2_total_laps.append(team_2_laps['LapTime'].count())
+        t1_laps = team_1_laps.shape[0]
+        t2_laps = team_2_laps.shape[0]
+
+        if t1_laps < t2_laps:
+            max_laps = t1_laps
+        else:
+            max_laps = t2_laps
+
+        team_1_times.append(team_1_laps['LapTime'][1:max_laps].sum())
+        team_1_total_laps.append(max_laps)
+
+        team_2_times.append(team_2_laps['LapTime'][1:max_laps].sum())
+        team_2_total_laps.append(max_laps)
 
     delta_laps = []
 
@@ -287,10 +383,15 @@ def race_diff(team_1, team_2, session):
             mean_time_team_1 = (team_1_times[i] / team_1_total_laps[i]).total_seconds() * 1000
             mean_time_team_2 = (team_2_times[i] / team_2_total_laps[i]).total_seconds() * 1000
 
-            delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * total_laps[i]
+            if team_1_total_laps > team_2_total_laps:
+                laps = team_1_total_laps[i]
+            else:
+                laps = team_2_total_laps[i]
+
+            delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    plt.figure(figsize=(13, 7))
+    fig, ax1 = plt.subplots(figsize=(13, 7))
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
 
     for i in range(len(session_names)):
@@ -310,6 +411,7 @@ def race_diff(team_1, team_2, session):
     # Set the labels and title
     plt.ylabel(f'Percentage time difference', fontsize=14)
     plt.xlabel('Circuito', fontsize=14)
+    ax1.yaxis.grid(True, linestyle='--')
     plt.title(f'{team_1} VS {team_2} race time difference', fontsize=14)
 
     step = 0.2
@@ -322,25 +424,20 @@ def race_diff(team_1, team_2, session):
     end = np.ceil(max(delta_laps) / step) * step
 
     delta_laps = [x for x in delta_laps if x != 0]
-    mean_y = np.mean(delta_laps)
-    # Draw horizontal line at y=mean_y
-    plt.axhline(mean_y, color='red', linewidth=2, label='Mean distance')
+    delta_laps = pd.Series(delta_laps)
+    mean_y = list(delta_laps.rolling(window=5, min_periods=1).mean())
+
+    plt.plot(session_names, mean_y, color='red',
+             marker='o', markersize=4, linewidth=2, label='Moving Average (5 last races)')
+
     if min(delta_laps) < 0:
         plt.axhline(0, color='black', linewidth=2)
 
     # Generate a list of ticks from minimum to maximum y values considering 0.0 value and step=0.2
     yticks = list(np.arange(start, end + step, step))
-    yticks.append(mean_y)
-    delete = None
-    for i in range(len(yticks)):
-        if abs(yticks[i] - mean_y) <= 0.10:
-            delete = yticks[i]
-            break
-    if delete is not None:
-        yticks.remove(delete)
     yticks = sorted(yticks)
 
-    plt.yticks(yticks, [f'{tick:.2f} %' if tick != mean_y else f'{tick:.2f} %' for tick in yticks])
+    plt.yticks(yticks, [f'{tick:.2f} %' for tick in yticks])
 
     # To avoid repeating labels in the legend, we handle them separately
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -357,20 +454,29 @@ def race_distance(session, driver_1, driver_2):
     laps_driver_1 = session.laps.pick_driver(driver_1).reset_index()
     laps_driver_2 = session.laps.pick_driver(driver_2).reset_index()
 
+    laps_driver_1_box = pd.isna(laps_driver_1['PitInTime'])
+    filtered_laps_driver_1 = laps_driver_1[~laps_driver_1_box]
+    pit_laps_driver_1 = np.array(filtered_laps_driver_1.index + 1)
+
+    laps_driver_2_box = pd.isna(laps_driver_2['PitInTime'])
+    filtered_laps_driver_2 = laps_driver_2[~laps_driver_2_box]
+    pit_laps_driver_2 = np.array(filtered_laps_driver_2.index + 1)
+
     laps_diff = []
     laps = []
     for i in range(len(laps_driver_1)):
-        laps_diff.append(laps_driver_1['LapTime'][i].total_seconds() - laps_driver_2['LapTime'][i].total_seconds())
+        laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
         laps.append(i+1)
 
-    progressive_sum = np.cumsum(laps_diff)
+    laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
+    progressive_sum = laps_diff
     colors = ['red']
     for i in range(len(progressive_sum) - 1):
         if progressive_sum[i] < progressive_sum[i + 1]:
             colors.append('green')
         else:
             colors.append('red')
-    plt.figure(figsize=(16, 8))
+    plt.figure(figsize=(25, 8))
     # Bar Plot
     bars = plt.bar(laps, progressive_sum, color=colors, width=0.9)
 
@@ -386,18 +492,35 @@ def race_distance(session, driver_1, driver_2):
             fontsize=8 # font size
         )
     # Create custom legend
-    from matplotlib.patches import Patch
-    legend_elements = [Patch(facecolor='green', edgecolor='green', label='Driver 1 Ahead'),
-                       Patch(facecolor='red', edgecolor='red', label='Driver 2 Ahead')]
-    plt.legend(handles=legend_elements, loc='best')
+
+    legend_elements = [Patch(facecolor='green', edgecolor='green', label=f'{driver_2} Faster'),
+                       Patch(facecolor='red', edgecolor='red', label=f'{driver_1} Faster')]
+    plt.legend(handles=legend_elements, loc='best', fontsize=20)
+
+    # Add arrows and text for pit stops
+    for pit_lap in pit_laps_driver_1:
+        start_y = progressive_sum[pit_lap - 1] - 15
+        end_y = progressive_sum[pit_lap - 1]
+        dy = 10 if start_y < 0 else -10
+        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='blue')
+        plt.text(pit_lap, start_y - 1.5, f'{driver_1} Pit Stop', color='blue', fontsize=11, ha='center')
+
+    for pit_lap in pit_laps_driver_2:
+        start_y = progressive_sum[pit_lap - 1] - 15
+        end_y = progressive_sum[pit_lap - 1]
+        dy = 10 if start_y < 0 else -10
+        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='black')
+        plt.text(pit_lap, start_y - 1.25, f'{driver_2} Pit Stop', color='black', fontsize=11, ha='center')
 
     plt.xlabel('Laps', fontsize=20)
     plt.ylabel('Progressive Time Difference (seconds)', fontsize=20)
-    plt.title('Progressive Time Difference between Two Drivers', fontsize=20)
+    plt.title(f'Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}', fontsize=20)
     plt.grid(True, axis='y')
+
 
     # Display the plot
     plt.tight_layout()  # Adjusts plot parameters for a better layout
+    plt.savefig(f'../PNGs/Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}', dpi=400)
     plt.show()
 
 

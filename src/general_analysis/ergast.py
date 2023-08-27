@@ -71,6 +71,7 @@ def get_position_changes(race):
     finish = race.content[0][['familyName', 'givenName', 'grid', 'status', 'constructorName']]
     finish['Driver'] = finish['givenName'] + ' ' + finish['familyName']
     finish['Finish'] = range(1, finish.shape[0] + 1)
+    finish.loc[(finish['grid'] == 0) & (finish['Driver'] == 'Sergio Pérez'), 'grid'] = 19
     finish['grid'].replace(0, 20, inplace=True)
     finish.loc[finish['status'].isin(['Did not qualify', 'Did not prequalify']), 'grid'] = finish['Finish']
     finish['Grid change'] = finish['grid'] - finish['Finish']

@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt, cm
 from fastf1 import utils, plotting
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 from scipy.signal import savgol_filter
 from timple.timedelta import strftimedelta
@@ -42,10 +43,6 @@ def overlying_laps(session, driver_1, driver_2, driver_3=None):
 
     delta_time = adjust_to_final(delta_time, final_value)
 
-    if driver_3 is not None:
-        d3_lap = session.laps.pick_driver(driver_3).pick_fastest()
-        delta_time2, _, compare_tel2 = utils.delta_time(d1_lap, d3_lap)
-
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Plot the speed for driver 1 (reference) and driver 2 (compare)
@@ -56,43 +53,38 @@ def overlying_laps(session, driver_1, driver_2, driver_3=None):
             color='#FFA500',
             label=driver_2)
 
-    if driver_3 is not None:
-        ax.plot(compare_tel2['Distance'], compare_tel2['Speed'],
-                color='#00FF00',  # or any other color
-                label=driver_3)
-
     colors = ['green' if x > 0 else 'red' for x in delta_time]
     twin = ax.twinx()
     for i in range(1, len(delta_time)):
         twin.plot(ref_tel['Distance'][i-1:i+1], delta_time[i-1:i+1], color=colors[i],
                   alpha=0.5, label='delta')
-    if driver_3 is not None:
-        twin.plot(ref_tel['Distance'], delta_time2, ':', color='yellow', alpha=0.5, label=f'delta_{driver_3}')
-    twin.axhline(y=0, color='white', linestyle='--')
 
     # Set the labels for the axes
     ax.set_xlabel('Distance')
     ax.set_ylabel('Speed')
-    if driver_3 is not None:
-        ax.set_title(f'Qualy lap comparison among {driver_1}, {driver_2}, and {driver_3}')
-    else:
-        ax.set_title(f'Qualy lap comparison: {driver_1} VS {driver_2}')
+    ax.set_title(f'{session.event.EventName + " " + session.name} comparation: {driver_1} VS {driver_2}')
+
+    twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    twin.set_ylabel('Time diff (s)')
+
+    legend_elements = [
+        Line2D([0], [0], color='green', lw=2, label=f'{driver_1} ahead'),
+        Line2D([0], [0], color='red', lw=2, label=f'{driver_2} ahead')
+    ]
 
     # Get the legend handles and labels from the first axes
     handles1, labels1 = ax.get_legend_handles_labels()
 
-    # Get the legend handles and labels from the second (twin) axes
-    handles2, labels2 = twin.get_legend_handles_labels()
-
     # Combine the handles and labels
-    handles = handles1 + handles2
-    labels = labels1 + labels2
+    handles = handles1 + legend_elements
+    labels = labels1 + [entry.get_label() for entry in legend_elements]
 
-    ax.legend(handles, set(labels), loc='lower right')
-
+    # Create a single legend with the handles and labels
+    ax.legend(handles, labels, loc='lower right')
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     # Display the plot
     plt.tight_layout()
-    plt.savefig(f"../PNGs/{driver_1} - {driver_2} QUALY LAPS {session.event.OfficialEventName}.png", dpi=1000)
+    plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=400)
     plt.show()
 
 

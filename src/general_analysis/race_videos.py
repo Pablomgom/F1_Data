@@ -145,7 +145,6 @@ def bar_race(races, sprints, schedule):
         bar_label_size=11,
         tick_label_size=11,
         shared_fontdict={
-            'family': 'Helvetica Normal',
             'color': '.1'
         },
         scale='linear',
