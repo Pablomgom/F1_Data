@@ -397,7 +397,7 @@ def race_diff(team_1, team_2, session):
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(14, 7))
+    fig, ax1 = plt.subplots(figsize=(16, 7))
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
 
     for i in range(len(session_names)):

@@ -12,7 +12,7 @@ if __name__ == '__main__':
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     #pitstops(2023)
 
-    plot_circuit()
+    #plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 14, 'R')
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     #qualy_diff('Alpine', 'Ferrari', 12)
 
-    #race_diff('Alfa Romeo', 'Williams', 13)
+    race_diff('Ferrari', 'Aston Martin', 14)
 
     #position_changes(session)
 
