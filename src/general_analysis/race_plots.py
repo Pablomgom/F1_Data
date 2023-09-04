@@ -25,8 +25,8 @@ def position_changes(session):
 
     for drv in session.drivers:
         drv_laps = session.laps.pick_driver(drv)
-
         abb = drv_laps['Driver'].iloc[0]
+
         if abb == 'MSC':
             color = '#cacaca'
         elif abb == 'VET':
@@ -59,6 +59,7 @@ def position_changes(session):
     ax.legend(bbox_to_anchor=(1.0, 1.02))
 
     plt.title(session.event.OfficialEventName, fontsize=14, loc='center')
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f"../PNGs/POSITION CHANGES {session.event.OfficialEventName}.png", dpi=400)
     plt.show()
@@ -68,8 +69,8 @@ def driver_lap_times(race, driver, fastest_laps=True):
     plotting.setup_mpl(misc_mpl_mods=False)
 
     driver_laps = race.laps.pick_driver(driver)
-    max_stint = max(driver_laps['Stint'])
-    driver_laps_filter = driver_laps[driver_laps['Stint'] == 4]
+    max_stint = driver_laps['Stint'].value_counts().index[0]
+    driver_laps_filter = driver_laps[driver_laps['Stint'] == max_stint]
 
     # Convert to timedelta series
     series = driver_laps_filter['LapTime']
@@ -79,7 +80,7 @@ def driver_lap_times(race, driver, fastest_laps=True):
     Q3 = series.quantile(0.75)
     IQR = Q3 - Q1
 
-    filtered_series = series[~((series < (Q1 - 1.5 * IQR)) | (series > (Q3 + 1.5 * IQR)))]
+    filtered_series = series[~((series < (Q1 - 1 * IQR)) | (series > Q3))]
     driver_laps_filter['LapTime'] = filtered_series
     driver_laps_filter = driver_laps_filter[driver_laps_filter['LapTime'].notna()]
     driver_laps_filter['LapNumber'] = driver_laps_filter['LapNumber'] - driver_laps_filter['LapNumber'].min() + 1
@@ -189,6 +190,8 @@ def tyre_strategies(session):
     drivers = session.drivers
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
+    drivers = ['VER', 'PER', 'SAI', 'LEC', 'RUS', 'HAM', 'ALB', 'NOR', 'ALO', 'BOT',
+               'LAW', 'PIA', 'SAR', 'ZHO', 'GAS', 'STR', 'HUL', 'MAG', 'OCO', 'TSU']
 
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
 
@@ -230,6 +233,8 @@ def tyre_strategies(session):
 
     for driver in drivers:
         driver_stints = stints.loc[stints["Driver"] == driver]
+        if driver == 'ALB':
+            a = 1
 
         previous_stint_end = 0
         for idx, row in driver_stints.iterrows():
@@ -240,7 +245,7 @@ def tyre_strategies(session):
                 alpha = 1
                 color = plotting.COMPOUND_COLORS[row["Compound"]]
             else:
-                alpha = 0.5
+                alpha = 0.65
                 rgb_color = mcolors.to_rgb(plotting.COMPOUND_COLORS[row["Compound"]])
                 color = tuple([x * 0.8 for x in rgb_color])
 
@@ -281,16 +286,17 @@ def tyre_strategies(session):
 
 
 def driver_laptimes(race):
+
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
+    point_finishers = ['1', '11', '55', '16', '63', '44', '23', '4', '14', '77']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
 
     driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
                      abv, driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
-
 
     fig, ax = plt.subplots(figsize=(10, 5))
     driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
@@ -391,7 +397,7 @@ def race_diff(team_1, team_2, session):
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(13, 7))
+    fig, ax1 = plt.subplots(figsize=(14, 7))
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
 
     for i in range(len(session_names)):
@@ -402,10 +408,10 @@ def race_diff(team_1, team_2, session):
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.06, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] + 0.05, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='top')
         else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.075, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] - 0.05, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='bottom')
 
     # Set the labels and title
@@ -425,10 +431,10 @@ def race_diff(team_1, team_2, session):
 
     delta_laps = [x for x in delta_laps if x != 0]
     delta_laps = pd.Series(delta_laps)
-    mean_y = list(delta_laps.rolling(window=5, min_periods=1).mean())
+    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
 
     plt.plot(session_names, mean_y, color='red',
-             marker='o', markersize=4, linewidth=2, label='Moving Average (5 last races)')
+             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
 
     if min(delta_laps) < 0:
         plt.axhline(0, color='black', linewidth=2)
@@ -442,6 +448,7 @@ def race_diff(team_1, team_2, session):
     # To avoid repeating labels in the legend, we handle them separately
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.legend(by_label.values(), by_label.keys(), loc='upper right')
 
     plt.savefig(f"../PNGs/{team_2} VS {team_1} race time difference.png", dpi=400)
@@ -465,7 +472,10 @@ def race_distance(session, driver_1, driver_2):
     laps_diff = []
     laps = []
     for i in range(len(laps_driver_1)):
-        laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
+        if i == 63:
+            laps_diff.append(0)
+        else:
+            laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
         laps.append(i+1)
 
     laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
@@ -476,14 +486,14 @@ def race_distance(session, driver_1, driver_2):
             colors.append('green')
         else:
             colors.append('red')
-    plt.figure(figsize=(25, 8))
+    plt.figure(figsize=(37, 8))
     # Bar Plot
     bars = plt.bar(laps, progressive_sum, color=colors, width=0.9)
 
     # Annotate bars with their values
     for bar in bars:
         yval = bar.get_height()
-        offset = 0.5 if yval > 0 else -0.5  # This will adjust the position above or below the bar. Modify the value if needed.
+        offset = 0.7 if yval > 0 else -0.7  # This will adjust the position above or below the bar. Modify the value if needed.
         plt.annotate(
             f'{yval:.2f}',  # Format to 2 decimal places, modify as needed
             (bar.get_x() + bar.get_width() / 2, yval + offset),  # Adjusted the y-coordinate here
@@ -497,23 +507,51 @@ def race_distance(session, driver_1, driver_2):
                        Patch(facecolor='red', edgecolor='red', label=f'{driver_1} Faster')]
     plt.legend(handles=legend_elements, loc='best', fontsize=20)
 
-    # Add arrows and text for pit stops
+    # Given offset for overlapping text
+    text_offset = 3
+
     for pit_lap in pit_laps_driver_1:
-        start_y = progressive_sum[pit_lap - 1] - 15
         end_y = progressive_sum[pit_lap - 1]
-        dy = 10 if start_y < 0 else -10
-        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='blue')
-        plt.text(pit_lap, start_y - 1.5, f'{driver_1} Pit Stop', color='blue', fontsize=11, ha='center')
+
+        # If end_y is positive or zero, adjust the start_y and dy to ensure arrow's head ends at y=0
+        if end_y >= 0:
+            start_y = -15
+            dy = 13
+            text_y = -18
+        else:
+            start_y = end_y - 15
+            dy = 10
+            text_y = start_y - 1.5
+
+        # Check for overlap and adjust
+        if pit_lap in pit_laps_driver_2:
+            text_y -= text_offset
+
+        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='white')
+        plt.text(pit_lap, text_y, f'{driver_1} Pit Stop', color='white', fontsize=11, ha='center')
 
     for pit_lap in pit_laps_driver_2:
-        start_y = progressive_sum[pit_lap - 1] - 15
         end_y = progressive_sum[pit_lap - 1]
-        dy = 10 if start_y < 0 else -10
-        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='black')
-        plt.text(pit_lap, start_y - 1.25, f'{driver_2} Pit Stop', color='black', fontsize=11, ha='center')
+
+        # If end_y is positive or zero, adjust the start_y and dy to ensure arrow's head ends at y=0
+        if end_y >= 0:
+            start_y = -15
+            dy = 13
+            text_y = -16.25
+        else:
+            start_y = end_y - 15
+            dy = 10
+            text_y = start_y - 1.25
+
+        if pit_lap + 1 in pit_laps_driver_1 and pit_lap + 1 not in pit_laps_driver_2:
+            text_y -= 2
+
+        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='white')
+        plt.text(pit_lap, text_y, f'{driver_2} Pit Stop', color='white', fontsize=11, ha='center')
 
     plt.xlabel('Laps', fontsize=20)
     plt.ylabel('Progressive Time Difference (seconds)', fontsize=20)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.title(f'Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}', fontsize=20)
     plt.grid(True, axis='y')
 

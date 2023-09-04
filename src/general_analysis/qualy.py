@@ -5,7 +5,7 @@ from fastf1.core import Laps
 from matplotlib import pyplot as plt, cm
 from fastf1 import utils, plotting
 from matplotlib.collections import LineCollection
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 from scipy.signal import savgol_filter
@@ -14,7 +14,7 @@ from scipy.interpolate import interp1d, CubicSpline
 from scipy.interpolate import UnivariateSpline
 
 
-def overlying_laps(session, driver_1, driver_2, driver_3=None):
+def overlying_laps(session, driver_1, driver_2, lap=None):
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'black'
 
@@ -24,10 +24,19 @@ def overlying_laps(session, driver_1, driver_2, driver_3=None):
     plt.rcParams['xtick.color'] = 'white'
     plt.rcParams['ytick.color'] = 'white'
 
-    d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
-    d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
+    if lap is not None:
+        for i in session.laps.pick_driver(driver_1).pick_lap(lap).iterlaps():
+            d1_lap = i[1]
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap)
+        for i in session.laps.pick_driver(driver_2).pick_lap(lap).iterlaps():
+            d2_lap = i[1]
+
+    else:
+        #session.laps.split_qualifying_sessions()[0].pick_driver('ALO')
+        d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
+        d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
+
+    delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap, lap)
 
     final_value = ((d2_lap['LapTime'] - d1_lap['LapTime']).total_seconds())
 
@@ -43,26 +52,42 @@ def overlying_laps(session, driver_1, driver_2, driver_3=None):
 
     delta_time = adjust_to_final(delta_time, final_value)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(nrows=5,figsize=(16, 11), gridspec_kw={'height_ratios': [4,1,1,2,2]})
 
-    # Plot the speed for driver 1 (reference) and driver 2 (compare)
-    ax.plot(ref_tel['Distance'], ref_tel['Speed'],
-            color='#0000FF',
-            label=driver_1)
-    ax.plot(compare_tel['Distance'], compare_tel['Speed'],
-            color='#FFA500',
-            label=driver_2)
+    if lap is None:
+        ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
+                color='#0000FF',
+                label=driver_1)
+        ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
+                color='#FFA500',
+                label=driver_2)
 
-    colors = ['green' if x > 0 else 'red' for x in delta_time]
-    twin = ax.twinx()
-    for i in range(1, len(delta_time)):
-        twin.plot(ref_tel['Distance'][i-1:i+1], delta_time[i-1:i+1], color=colors[i],
-                  alpha=0.5, label='delta')
+        colors = ['green' if x > 0 else 'red' for x in delta_time]
+        twin = ax[0].twinx()
+        for i in range(1, len(delta_time)):
+            twin.plot(ref_tel['Distance'][i-1:i+1], delta_time[i-1:i+1], color=colors[i],
+                      alpha=0.5, label='delta')
+
+    else:
+        ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
+                color='#0000FF',
+                label=driver_1)
+        ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
+                color='#FFA500',
+                label=driver_2)
+
+        colors = ['green' if x > 0 else 'red' for x in delta_time]
+        twin = ax[0].twinx()
+        for i in range(1, len(delta_time)):
+            twin.plot(compare_tel['Distance'][i - 1:i + 1], delta_time[i - 1:i + 1], color=colors[i],
+                      alpha=0.5, label='delta')
 
     # Set the labels for the axes
-    ax.set_xlabel('Distance')
-    ax.set_ylabel('Speed')
-    ax.set_title(f'{session.event.EventName + " " + session.name} comparation: {driver_1} VS {driver_2}')
+    ax[0].set_xlabel('Distance')
+    ax[0].set_ylabel('Speed')
+    ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
+                    f'{" Lap " + str(lap) if lap is not None else ""} comparation: {driver_1} VS {driver_2}',
+                    fontsize=24, y=1.1)
 
     twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     twin.set_ylabel('Time diff (s)')
@@ -73,15 +98,70 @@ def overlying_laps(session, driver_1, driver_2, driver_3=None):
     ]
 
     # Get the legend handles and labels from the first axes
-    handles1, labels1 = ax.get_legend_handles_labels()
+    handles1, labels1 = ax[0].get_legend_handles_labels()
 
     # Combine the handles and labels
     handles = handles1 + legend_elements
     labels = labels1 + [entry.get_label() for entry in legend_elements]
 
     # Create a single legend with the handles and labels
-    ax.legend(handles, labels, loc='lower right')
+    ax[0].legend(handles, labels, loc='lower right')
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+
+    ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],
+               color='#0000FF',
+               label=driver_1)
+    ax[1].plot(compare_tel['Distance'], compare_tel['Brake'],
+               color='#FFA500',
+               label=driver_2)
+
+    ax[1].set_xlabel('Distance')
+    ax[1].set_ylabel('Brakes')
+
+    ax[1].set_yticks([0, 1])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[1].set_yticklabels(['ON', 'OFF'])
+
+    ax[2].plot(ref_tel['Distance'], ref_tel['Throttle'],
+               color='#0000FF',
+               label=driver_1)
+    ax[2].plot(compare_tel['Distance'], compare_tel['Throttle'],
+               color='#FFA500',
+               label=driver_2)
+
+    ax[2].set_xlabel('Distance')
+    ax[2].set_ylabel('Throttle')
+
+    ax[2].set_yticks([0, 50, 100])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[2].set_yticklabels(['0%', '50%', '100%'])
+
+    ax[3].plot(ref_tel['Distance'], ref_tel['nGear'],
+               color='#0000FF',
+               label=driver_1)
+    ax[3].plot(compare_tel['Distance'], compare_tel['nGear'],
+               color='#FFA500',
+               label=driver_2)
+
+    ax[3].set_xlabel('Distance')
+    ax[3].set_ylabel('Gear')
+
+    ax[4].plot(ref_tel['Distance'], ref_tel['RPM'],
+               color='#0000FF',
+               label=driver_1)
+    ax[4].plot(compare_tel['Distance'], compare_tel['RPM'],
+               color='#FFA500',
+               label=driver_2)
+
+    ax[4].set_xlabel('Distance')
+    ax[4].set_ylabel('RPM')
+
+    ax[3].set_yticks([2, 3, 4, 5, 6, 7, 8])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[3].set_yticklabels(['2', '3', '4', '5', '6', '7', '8'])
+
+    ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[4].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+
     # Display the plot
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=400)
@@ -120,31 +200,8 @@ def gear_changes(session, driver):
     plt.show()
 
 
-def interpolate_data(reference_t, target_t, target_data):
-    cs = CubicSpline(target_t, target_data, extrapolate=True)
-    return cs(reference_t)
 
 
-def resample_telemetry(distance, data, resample_interval=10):
-    """
-    Resample telemetry data at regular distance intervals using cubic spline interpolation.
-    """
-    cs = CubicSpline(distance, data)
-    max_dist = distance[-1]
-    resampled_distance = np.arange(0, max_dist, resample_interval)
-    resampled_data = cs(resampled_distance)
-    return resampled_distance, resampled_data
-
-
-def apply_smoothing(data, window_length=51, polyorder=2):
-    """
-    Apply Savitzky-Golay filter to the data for smoothness.
-    If the length of the data is less than the window_length, we don't apply the filter.
-    """
-    if len(data) < window_length:
-        return data
-
-    return savgol_filter(data, window_length, polyorder)
 
 def fastest_by_point(session, team_1, team_2):
     lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
@@ -153,73 +210,72 @@ def fastest_by_point(session, team_1, team_2):
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     tel_team_2 = lap_team_2.get_telemetry()
 
-    x_1 = np.array(tel_team_1['X'].values)
-    y_1 = np.array(tel_team_1['Y'].values)
-    speed_1 = np.array(tel_team_1['Speed'].values)
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, special_mode=True)
 
-    x_2 = np.array(tel_team_2['X'].values)
-    y_2 = np.array(tel_team_2['Y'].values)
-    speed_2 = np.array(tel_team_2['Speed'].values)
+    final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
 
-    distance_1 = np.array(tel_team_1['Distance'].values)
-    distance_2 = np.array(tel_team_2['Distance'].values)
+    def adjust_to_final(series, final_value):
+        # Calculate the adjustment required for each element
+        diff = final_value - series.iloc[-1]
+        adjustments = [diff * (i + 1) / len(series) for i in range(len(series))]
 
-    resample_interval = 8 # This represents the distance between data points (e.g., every 10 meters)
+        # Adjust the original series
+        adjusted_series = series + adjustments
 
-    # Resample telemetry data at regular distance intervals.
-    distance_1_resampled, x_1_resampled = resample_telemetry(distance_1, x_1, resample_interval)
-    _, y_1_resampled = resample_telemetry(distance_1, y_1, resample_interval)
-    _, speed_1_resampled = resample_telemetry(distance_1, speed_1, resample_interval)
+        return adjusted_series
 
-    distance_2_resampled, x_2_resampled = resample_telemetry(distance_2, x_2, resample_interval)
-    _, y_2_resampled = resample_telemetry(distance_2, y_2, resample_interval)
-    _, speed_2_resampled = resample_telemetry(distance_2, speed_2, resample_interval)
+    delta_time = adjust_to_final(delta_time, final_value)
 
-    x_1_resampled = apply_smoothing(x_1_resampled)
-    y_1_resampled = apply_smoothing(y_1_resampled)
-    speed_1_resampled = apply_smoothing(speed_1_resampled)
+    x = np.array(tel_team_1['X'].values)
+    y = np.array(tel_team_1['Y'].values)
 
-    x_2_resampled = apply_smoothing(x_2_resampled)
-    y_2_resampled = apply_smoothing(y_2_resampled)
-    speed_2_resampled = apply_smoothing(speed_2_resampled)
-
-    # Take the common distance range for comparison
-    max_common_distance = min(distance_1_resampled[-1], distance_2_resampled[-1])
-    common_indices_1 = distance_1_resampled <= max_common_distance
-    common_indices_2 = distance_2_resampled <= max_common_distance
-
-    speed_1_common = speed_1_resampled[common_indices_1]
-    speed_2_common = speed_2_resampled[common_indices_2]
-
-    faster = [team_1 if speed_1_common[i] > speed_2_common[i] else team_2 for i in range(len(speed_1_common))]
-
-    team_colors = {team_1: 0, team_2: 1}
-    color_values = [team_colors[team] for team in faster]
-
-    colors = [plotting.team_color(team_1),
-              plotting.team_color(team_2)]  # R -> G -> B, Red for team_1 and Blue for team_2
-    n_bins = [2]  # Discretizes the interpolation into bins
-    cmap_name = 'custom_div_cmap'
-    cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=2)
-
-    points = np.array([x_2, y_2]).T.reshape(-1, 1, 2)
+    points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-    lc_comp = LineCollection(segments, cmap=cm)
-    lc_comp.set_array(np.array(color_values))
-    lc_comp.set_linewidth(4)
+    if len(delta_time) != len(segments):
+        from scipy.interpolate import interp1d
+        x_old = np.linspace(0, 1, len(delta_time))
+        x_new = np.linspace(0, 1, len(segments))
+        f = interp1d(x_old, delta_time, kind='linear')
+        delta_time = f(x_new)
+    # Change the colormap to a diverging colormap
+    cmap = cm.get_cmap('coolwarm')
+
+    # Get the maximum absolute value of delta_time for symmetric coloring
+    vmax = np.max(np.abs(delta_time))
+    vmin = -vmax
+
+    # Initialize the TwoSlopeNorm with 0 as the center
+    norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
+
+    # Update LineCollection with the new colormap and normalization
+    lc_comp = LineCollection(segments, norm=norm, cmap=cmap)
+    lc_comp.set_array(delta_time)
+    lc_comp.set_linewidth(7)
+
+    plt.subplots(figsize=(12,8))
 
     plt.gca().add_collection(lc_comp)
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
 
-    title = plt.suptitle(
-        f"Fastest Lap Gear Shift Visualization\n"
-    )
+    cbar = plt.colorbar(mappable=lc_comp, label="DeltaTime")
+    # Create custom legend
+    legend_lines = [Line2D([0], [0], color='red', lw=4),
+                    Line2D([0], [0], color='blue', lw=4)]
 
-    cbar = plt.colorbar(mappable=lc_comp, label="Team")
-    cbar.set_ticks([0.25, 0.75])  # Set ticks in the middle of the bins
-    cbar.set_ticklabels([team_1, team_2])  # Set tick labels to team names
+    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'])
+    cbar.set_label('Time Difference (s)', rotation=270, labelpad=20, fontsize=14)
+
+    cbar.ax.tick_params(labelsize=12)
+
+    plt.suptitle(f"{team_1} vs {team_2}:"
+                 f" {str(session.session_info['StartDate'].year) + ' ' + session.event.EventName + ' ' + session.name} \n",
+                 fontsize=18)
+    plt.tight_layout()
+    path = (f"../PNGs/Dif by point {team_1} vs {team_2} - {str(session.session_info['StartDate'].year)}"
+            f" {session.event.EventName + ' ' + session.name}.png")
+    plt.savefig(path, dpi=400)
     plt.show()
 
 
@@ -400,3 +456,99 @@ def qualy_diff(team_1, team_2, session):
 
     # Show the plot
     plt.show()
+
+
+
+
+def fastest_by_point_v2(session, team_1, team_2):
+    lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
+    tel_team_1 = lap_team_1.get_telemetry()
+
+    lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
+    tel_team_2 = lap_team_2.get_telemetry()
+
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, special_mode=True)
+
+    final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
+
+    def adjust_to_final(series, final_value):
+        # Calculate the adjustment required for each element
+        diff = final_value - series.iloc[-1]
+        adjustments = [diff * (i + 1) / len(series) for i in range(len(series))]
+
+        # Adjust the original series
+        adjusted_series = series + adjustments
+
+        return adjusted_series
+
+    delta_time = adjust_to_final(delta_time, final_value)
+
+    num_stretches = 30
+    stretch_len = len(delta_time) // num_stretches
+    stretched_delta_time = []
+
+    for i in range(num_stretches):
+        start_idx = i * stretch_len + delta_time.index[0]
+        end_idx = (i + 1) * stretch_len - 1 + delta_time.index[0]  # -1 to get the last element of the stretch
+
+        start_value = delta_time[start_idx]
+        end_value = delta_time[end_idx]
+
+        stretch_value = 1 if start_value < end_value else 0  # 1 for team_1, 0 for team_2
+
+        stretched_delta_time.extend([stretch_value] * stretch_len)
+
+    # Handle remaining elements if delta_time is not exactly divisible by num_stretches
+    if len(delta_time) % num_stretches != 0:
+        start_value = delta_time[num_stretches * stretch_len]
+        end_value = delta_time.iloc[-1]  # last value in delta_time
+
+        stretch_value = 1 if start_value < end_value else 0  # 1 for team_1, 0 for team_2
+
+        stretched_delta_time.extend([stretch_value] * (len(delta_time) - num_stretches * stretch_len))
+
+    # Replace your original delta_time with the new stretched_delta_time
+    delta_time = np.array(stretched_delta_time)
+
+    x = np.array(tel_team_1['X'].values)
+    y = np.array(tel_team_1['Y'].values)
+
+    points = np.array([x, y]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+    if len(delta_time) != len(segments):
+        from scipy.interpolate import interp1d
+        x_old = np.linspace(0, 1, len(delta_time))
+        x_new = np.linspace(0, 1, len(segments))
+        f = interp1d(x_old, delta_time, kind='linear')
+        delta_time = f(x_new)
+    # Change the colormap to a diverging colormap
+    cmap = cm.get_cmap('coolwarm', 2)  # Discrete colormap with 2 colors
+    # Initialize the TwoSlopeNorm with 0.5 as the center
+
+    # Update LineCollection with the new colormap and normalization
+    lc_comp = LineCollection(segments, cmap=cmap)
+    lc_comp.set_array(delta_time)
+    lc_comp.set_linewidth(7)
+
+    plt.subplots(figsize=(12,8))
+
+    plt.gca().add_collection(lc_comp)
+    plt.axis('equal')
+    plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
+
+    # Create custom legend
+    legend_lines = [Line2D([0], [0], color='red', lw=4),
+                    Line2D([0], [0], color='blue', lw=4)]
+
+    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'])
+
+    plt.suptitle(f"TRACK DOMINANCE {team_1} vs {team_2}:"
+                 f" {str(session.session_info['StartDate'].year) + ' ' + session.event.EventName} \n",
+                 fontsize=18)
+    plt.tight_layout()
+    path = (f"../PNGs/TRACK DOMINANCE{team_1} vs {team_2} - {str(session.session_info['StartDate'].year)}"
+            f" {session.event.EventName}.png")
+    plt.savefig(path, dpi=400)
+    plt.show()
+

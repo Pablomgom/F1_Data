@@ -1,6 +1,9 @@
 from datetime import timedelta
+
+import fastf1
 import pandas as pd
 import bar_chart_race as bcr
+from matplotlib import pyplot as plt, animation
 
 from src.variables.variables import max_races
 
@@ -155,3 +158,4 @@ def bar_race(races, sprints, schedule):
         },
         filter_column_colors=True,
     )
+

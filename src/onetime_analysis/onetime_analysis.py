@@ -7,8 +7,49 @@ from matplotlib import pyplot as plt, cm
 from collections import Counter
 import matplotlib.patches as mpatches
 from matplotlib.ticker import FuncFormatter
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from src.general_analysis.table import render_mpl_table
+
+
+def pitstops(year):
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
+    pitstops = pitstops[pitstops['Year'] == year]
+    pitstops = pitstops.groupby('Driver')['Time'].mean()
+    pitstops = pitstops.reset_index()
+    pitstops = pitstops.sort_values(by='Time', ascending=True)
+    pitstops['Time'] = pitstops['Time'].round(2)
+
+    fig, ax1 = plt.subplots(figsize=(29, 10))
+    drivers = [i for i in pitstops['Driver']]
+    colors = []
+
+    for driver in drivers:
+        for key, value in fastf1.plotting.DRIVER_COLORS.items():
+            parts = key.split(" ", 1)
+            new_key = parts[1] if len(parts) > 1 else key
+            if (new_key == driver.lower()) or (new_key == 'guanyu' and driver == 'Zhou'):
+                colors.append(value)
+                break
+
+    bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
+                   edgecolor='white')
+
+    for bar in bars:
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom', fontsize=14)
+
+    ax1.set_title(f'Average pit stop times per driver in {year}', fontsize=28)
+    ax1.set_xlabel('Driver', fontweight='bold', fontsize=20)
+    ax1.set_ylabel('Avg time (s)', fontweight='bold', fontsize=20)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=18)
+    ax1.yaxis.grid(True, linestyle='--')
+    ax1.xaxis.grid(False)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/PIT STOP AVG TIME {year}', dpi=400)
+    plt.show()
 
 
 def get_retirements_per_driver(driver, start=None, end=None):
@@ -18,8 +59,7 @@ def get_retirements_per_driver(driver, start=None, end=None):
 
     for i in range(start, end):
         races = ergast.get_race_results(season=i, limit=1000)
-        sprints = ergast.get_sprint_results(season=i, limit=1000)
-        total_races = races.content + sprints.content
+        total_races = races.content
         for race in total_races:
             race = race[race['familyName'] == driver]
             if not pd.isna(race['status'].max()):
@@ -123,10 +163,10 @@ def get_pit_stops(year):
 
     for bar in bars:
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + 1, f'{height}', ha='center', va='bottom', fontsize=10)
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + 1, f'{height}', ha='center', va='bottom', fontsize=14)
 
     ax2 = ax1.twinx()
-    mean_pits = [round(i/22, 2) for i in n_pit_stops]
+    mean_pits = [round(i/20, 2) for i in n_pit_stops]
 
     total = sum(mean_pits)
     mean = round(total / len(mean_pits), 2)
@@ -138,7 +178,7 @@ def get_pit_stops(year):
 
     for i, value in enumerate(mean_pits):
         ax2.annotate(f'{value}', (i, value), textcoords="offset points", xytext=(0, -18), ha='center',
-                     fontsize=10, bbox=dict(boxstyle='round,pad=0.3', edgecolor='white', facecolor='white'))
+                     fontsize=12, bbox=dict(boxstyle='round,pad=0.3', edgecolor='white', facecolor='black'))
 
     # Add a legend
     handles1, labels1 = ax1.get_legend_handles_labels()
@@ -359,9 +399,10 @@ def get_topspeed_in_session(session, column='Speed', DRS=None):
         for lap in laps.iterrows():
             try:
                 if column == 'Speed':
-                    if DRS is not None:
-                        lap[1].telemetry = lap[1].telemetry[~lap[1].telemetry['DRS'].isin([10, 12, 14])]
-                    top_speed = max(lap[1].telemetry[column])
+                    if lap[1].telemetry['DRS'].max() >= 10:
+                        top_speed = 0
+                    else:
+                        top_speed = max(lap[1].telemetry[column])
                 else:
                     top_speed = round(lap[1][column].total_seconds(), 3)
             except ValueError as e:
@@ -412,7 +453,11 @@ def get_topspeed_in_session(session, column='Speed', DRS=None):
                    edgecolor='white')
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}')
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
-    ax1.set_ylabel('Max speed', fontweight='bold', fontsize=12)
+    if column == 'Speed':
+        y_label = 'Max speed'
+    else:
+        y_label = 'Sector time'
+    ax1.set_ylabel(y_label, fontweight='bold', fontsize=12)
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)
 
@@ -606,3 +651,136 @@ def races_by_number(number):
 
     drivers = drivers.value_counts()
     print(drivers)
+
+
+def plot_circuit():
+    session = fastf1.get_session(2022, 'Austin', 'Q')
+    session.load()
+
+    lap = session.laps.pick_fastest()
+    pos = lap.get_pos_data()
+
+    circuit_info = session.get_circuit_info()
+
+    def rotate(xy, *, angle):
+        rot_mat = np.array([[np.cos(angle), np.sin(angle)],
+                            [-np.sin(angle), np.cos(angle)]])
+        return np.matmul(xy, rot_mat)
+
+    track = pos.loc[:, ('X', 'Y')].to_numpy()
+
+    # Also get the elevation data
+    elevation = pos.loc[:, 'Z'].to_numpy()
+
+    # Convert the rotation angle from degrees to radian.
+    track_angle = circuit_info.rotation / 180 * np.pi
+
+    # Rotate the track map.
+    rotated_track = rotate(track, angle=track_angle)
+
+    # Create 2D plot
+    def normalize(data):
+        return (data - np.min(data)) / (np.max(data) - np.min(data))
+
+    def normalize(data):
+        return (data - np.min(data)) / (np.max(data) - np.min(data))
+
+    # Normalize X, Y coordinates
+    norm_track = np.zeros_like(rotated_track)
+    norm_track[:, 0] = normalize(rotated_track[:, 0])
+    norm_track[:, 1] = normalize(rotated_track[:, 1])
+    norm_elevation = normalize(elevation)
+
+    # Create 3D plot
+    fig = plt.figure(figsize=(12, 12))
+    ax = fig.add_subplot(projection='3d')
+
+    ax.set_zlim(0, 1)
+
+    # Vertical offset for each layer
+    vertical_offset = 0.125  # Adjust this based on how much separation you want between layers
+
+    # Base elevation for all layers, set to zero
+    base_elevation = np.zeros_like(norm_elevation)
+
+    # Loop through layers (replace this loop to use actual multiple laps or segments if available)
+
+    # Start each layer from Z=0 and then build it up by the layer number multiplied by the vertical offset
+    current_elevation = base_elevation + norm_elevation * vertical_offset
+
+    # Plot the track in 3D
+    ax.plot(norm_track[:, 0], norm_track[:, 1], current_elevation)
+
+    verts = []
+    for j in range(len(norm_track) - 1):
+        x = norm_track[j:j + 2, 0]
+        y = norm_track[j:j + 2, 1]
+        z = current_elevation[j:j + 2]
+        poly = [
+            [x[0], y[0], 0],
+            [x[1], y[1], 0],
+            [x[1], y[1], z[1]],
+            [x[0], y[0], z[0]]
+        ]
+        verts.append(poly)
+    ax.add_collection3d(Poly3DCollection(verts, alpha=0.5, facecolors='b'))
+
+    # Turn off grid
+    ax.grid(False)
+
+    # Turn off axis values and ticks
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
+
+    # Hide axes
+    ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+    ax.set_axis_off()
+
+    plt.show()
+
+    '''
+    def find_closest_point(track, target_x, target_y):
+        distances = np.sqrt((track[:, 0] - target_x) ** 2 + (track[:, 1] - target_y) ** 2)
+        closest_index = np.argmin(distances)
+        return closest_index, track[closest_index]
+    # Iterate over all corners.
+    for _, corner in circuit_info.corners.iterrows():
+        # Create a string from corner number and letter
+        txt = f"{corner['Number']}{corner['Letter']}"
+
+        # Convert the angle from degrees to radian.
+        offset_angle = corner['Angle'] / 180 * np.pi
+
+        # Rotate the offset vector so that it points sideways from the track.
+        offset_x, offset_y = rotate(offset_vector, angle=offset_angle)
+
+        # Add the offset to the position of the corner
+        text_x = corner['X'] + offset_x
+        text_y = corner['Y'] + offset_y
+
+        # Rotate the text position equivalently to the rest of the track map
+        track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
+
+        # Find the closest point in the rotated_track to (track_x, track_y)
+        closest_index, closest_point = find_closest_point(rotated_track, track_x, track_y)
+
+        # Now, closest_index is the index of the closest point in rotated_track
+        # closest_point is the [x, y] of the closest point
+
+        # If you also need the Z coordinate, you can get it from the original 'track' array
+        track_z = track[closest_index, 2]
+
+        # Draw a circle next to the track in 3D.
+        ax.scatter(text_x, text_y, track_z, color='grey', s=140)
+
+        # Draw a line from the track to this circle in 3D.
+        ax.plot([track_x, text_x], [track_y, text_y], [track_z, track_z], color='grey')
+
+        # Finally, print the corner number inside the circle.
+        # NOTE: text plotting in 3D isn't as straightforward as in 2D
+        ax.text(text_x, text_y, track_z, txt, color='white')
+        
+    '''

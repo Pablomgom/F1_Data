@@ -71,10 +71,11 @@ def get_position_changes(race):
     finish = race.content[0][['familyName', 'givenName', 'grid', 'status', 'constructorName']]
     finish['Driver'] = finish['givenName'] + ' ' + finish['familyName']
     finish['Finish'] = range(1, finish.shape[0] + 1)
-    finish.loc[(finish['grid'] == 0) & (finish['Driver'] == 'Sergio Pérez'), 'grid'] = 19
+    finish.loc[(finish['grid'] == 5) & (finish['Driver'] == 'Guanyu Zhou'), 'grid'] = 15
     finish['grid'].replace(0, 20, inplace=True)
     finish.loc[finish['status'].isin(['Did not qualify', 'Did not prequalify']), 'grid'] = finish['Finish']
     finish['Grid change'] = finish['grid'] - finish['Finish']
+    #finish['grid'].replace(20, 'Pit Lane', inplace=True)
     finish['Team'] = finish['constructorName']
 
 
@@ -124,3 +125,4 @@ def get_position_changes(race):
     plt.tight_layout()
     plt.savefig(f"../PNGs/Race Results - {race.description['raceName'].min()} - {race.description['season'].min()}",
                 bbox_inches='tight', dpi=400)
+    plt.show()
