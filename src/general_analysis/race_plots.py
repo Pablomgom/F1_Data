@@ -18,6 +18,103 @@ import math
 from matplotlib.ticker import FuncFormatter
 
 
+def race_pace_teammates(team):
+
+    circuits = []
+    legend = []
+    color = []
+    differences = []
+    for i in range(1, 15):
+
+        if i == 14:
+            a = 1
+        race = fastf1.get_session(2023, i, 'R')
+        race.load()
+        drivers = np.unique(race.laps.pick_team(team)['Driver'].values)
+        laps_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps()['LapTime'].mean()
+        laps_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps()['LapTime'].mean()
+        n_laps_d1 = len(race.laps.pick_driver(drivers[0]).pick_quicklaps())
+        n_laps_d2 = len(race.laps.pick_driver(drivers[1]).pick_quicklaps())
+        circuits.append(race.event.Location.split('-')[0])
+
+        if n_laps_d2 >= 25 and n_laps_d1 >= 25:
+
+            if laps_d1 > laps_d2:
+                legend.append(f'{drivers[1]} faster')
+                color.append('blue')
+            else:
+                legend.append(f'{drivers[0]} faster')
+                color.append('orange')
+
+            original_value = laps_d1.total_seconds()
+            new_value = laps_d2.total_seconds()
+
+            delta_diff = ((new_value - original_value) / original_value) * 100
+            differences.append(round(delta_diff, 2))
+
+        else:
+            differences.append(np.nan)
+            legend.append(f'{drivers[1]} faster')
+            color.append('blue')
+
+    fig, ax = plt.subplots(figsize=(18, 10))
+
+    # Create bar objects and keep them in a list
+    bars = []
+
+    for c, d, col in zip(circuits, differences, color):
+        bar = ax.bar(c, d, color=col)
+        bars.append(bar)
+
+    for i in range(len(differences)):
+        if differences[i] > 0:  # If the bar is above y=0
+            plt.text(circuits[i], differences[i] + 0.05, str(differences[i]) + '%',
+                     ha='center', va='top', fontsize=12)
+        else:  # If the bar is below y=0
+            plt.text(circuits[i], differences[i] - 0.05, str(differences[i]) + '%',
+                     ha='center', va='bottom', fontsize=12)
+
+    plt.axhline(0, color='white', linewidth=0.8)
+
+    # Convert your list to a Pandas Series
+    differences_series = pd.Series(differences)
+
+    # Calculate the rolling mean
+    mean_y = differences_series.rolling(window=4, min_periods=1).mean().tolist()
+
+    plt.plot(circuits, mean_y, color='red',
+             marker='o', markersize=5.5, linewidth=3.5, label='Moving Average (4 last races)')
+
+    # Create legend using unique labels
+    legend_unique = list(set(legend))  # unique legend items
+    legend_handles = {l: None for l in legend_unique}  # initialize dictionary to hold legend handles
+
+    # Loop through to find the corresponding handles for unique legend items
+    for l, b in zip(legend, bars):
+        if legend_handles[l] is None:
+            legend_handles[l] = b[0]
+
+    # Create handles and labels list for the legend
+    all_legend_handles = [legend_handles[l] for l in legend_unique]
+    all_legend_labels = legend_unique
+
+    # Add the handle and label for the Moving Average
+    ma_handle = plt.Line2D([0], [0], marker='o', color='red', linestyle='-', linewidth=3.5, markersize=5.5)
+    all_legend_handles.append(ma_handle)
+    all_legend_labels.append('Moving Average (4 last races)')
+
+    plt.legend(all_legend_handles, all_legend_labels, fontsize='x-large')
+
+    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
+    plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', fontsize=26)
+    plt.xlabel('Circuit', fontsize=16)
+    plt.ylabel('Time diff (seconds)', fontsize=16)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/RACE DIFF BETWEEN {team} TEAMMATES.png', dpi=450)
+    plt.show()
+
+
 def position_changes(session):
     plotting.setup_mpl(misc_mpl_mods=False)
 

@@ -16,7 +16,9 @@ if __name__ == '__main__':
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 14, 'R')
-    session.load()
+    #session.load()
+
+    race_pace_teammates('Aston Martin')
 
     #driver_race_times_per_tyre(session, 'ALB')
 
@@ -34,7 +36,7 @@ if __name__ == '__main__':
 
     #overlying_laps(session, 'PER', 'VER')
 
-    race_distance(session, 'BOT', 'LAW')
+    #race_distance(session, 'BOT', 'LAW')
 
     #driver_lap_times(session, 'VER')
 
