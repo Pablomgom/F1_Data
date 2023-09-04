@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
-    pitstops(2023, 14)
+    #pitstops(2023, 14)
 
     #plot_circuit()
 
@@ -28,13 +28,13 @@ if __name__ == '__main__':
 
     #qualy_diff('Alpine', 'Ferrari', 12)
 
-    race_diff('Ferrari', 'Aston Martin', 14)
+    #race_diff('Ferrari', 'Aston Martin', 14)
 
     #position_changes(session)
 
     #overlying_laps(session, 'PER', 'VER')
 
-    #race_distance(session, 'VER', 'SAI')
+    race_distance(session, 'BOT', 'LAW')
 
     #driver_lap_times(session, 'VER')
 

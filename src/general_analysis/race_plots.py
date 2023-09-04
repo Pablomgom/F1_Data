@@ -471,11 +471,8 @@ def race_distance(session, driver_1, driver_2):
 
     laps_diff = []
     laps = []
-    for i in range(len(laps_driver_1)):
-        if i == 63:
-            laps_diff.append(0)
-        else:
-            laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
+    for i in range(len(laps_driver_1) - 1):
+        laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
         laps.append(i+1)
 
     laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
