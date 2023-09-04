@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
-    #pitstops(2023)
+    pitstops(2023, 14)
 
     #plot_circuit()
 

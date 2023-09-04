@@ -12,11 +12,14 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from src.general_analysis.table import render_mpl_table
 
 
-def pitstops(year):
+def pitstops(year, round=None):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
-    pitstops = pitstops.groupby('Driver')['Time'].mean()
+    if round is None:
+        pitstops = pitstops.groupby('Driver')['Time'].mean()
+    else:
+        pitstops = pitstops[pitstops['Race_ID'] == round]
     pitstops = pitstops.reset_index()
     pitstops = pitstops.sort_values(by='Time', ascending=True)
     pitstops['Time'] = pitstops['Time'].round(2)
@@ -33,6 +36,18 @@ def pitstops(year):
                 colors.append(value)
                 break
 
+    if round is not None:
+        name_count = {}
+
+        def update_name(name):
+            if name in name_count:
+                name_count[name] += 1
+            else:
+                name_count[name] = 1
+            return f"{name}_{name_count[name]}"
+
+        pitstops['Driver'] = pitstops['Driver'].apply(update_name)
+
     bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
                    edgecolor='white')
 
@@ -40,10 +55,10 @@ def pitstops(year):
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom', fontsize=14)
 
-    ax1.set_title(f'Average pit stop times per driver in {year}', fontsize=28)
+    ax1.set_title(f'PIT STOP TIMES IN 2023 ITALIAN GP', fontsize=28)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=20)
     ax1.set_ylabel('Avg time (s)', fontweight='bold', fontsize=20)
-    plt.xticks(fontsize=12)
+    plt.xticks(fontsize=10)
     plt.yticks(fontsize=18)
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)
