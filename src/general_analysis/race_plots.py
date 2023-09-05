@@ -505,10 +505,10 @@ def race_diff(team_1, team_2, session):
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.05, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] + 0.08, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='top')
         else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.05, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] - 0.08, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='bottom')
 
     # Set the labels and title
@@ -530,11 +530,11 @@ def race_diff(team_1, team_2, session):
     delta_laps = pd.Series(delta_laps)
     mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
 
-    plt.plot(session_names, mean_y, color='red',
+    plt.plot(session_names, mean_y, color='blue',
              marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
 
     if min(delta_laps) < 0:
-        plt.axhline(0, color='black', linewidth=2)
+        plt.axhline(0, color='white', linewidth=2)
 
     # Generate a list of ticks from minimum to maximum y values considering 0.0 value and step=0.2
     yticks = list(np.arange(start, end + step, step))
