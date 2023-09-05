@@ -26,18 +26,18 @@ def race_pace_teammates(team):
     differences = []
     for i in range(1, 15):
 
-        if i == 14:
-            a = 1
         race = fastf1.get_session(2023, i, 'R')
         race.load()
         drivers = np.unique(race.laps.pick_team(team)['Driver'].values)
-        laps_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps()['LapTime'].mean()
-        laps_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps()['LapTime'].mean()
         n_laps_d1 = len(race.laps.pick_driver(drivers[0]).pick_quicklaps())
         n_laps_d2 = len(race.laps.pick_driver(drivers[1]).pick_quicklaps())
         circuits.append(race.event.Location.split('-')[0])
 
         if n_laps_d2 >= 25 and n_laps_d1 >= 25:
+
+            n_total_laps = min(n_laps_d2, n_laps_d1)
+            laps_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps()[:n_total_laps]['LapTime'].mean()
+            laps_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps()[:n_total_laps]['LapTime'].mean()
 
             if laps_d1 > laps_d2:
                 legend.append(f'{drivers[1]} faster')
@@ -45,6 +45,7 @@ def race_pace_teammates(team):
             else:
                 legend.append(f'{drivers[0]} faster')
                 color.append('orange')
+
 
             original_value = laps_d1.total_seconds()
             new_value = laps_d2.total_seconds()
@@ -68,10 +69,10 @@ def race_pace_teammates(team):
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.05, str(differences[i]) + '%',
+            plt.text(circuits[i], differences[i] + 0.1, str(differences[i]) + '%',
                      ha='center', va='top', fontsize=12)
         else:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.05, str(differences[i]) + '%',
+            plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
                      ha='center', va='bottom', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
@@ -568,7 +569,7 @@ def race_distance(session, driver_1, driver_2):
 
     laps_diff = []
     laps = []
-    for i in range(len(laps_driver_1) - 1):
+    for i in range(len(laps_driver_1)):
         laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
         laps.append(i+1)
 

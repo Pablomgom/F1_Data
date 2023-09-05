@@ -15,10 +15,10 @@ if __name__ == '__main__':
     #plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 14, 'R')
+    session = fastf1.get_session(2021, 'Spain', 'R')
     session.load()
 
-    #race_pace_teammates('Aston Martin')
+    race_pace_teammates('Williams')
 
     #driver_race_times_per_tyre(session, 'ALB')
 
@@ -30,13 +30,13 @@ if __name__ == '__main__':
 
     #qualy_diff('Alpine', 'Ferrari', 12)
 
-    race_diff('Red Bull Racing', 'Mercedes', 14)
+    #race_diff('Red Bull Racing', 'Mercedes', 14)
 
     #position_changes(session)
 
     #overlying_laps(session, 'PER', 'VER')
 
-    #race_distance(session, 'VER', 'PER')
+    #race_distance(session, 'HAM', 'VER')
 
     #driver_lap_times(session, 'VER')
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     circuito = circuitos.circuitId.min()
 
 
-    #races_by_number(13)
+    #races_by_number(0)
 
     #overtakes()
 
@@ -88,6 +88,6 @@ if __name__ == '__main__':
 
     #get_retirements()
 
-    #wdc_comparation('Schumacher', 1991, 2013)
+    #wdc_comparation('Mario Andretti', 1950, 1983)
 
     #get_topspeed()

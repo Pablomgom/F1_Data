@@ -57,12 +57,12 @@ def win_wdc(standings):
 def process_race_data(content, driver, points, team_mate_points, team_mates_names, DNFs = None):
     append = False
     for race in content:
-        race_data = race[(race['familyName'] == driver) & (race['givenName'] == 'Michael')]
+        race_data = race[(race['familyName'] == driver.split(" ")[1]) & (race['givenName'] == driver.split(" ")[0])]
         if len(race_data) > 0:
             driver_team = race_data['constructorName'].values[0]
             if re.search(r'(Spun off|Accident|Finished|Collision|\+)', race_data['status'].max()) and DNFs is not None:
                 team_mates = race[race['constructorName'] == driver_team]
-                team_mates = team_mates[team_mates['familyName'] != driver]
+                team_mates = team_mates[team_mates['familyName'] != driver.split(" ")[1]]
                 if re.search(r'(Spun off|Accident|Finished|Collision|\+)', team_mates['status'].max()):
                     points += race_data['points'].values[0]
                     team_mate_points += team_mates['points'].values[0]
@@ -70,10 +70,16 @@ def process_race_data(content, driver, points, team_mate_points, team_mates_name
                     append = True
             elif DNFs is None:
                 team_mates = race[race['constructorName'] == driver_team]
-                team_mates = team_mates[team_mates['familyName'] != driver]
+                team_mates = team_mates[team_mates['familyName'] != driver.split(" ")[1]]
                 points += race_data['points'].values[0]
-                team_mate_points += team_mates['points'].values[0]
-                team_mates_names.append(team_mates['familyName'].values[0])
+                if len(team_mates) == 0:
+                    team_mate_points += 0
+                    team_mates_names.append("Didn't have")
+                else:
+                    if team_mates['familyName'].values[0] == 'Andretti':
+                        a = 1
+                    team_mate_points += team_mates['points'].values[0]
+                    team_mates_names.append(team_mates['familyName'].values[0])
                 append = True
 
     return points, team_mate_points, team_mates_names, append
@@ -99,6 +105,9 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         team_mate_points = 0
         team_mates_names = []
 
+        if i == 1974:
+            a = 1
+
         (points, team_mate_points,
          team_mates_names, append_races) = process_race_data(
                                     races.content, driver, points, team_mate_points, team_mates_names, DNFs)
@@ -110,7 +119,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
             points_per_year.append(points)
             team_mates_points_per_year.append(team_mate_points)
             team_mates_names_per_year.append(team_mates_names)
-            driver_code.append(races.content[14][races.content[14]['familyName'] == driver]['driverCode'])
+            driver_code.append(driver)
             years.append(i)
         print(i)
 
@@ -139,7 +148,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
 
     # Create bars for Driver 1
     plt.bar(r1, points_per_year, width=barWidth, color="#8B0000",
-            edgecolor='white', label=driver_code[0].values[0])
+            edgecolor='white', label=driver.split(" ")[0])
 
     added_to_legend = set()
     # Create bars for Driver 2 with varying names
