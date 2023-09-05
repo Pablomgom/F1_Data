@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     #qualy_diff('Alpine', 'Ferrari', 12)
 
-    race_diff('Ferrari', 'McLaren', 14)
+    race_diff('Red Bull Racing', 'Mercedes', 14)
 
     #position_changes(session)
 

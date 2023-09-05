@@ -505,17 +505,17 @@ def race_diff(team_1, team_2, session):
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.08, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] + 0.04, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='top')
         else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.08, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='bottom')
 
     # Set the labels and title
-    plt.ylabel(f'Percentage time difference', fontsize=14)
-    plt.xlabel('Circuito', fontsize=14)
+    plt.ylabel(f'Percentage time difference', fontsize=16)
+    plt.xlabel('Circuit', fontsize=16)
     ax1.yaxis.grid(True, linestyle='--')
-    plt.title(f'{team_1} VS {team_2} race time difference', fontsize=14)
+    plt.title(f'{team_1} VS {team_2} race time difference', fontsize=24)
 
     step = 0.2
 
@@ -530,7 +530,7 @@ def race_diff(team_1, team_2, session):
     delta_laps = pd.Series(delta_laps)
     mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
 
-    plt.plot(session_names, mean_y, color='blue',
+    plt.plot(session_names, mean_y, color='red',
              marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
 
     if min(delta_laps) < 0:
@@ -546,7 +546,7 @@ def race_diff(team_1, team_2, session):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
-    plt.legend(by_label.values(), by_label.keys(), loc='upper right')
+    plt.legend(by_label.values(), by_label.keys(), loc='upper left')
 
     plt.savefig(f"../PNGs/{team_2} VS {team_1} race time difference.png", dpi=400)
 
