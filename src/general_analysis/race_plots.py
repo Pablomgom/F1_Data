@@ -49,8 +49,12 @@ def race_pace_teammates(team):
                 color.append('blue')
             else:
                 legend.append(f'{drivers[0]} faster')
-                color.append('orange')
-
+                if drivers[0] == 'RIC':
+                    color.append('white')
+                elif drivers[0] == 'LAW':
+                    color.append('green')
+                else:
+                    color.append('orange')
 
             original_value = laps_d1.total_seconds()
             new_value = laps_d2.total_seconds()
@@ -115,10 +119,10 @@ def race_pace_teammates(team):
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.1, str(differences[i]) + '%',
+            plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
                      ha='center', va='top', fontsize=12)
         else:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.1, str(differences[i]) + '%',
+            plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
                      ha='center', va='bottom', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
@@ -502,19 +506,13 @@ def race_diff(team_1, team_2, session):
 
         team_1_laps = race.laps.pick_driver(d_t1)
         team_2_laps = race.laps.pick_driver(d_t2)
-        team_1_laps = team_1_laps.dropna(subset='LapTime')
-        team_1_laps = team_1_laps[team_1_laps['TrackStatus'].astype(str).apply(lambda x: set(x) <= {'1', '2'})]
+        team_1_laps = team_1_laps.pick_quicklaps().pick_wo_box()
+        team_2_laps = team_2_laps.pick_quicklaps().pick_wo_box()
 
-        team_2_laps = team_2_laps.dropna(subset='LapTime')
-        team_2_laps = team_2_laps[team_2_laps['TrackStatus'].astype(str).apply(lambda x: set(x) <= {'1', '2'})]
+        t1_laps = len(team_1_laps.pick_quicklaps().pick_wo_box())
+        t2_laps = len(team_2_laps.pick_quicklaps().pick_wo_box())
 
-        t1_laps = team_1_laps.shape[0]
-        t2_laps = team_2_laps.shape[0]
-
-        if t1_laps < t2_laps:
-            max_laps = t1_laps
-        else:
-            max_laps = t2_laps
+        max_laps = min(t1_laps, t2_laps)
 
         team_1_times.append(team_1_laps['LapTime'][1:max_laps].sum())
         team_1_total_laps.append(max_laps)
