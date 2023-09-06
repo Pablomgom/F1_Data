@@ -18,7 +18,7 @@ if __name__ == '__main__':
     session = fastf1.get_session(2021, 'Spain', 'R')
     session.load()
 
-    race_pace_teammates('Williams')
+    race_pace_teammates('Ferrari')
 
     #driver_race_times_per_tyre(session, 'ALB')
 
