@@ -57,20 +57,41 @@ def race_pace_teammates(team):
 
             delta_diff = ((new_value - original_value) / original_value) * 100
             differences.append(round(delta_diff, 2))
-            tyres_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps().pick_wo_box()[:n_total_laps]['Compound'].value_counts()
-            tyres_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps().pick_wo_box()[:n_total_laps]['Compound'].value_counts()
 
-            formatted_strings = []
-            for item, value in tyres_d1.items():
-                formatted_string = f"{item} ({value})"
-                formatted_strings.append(formatted_string)
-            final_string_d1 = ', '.join(formatted_strings) + '\n'
+            stint_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps().pick_wo_box()[:n_total_laps]['Stint'].value_counts()
+            stint_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps().pick_wo_box()[:n_total_laps]['Stint'].value_counts()
 
-            formatted_strings = []
-            for item, value in tyres_d2.items():
-                formatted_string = f"{item} ({value})"
-                formatted_strings.append(formatted_string)
-            final_string_d2 = ', '.join(formatted_strings) + '\n'
+            stint_d1 = stint_d1.sort_index()
+            stint_d1.index = [1.0 if idx == stint_d1.index[0] else idx for idx in stint_d1.index]
+
+            tyres_d1 = pd.Series(dtype='str')
+            for i, stint in stint_d1.items():
+                data = race.laps[race.laps['Stint'] == i]
+                tyre = pd.Series([data.pick_driver(drivers[0])['Compound'].min()])
+                tyres_d1 = tyres_d1._append(tyre)
+
+            stint_d2 = stint_d2.sort_index()
+            stint_d2.index = [1.0 if idx == stint_d2.index[0] else idx for idx in stint_d2.index]
+
+            tyres_d2 = pd.Series(dtype='str')
+            for i, stint in stint_d2.items():
+                data = race.laps[race.laps['Stint'] == i]
+                tyre = pd.Series([data.pick_driver(drivers[1])['Compound'].min()])
+                tyres_d2 = tyres_d2._append(tyre)
+
+            def get_strategy(stints, tyres, add_blank=None):
+
+                formatted_stints = []
+                for elem1, elem2 in zip(stints, tyres):
+                    formatted_stints.append(f'{elem2} ({elem1})')
+
+                final_string = ' - '.join(formatted_stints) + '\n'
+                if add_blank:
+                    final_string += '\n'
+                return final_string
+
+            final_string_d1 = get_strategy(stint_d1, tyres_d1)
+            final_string_d2 = get_strategy(stint_d2, tyres_d2, add_blank=True)
 
             context += race.event.Location.split('-')[0].upper() + '\n'
             context += f'{drivers[0]} from P{int(grid_pos_d1.max())} to P{int(final_pos_d1.max())}: '
@@ -94,10 +115,10 @@ def race_pace_teammates(team):
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.02, str(differences[i]) + '%',
+            plt.text(circuits[i], differences[i] + 0.1, str(differences[i]) + '%',
                      ha='center', va='top', fontsize=12)
         else:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.02, str(differences[i]) + '%',
+            plt.text(circuits[i], differences[i] - 0.1, str(differences[i]) + '%',
                      ha='center', va='bottom', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
@@ -314,8 +335,6 @@ def tyre_strategies(session):
     drivers = session.drivers
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
-    drivers = ['VER', 'PER', 'SAI', 'LEC', 'RUS', 'HAM', 'ALB', 'NOR', 'ALO', 'BOT',
-               'LAW', 'PIA', 'SAR', 'ZHO', 'GAS', 'STR', 'HUL', 'MAG', 'OCO', 'TSU']
 
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
 

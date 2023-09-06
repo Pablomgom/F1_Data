@@ -15,8 +15,8 @@ if __name__ == '__main__':
     #plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2021, 'Spain', 'R')
-    session.load()
+    session = fastf1.get_session(2023, 'Austria', 'R')
+    #session.load()
 
     race_pace_teammates('Ferrari')
 
