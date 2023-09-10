@@ -2,6 +2,7 @@ import re
 
 import fastf1
 import pandas as pd
+from fastf1.ergast import Ergast
 from matplotlib.patches import Patch
 from fastf1 import plotting
 
@@ -480,13 +481,14 @@ def driver_laptimes(race):
     plt.show()
 
 
-def race_diff(team_1, team_2, session):
+def race_diff(team_1, team_2, year):
 
     races = []
     session_names = []
-
-    for i in range(session):
-        session = fastf1.get_session(2023, i + 1, 'R')
+    context = ''
+    n_races = Ergast().get_race_results(season=year, limit=1000)
+    for i in range(len(n_races.content)):
+        session = fastf1.get_session(year,  i + 1, 'R')
         session.load(telemetry=True)
         races.append(session)
         session_names.append(session.event['Location'].split('-')[0])
@@ -506,39 +508,55 @@ def race_diff(team_1, team_2, session):
 
         team_1_laps = race.laps.pick_driver(d_t1)
         team_2_laps = race.laps.pick_driver(d_t2)
-        team_1_laps = team_1_laps.pick_quicklaps().pick_wo_box()
-        team_2_laps = team_2_laps.pick_quicklaps().pick_wo_box()
 
-        t1_laps = len(team_1_laps.pick_quicklaps().pick_wo_box())
-        t2_laps = len(team_2_laps.pick_quicklaps().pick_wo_box())
+        max_laps = min(len(team_1_laps), len(team_2_laps))
 
-        max_laps = min(t1_laps, t2_laps)
+        team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
+        team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
 
-        team_1_times.append(team_1_laps['LapTime'][1:max_laps].sum())
-        team_1_total_laps.append(max_laps)
+        seconds_box = 24
+        stints_t1 = team_1_laps['Stint'].value_counts()
+        stints_t1 = len(stints_t1[stints_t1 >= 3].index.tolist())
+        stints_t2 = team_2_laps['Stint'].value_counts()
+        stints_t2 = len(stints_t2[stints_t2 >= 3].index.tolist())
 
-        team_2_times.append(team_2_laps['LapTime'][1:max_laps].sum())
-        team_2_total_laps.append(max_laps)
+        if stints_t2 is np.nan:
+            stints_t2 = 0
+
+        sum_t1 = team_1_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t1 - 1) * seconds_box))
+        sum_t2 = team_2_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t2 - 1) * seconds_box))
+
+        mean_t1 = sum_t1 / len(team_1_laps)
+        if len(team_2_laps) == 0:
+            team_2_times.append(0)
+            team_2_total_laps.append(len(team_2_laps))
+        else:
+            mean_t2 = sum_t2 / len(team_2_laps)
+            team_2_times.append(mean_t2)
+            team_2_total_laps.append(len(team_2_laps))
+
+        team_1_times.append(mean_t1)
+        team_1_total_laps.append(len(team_1_laps))
 
     delta_laps = []
 
     for i in range(len(team_2_times)):
+        mean_time_team_1 = team_1_times[i]
+        mean_time_team_2 = team_2_times[i]
 
-        if team_1_total_laps[i] == 0:
+        if team_1_total_laps[i] > team_2_total_laps[i]:
+            laps = team_1_total_laps[i]
+        else:
+            laps = team_2_total_laps[i]
+
+
+        if mean_time_team_2 == 0:
             delta_laps.append(0)
         else:
-            mean_time_team_1 = (team_1_times[i] / team_1_total_laps[i]).total_seconds() * 1000
-            mean_time_team_2 = (team_2_times[i] / team_2_total_laps[i]).total_seconds() * 1000
-
-            if team_1_total_laps > team_2_total_laps:
-                laps = team_1_total_laps[i]
-            else:
-                laps = team_2_total_laps[i]
-
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(16, 7))
+    fig, ax1 = plt.subplots(figsize=(25, 12))
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
 
     for i in range(len(session_names)):
@@ -559,18 +577,16 @@ def race_diff(team_1, team_2, session):
     plt.ylabel(f'Percentage time difference', fontsize=16)
     plt.xlabel('Circuit', fontsize=16)
     ax1.yaxis.grid(True, linestyle='--')
-    plt.title(f'{team_1} VS {team_2} race time difference', fontsize=24)
+    plt.title(f'{team_1} VS {team_2} {year} race time difference', fontsize=24)
 
     step = 0.2
 
-    start = np.ceil(abs(min(delta_laps) / step))
     if min(delta_laps) < 0:
         start = np.floor(min(delta_laps) / step) * step
     else:
         start = np.ceil(min(delta_laps) / step) * step
     end = np.ceil(max(delta_laps) / step) * step
 
-    delta_laps = [x for x in delta_laps if x != 0]
     delta_laps = pd.Series(delta_laps)
     mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
 
@@ -592,10 +608,12 @@ def race_diff(team_1, team_2, session):
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.legend(by_label.values(), by_label.keys(), loc='upper left')
 
-    plt.savefig(f"../PNGs/{team_2} VS {team_1} race time difference.png", dpi=400)
+    plt.savefig(f"../PNGs/{team_2} VS {team_1} {year} race time difference.png", dpi=400)
 
     # Show the plot
     plt.show()
+
+    print(context)
 
 
 def race_distance(session, driver_1, driver_2):

@@ -16,9 +16,12 @@ if __name__ == '__main__':
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 'Belgium', 'R')
-    session.load()
+    #session.load()
 
-    #race_pace_teammates('AlphaTauri')
+    #qualy_diff_last_year(14)
+    #performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
+
+    race_pace_teammates('AlphaTauri')
 
     #driver_race_times_per_tyre(session, 'ALB')
 
@@ -30,7 +33,7 @@ if __name__ == '__main__':
 
     #qualy_diff('Alpine', 'Ferrari', 12)
 
-    #race_diff('Ferrari', 'Mercedes', 14)
+    #race_diff('Williams', 'Alpine', 2023)
 
     #position_changes(session)
 
@@ -44,18 +47,18 @@ if __name__ == '__main__':
 
     #gear_changes(session, 'HAM')
 
-    tyre_strategies(session)
+    #tyre_strategies(session)
 
     #qualy_results(session)
 
 
     ergast = Ergast()
     drivers = ergast.get_driver_info(season=1959, limit=1000)
-    races = ergast.get_race_results(season=2008, round=13, limit=1000)
+    races = ergast.get_race_results(season=1962, limit=1000)
     qualy = ergast.get_qualifying_results(season=2008, round=6, limit=1000)
-    #sprints = ergast.get_sprint_results(season=1961,  limit=1000)
-    #schedule = ergast.get_race_schedule(season=1961, limit=1000)
-    circuitos = ergast.get_circuits(season=2023, round=14, limit=1000)
+    sprints = ergast.get_sprint_results(season=1962,  limit=1000)
+    schedule = ergast.get_race_schedule(season=1962, limit=1000)
+    circuitos = ergast.get_circuits(season=1951, round=6, limit=1000)
     circuito = circuitos.circuitId.min()
 
 
@@ -65,7 +68,7 @@ if __name__ == '__main__':
 
     #day_all_races()
 
-    #wins_in_circuit(circuito)
+    #wins_in_circuit(circuito, end=1977)
 
 
     #get_pit_stops(2018)
@@ -76,7 +79,7 @@ if __name__ == '__main__':
     #qualy_results_ergast(qualy)
 
 
-    get_position_changes(races)
+    #get_position_changes(races)
 
     #get_circuitos()
 

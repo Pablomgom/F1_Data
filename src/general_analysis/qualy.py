@@ -2,17 +2,150 @@ import fastf1
 import numpy as np
 import pandas as pd
 from fastf1.core import Laps
+from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
 from fastf1 import utils, plotting
 from matplotlib.collections import LineCollection
-from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
-from scipy.signal import savgol_filter
 from timple.timedelta import strftimedelta
-from scipy.interpolate import interp1d, CubicSpline
-from scipy.interpolate import UnivariateSpline
+import matplotlib.patches as mpatches
 
+
+
+def performance_vs_last_year(team, delete_circuits):
+
+    ergast = Ergast()
+    prev_year = ergast.get_race_results(season=2022, limit=1000)
+    current_year = ergast.get_race_results(season=2023, limit=1000)
+
+    prev_cir = prev_year.description['circuitId'].values
+    current_cir = current_year.description['circuitId'].values
+
+    def intersect_lists_ordered(list1, list2):
+        return [item for item in list1 if item in list2]
+
+    result = intersect_lists_ordered(current_cir, prev_cir)
+    race_index_prev = []
+
+    for item in result:
+        if item in prev_year.description['circuitId'].values:
+            race_index_prev.append(prev_year.description['circuitId'].to_list().index(item) + 1)
+
+    race_index_current = []
+    for i, item in current_year.description['circuitId'].items():
+        if item in result:
+            race_index_current.append(i + 1)
+
+    delta = []
+    color = []
+    for i in range(len(race_index_current)):
+        prev_year = fastf1.get_session(2022, race_index_prev[i], 'Q')
+        prev_year.load()
+        current_year = fastf1.get_session(2023, race_index_current[i], 'Q')
+        current_year.load()
+
+        fast_prev_year = prev_year.laps.pick_team(team).pick_fastest()['LapTime']
+        fast_current_year = current_year.laps.pick_team(team).pick_fastest()['LapTime']
+        if result[i] in delete_circuits:
+            delta.append(np.nan)
+            color.append('red')
+        else:
+            delta_time = round(fast_current_year.total_seconds() - fast_prev_year.total_seconds(), 3)
+            delta.append(delta_time)
+            if delta_time > 0:
+                color.append('red')
+            else:
+                color.append('green')
+
+    fig, ax = plt.subplots(figsize=(16, 10))
+    result = [track.replace('_', ' ').title() for track in result]
+    ax.bar(result, delta, color=color)
+
+    for i in range(len(delta)):
+        if delta[i] > 0:  # If the bar is above y=0
+            plt.text(result[i], delta[i] + 0.2, '+'+str(delta[i])+'s',
+                     ha='center', va='top', fontsize=12)
+        else:  # If the bar is below y=0
+            plt.text(result[i], delta[i] - 0.2, str(delta[i])+'s',
+                     ha='center', va='bottom', fontsize=12)
+
+    plt.axhline(0, color='white', linewidth=0.8)
+    differences_series = pd.Series(delta)
+    # Calculate the rolling mean
+    mean_y = differences_series.rolling(window=4, min_periods=1).mean().tolist()
+    plt.plot(result, mean_y, color='red',
+             marker='o', markersize=5.5, linewidth=3.5, label='Moving Average (4 last races)')
+
+    # Add legend patches for the bar colors
+    red_patch = mpatches.Patch(color='red', label='2022 Faster')
+    green_patch = mpatches.Patch(color='green', label='2023 Faster')
+    plt.legend(handles=[green_patch, red_patch,
+                        plt.Line2D([], [], color='red', marker='o', markersize=5.5, linestyle='',
+                                   label='Moving Average (4 last circuits)')], fontsize='x-large', loc='upper left')
+    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
+    plt.title(f'{team.upper()} QUALY COMPARISON: 2022 vs. 2023', fontsize=24)
+    plt.xlabel('Circuit', fontsize=16)
+    plt.ylabel('Time diff (seconds)', fontsize=16)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{team} QUALY COMPARATION 2022 vs 2023.png', dpi=450)
+    plt.show()
+
+
+
+def qualy_diff_last_year(round_id):
+
+    ergast = Ergast()
+    current = ergast.get_qualifying_results(season=2023, round=round_id, limit=1000)
+    previous = ergast.get_qualifying_results(season=2022, limit=1000)
+    current_circuit = current.description['circuitId'].values[0]
+    index_pre_circuit = previous.description[previous.description['circuitId'] == current_circuit]['circuitId'].index[0]
+    teams = current.content[0]['constructorId'].values
+    teams = pd.Series(teams).drop_duplicates(keep='first').values
+    teams[teams == 'alfa'] = 'alfa romeo'
+    teams = teams.astype(np.dtype('<U12'))
+    teams = np.char.replace(teams, "_", " ")
+
+    previous = fastf1.get_session(2022, index_pre_circuit + 1, 'Q')
+    previous.load()
+    current = fastf1.get_session(2023, round_id, 'Q')
+    current.load()
+
+    teams_to_plot = current.results['TeamName'].values
+    teams_to_plot = pd.Series(teams_to_plot).drop_duplicates(keep='first').values
+
+    delta_times = []
+    colors = []
+    for team in teams_to_plot:
+        fast_current = current.laps.pick_team(team).pick_fastest()['LapTime']
+        fast_prev = previous.laps.pick_team(team).pick_fastest()['LapTime']
+
+        delta_time = fast_current.total_seconds() - fast_prev.total_seconds()
+        delta_times.append(round(delta_time, 3))
+
+        color = '#' + current.results[current.results['TeamName'] == team]['TeamColor'].values[0]
+        colors.append(color)
+
+    fig, ax = plt.subplots(figsize=(18, 8))
+    ax.bar(teams_to_plot, delta_times, color=colors)
+
+    for i in range(len(delta_times)):
+        if delta_times[i] > 0:  # If the bar is above y=0
+            plt.text(teams_to_plot[i], delta_times[i] + 0.08, '+'+str(delta_times[i])+'s',
+                     ha='center', va='top', fontsize=12)
+        else:  # If the bar is below y=0
+            plt.text(teams_to_plot[i], delta_times[i] - 0.08, str(delta_times[i])+'s',
+                     ha='center', va='bottom', fontsize=12)
+
+    plt.axhline(0, color='white', linewidth=0.8)
+    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
+    plt.title(f'{current.event.EventName.upper()} QUALY COMPARISON: 2022 vs. 2023', fontsize=24)
+    plt.xlabel('Team', fontsize=16)
+    plt.ylabel('Time diff (seconds)', fontsize=16)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{current.event.EventName} QUALY COMPARATION 2022 vs 2023.png', dpi=450)
+    plt.show()
 
 def overlying_laps(session, driver_1, driver_2, lap=None):
     plt.rcParams['axes.facecolor'] = 'black'

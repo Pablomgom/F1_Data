@@ -38,7 +38,7 @@ def bar_race(races, sprints, schedule):
 
     all_family_names = set()
     for race in races_df:
-        all_family_names.update(race['familyName'].unique())
+        all_family_names.update((race['givenName'] + ' ' + race['familyName']).unique())
 
     # initialize dictionary
     family_points_dict = {name: [] for name in all_family_names}
@@ -50,8 +50,10 @@ def bar_race(races, sprints, schedule):
 
         for i in range(len(race)):
             family_name = race.loc[i, 'familyName']
+            given_name = race.loc[i, 'givenName']
+            full_name = given_name + ' ' + family_name
             points = race.loc[i, 'points']
-            current_race_points[family_name] += points
+            current_race_points[full_name] += points
 
         # add points from the current race to the total points
         for name in all_family_names:
@@ -65,6 +67,7 @@ def bar_race(races, sprints, schedule):
         races_comput = max_races[schedule['season'].min()]
 
         for key in family_points_dict:
+
             sorted_values = sorted(family_points_dict[key], reverse=True)
 
             # Get the 4th highest value
