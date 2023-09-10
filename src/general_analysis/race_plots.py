@@ -26,9 +26,9 @@ def race_pace_teammates(team):
     color = []
     differences = []
     context = ''
-    for i in range(1, 15):
+    for i in range(14):
 
-        race = fastf1.get_session(2023, i, 'R')
+        race = fastf1.get_session(2023, i + 1, 'R')
         race.load()
         drivers = np.unique(race.laps.pick_team(team)['Driver'].values)
         n_laps_d1 = len(race.laps.pick_driver(drivers[0]).pick_quicklaps())
@@ -46,20 +46,33 @@ def race_pace_teammates(team):
             team_1_laps = race.laps.pick_driver(drivers[0])
             team_2_laps = race.laps.pick_driver(drivers[1])
 
+            '''
+            sc_laps = team_1_laps.pick_track_status('4567', 'any')
+            n_stints_t1 = team_1_laps[~team_1_laps['LapNumber'].isin(sc_laps['LapNumber'].values)]
+            n_stints_t1 = n_stints_t1[~np.isnan(n_stints_t1['PitInTime'])]
+            n_stints_t1 = n_stints_t1[]
+            n_stints_t1 = n_stints_t1['LapNumber'].values - 2
+
+
+            n_stints_t2 = team_2_laps[~team_2_laps['LapNumber'].isin(sc_laps['LapNumber'].values)]
+            n_stints_t2 = n_stints_t2[~np.isnan(n_stints_t2['PitInTime'])]
+            n_stints_t2 = n_stints_t2['LapNumber'].values - 2
+            '''
             max_laps = min(len(team_1_laps), len(team_2_laps))
 
             team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
             team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
-
+            '''
             seconds_box = 24
-            stints_t1 = team_1_laps['Stint'].value_counts()
-            stints_t1 = len(stints_t1[stints_t1 >= 3].index.tolist())
-            stints_t2 = team_2_laps['Stint'].value_counts()
-            stints_t2 = len(stints_t2[stints_t2 >= 3].index.tolist())
-
-            sum_t1 = team_1_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t1 - 1) * seconds_box))
-            sum_t2 = team_2_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t2 - 1) * seconds_box))
-
+            stints_t1 = len([i for i in n_stints_t1 if i in team_1_laps['LapNumber'].values])
+            stints_t2 = len([i for i in n_stints_t2 if i in team_1_laps['LapNumber'].values])
+            '''
+            sum_t1 = team_1_laps['LapTime'].sum()
+            sum_t2 = team_2_laps['LapTime'].sum()
+            '''
+            sum_t1 += pd.Timedelta(seconds=((stints_t1 - 1) * seconds_box))
+            sum_t2 += pd.Timedelta(seconds=((stints_t2 - 1) * seconds_box)))
+            '''
             mean_t1 = sum_t1 / len(team_1_laps)
             mean_t2 = sum_t2 / len(team_2_laps)
 
@@ -125,7 +138,7 @@ def race_pace_teammates(team):
             context += final_string_d2
 
         else:
-            differences.append(np.nan)
+            differences.append(0)
             legend.append(f'{drivers[1]} faster')
             color.append('blue')
 
@@ -142,7 +155,7 @@ def race_pace_teammates(team):
         if differences[i] > 0:  # If the bar is above y=0
             plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
                      ha='center', va='top', fontsize=12)
-        else:  # If the bar is below y=0
+        elif differences[i] < 0:  # If the bar is below y=0
             plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
                      ha='center', va='bottom', fontsize=12)
 

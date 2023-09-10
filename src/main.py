@@ -21,7 +21,7 @@ if __name__ == '__main__':
     #qualy_diff_last_year(14)
     #performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
 
-    race_pace_teammates('AlphaTauri')
+    race_pace_teammates('Ferrari')
 
     #driver_race_times_per_tyre(session, 'ALB')
 
