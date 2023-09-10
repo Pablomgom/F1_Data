@@ -42,10 +42,28 @@ def race_pace_teammates(team):
         if n_laps_d2 >= 25 and n_laps_d1 >= 25:
 
             n_total_laps = min(n_laps_d2, n_laps_d1)
-            laps_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps().pick_wo_box()[:n_total_laps]['LapTime'].mean()
-            laps_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps().pick_wo_box()[:n_total_laps]['LapTime'].mean()
 
-            if laps_d1 > laps_d2:
+            team_1_laps = race.laps.pick_driver(drivers[0])
+            team_2_laps = race.laps.pick_driver(drivers[1])
+
+            max_laps = min(len(team_1_laps), len(team_2_laps))
+
+            team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
+            team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
+
+            seconds_box = 24
+            stints_t1 = team_1_laps['Stint'].value_counts()
+            stints_t1 = len(stints_t1[stints_t1 >= 3].index.tolist())
+            stints_t2 = team_2_laps['Stint'].value_counts()
+            stints_t2 = len(stints_t2[stints_t2 >= 3].index.tolist())
+
+            sum_t1 = team_1_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t1 - 1) * seconds_box))
+            sum_t2 = team_2_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t2 - 1) * seconds_box))
+
+            mean_t1 = sum_t1 / len(team_1_laps)
+            mean_t2 = sum_t2 / len(team_2_laps)
+
+            if mean_t1 > mean_t2:
                 legend.append(f'{drivers[1]} faster')
                 color.append('blue')
             else:
@@ -57,8 +75,8 @@ def race_pace_teammates(team):
                 else:
                     color.append('orange')
 
-            original_value = laps_d1.total_seconds()
-            new_value = laps_d2.total_seconds()
+            original_value = mean_t1.total_seconds()
+            new_value = mean_t2.total_seconds()
 
             delta_diff = ((new_value - original_value) / original_value) * 100
             differences.append(round(delta_diff, 2))
@@ -73,6 +91,7 @@ def race_pace_teammates(team):
             for i, stint in stint_d1.items():
                 data = race.laps[race.laps['Stint'] == i]
                 tyre = pd.Series([data.pick_driver(drivers[0])['Compound'].min()])
+                tyre[0] = f'{str(int(i))} -> {tyre[0]}'
                 tyres_d1 = tyres_d1._append(tyre)
 
             stint_d2 = stint_d2.sort_index()
@@ -82,6 +101,7 @@ def race_pace_teammates(team):
             for i, stint in stint_d2.items():
                 data = race.laps[race.laps['Stint'] == i]
                 tyre = pd.Series([data.pick_driver(drivers[1])['Compound'].min()])
+                tyre[0] = f'{str(int(i))} -> {tyre[0]}'
                 tyres_d2 = tyres_d2._append(tyre)
 
             def get_strategy(stints, tyres, add_blank=None):
