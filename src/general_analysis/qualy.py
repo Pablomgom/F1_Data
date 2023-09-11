@@ -301,8 +301,8 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     plt.show()
 
 
-def gear_changes(session, driver):
-    lap = session.laps.pick_driver(driver).pick_fastest()
+def gear_changes(session, col='nGear'):
+    lap = session.laps.pick_fastest()
     tel = lap.get_telemetry()
 
     x = np.array(tel['X'].values)
@@ -310,26 +310,36 @@ def gear_changes(session, driver):
 
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    gear = tel['nGear'].to_numpy().astype(float)
+    data = tel[col].to_numpy().astype(float)
+    text = col
+    if col == 'nGear':
+        cmap = cm.get_cmap('Paired')
+        lc_comp = LineCollection(segments, norm=plt.Normalize(1, cmap.N + 1), cmap=cmap)
+        text = 'Gear Shift'
+    else:
+        cmap = cm.get_cmap('viridis')
+        min_speed, max_speed = data.min(), data.max()  # Min and max speeds for normalization
+        lc_comp = LineCollection(segments, norm=plt.Normalize(min_speed, max_speed), cmap=cmap)
+        lc_comp.set_array(data)
 
-    cmap = cm.get_cmap('Paired')
-    lc_comp = LineCollection(segments, norm=plt.Normalize(1, cmap.N + 1), cmap=cmap)
-    lc_comp.set_array(gear)
+    lc_comp.set_array(data)
     lc_comp.set_linewidth(4)
 
     plt.gca().add_collection(lc_comp)
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
 
-    title = plt.suptitle(
-        f"Fastest Lap Gear Shift Visualization\n"
-        f"{lap['Driver']} - {session.event['EventName']} {session.event.year}"
+    plt.suptitle(
+        f"Fastest Lap {text} Visualization\n"
+        f"{lap['Driver']} - {session.event['EventName']} {session.event.year}", fontsize=15
     )
-
-    cbar = plt.colorbar(mappable=lc_comp, label="Gear", boundaries=np.arange(1, 10))
-    cbar.set_ticks(np.arange(1.5, 9.5))
-    cbar.set_ticklabels(np.arange(1, 9))
-    plt.savefig(f"../PNGs/GEAR CHANGES {driver} {session.event.OfficialEventName}", dpi=400)
+    if col == 'nGear':
+        cbar = plt.colorbar(mappable=lc_comp, label="Gear", boundaries=np.arange(1, 10))
+        cbar.set_ticks(np.arange(1.5, 9.5))
+        cbar.set_ticklabels(np.arange(1, 9))
+    else:
+        plt.colorbar(mappable=lc_comp, label="Speed")
+    plt.savefig(f"../PNGs/GEAR CHANGES {session.event.OfficialEventName}", dpi=400)
     plt.show()
 
 
