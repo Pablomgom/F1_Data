@@ -56,7 +56,7 @@ def qualy_results_ergast(qualy):
                  f"Fastest Lap: {lap_time_string} ({qualy.content[0]['driverCode'][0]})")
 
     def custom_formatter(x, pos):
-        return x / 1e9
+        return round(x * 100000, 1)
 
     ax.xaxis.set_major_formatter(FuncFormatter(custom_formatter))
 

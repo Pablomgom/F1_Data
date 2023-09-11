@@ -455,9 +455,10 @@ def qualy_results(session):
     plt.ylabel("Driver")
 
     def custom_formatter(x, pos):
-        return x / 1e9
+        return round(x * 100000, 1)
 
     ax.xaxis.set_major_formatter(FuncFormatter(custom_formatter))
+    ax.xaxis.grid(True, color='white', linestyle='--')
 
     # Adding a watermark at the bottom left of the figure
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)

@@ -9,19 +9,19 @@ from src.onetime_analysis.onetime_analysis import *
 if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
-    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    #fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     #pitstops(2023, 14)
 
     #plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Belgium', 'R')
-    #session.load()
+    session = fastf1.get_session(2022, 'Singapur', 'Q')
+    session.load()
 
     #qualy_diff_last_year(14)
     #performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
 
-    race_pace_teammates('Ferrari')
+    #race_pace_teammates('Ferrari')
 
     #driver_race_times_per_tyre(session, 'ALB')
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     #position_changes(session)
 
-    #overlying_laps(session, 'PER', 'VER')
+    #overlying_laps(session, 'PER', 'LEC')
 
     #race_distance(session, 'HAM', 'VER')
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     ergast = Ergast()
     drivers = ergast.get_driver_info(season=1959, limit=1000)
-    races = ergast.get_race_results(season=1962, limit=1000)
+    races = ergast.get_race_results(season=2022, round=17, limit=1000)
     qualy = ergast.get_qualifying_results(season=2008, round=6, limit=1000)
     sprints = ergast.get_sprint_results(season=1962,  limit=1000)
     schedule = ergast.get_race_schedule(season=1962, limit=1000)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     #qualy_results_ergast(qualy)
 
 
-    #get_position_changes(races)
+    get_position_changes(races)
 
     #get_circuitos()
 
