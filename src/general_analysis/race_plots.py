@@ -519,20 +519,18 @@ def race_diff(team_1, team_2, year):
     races = []
     session_names = []
     context = ''
-    n_races = Ergast().get_race_results(season=year, limit=1000)
-    for i in range(len(n_races.content)):
-        session = fastf1.get_session(year,  i + 1, 'R')
-        session.load(telemetry=True)
-        races.append(session)
-        session_names.append(session.event['Location'].split('-')[0])
-
     team_1_times = []
     team_2_times = []
 
     team_1_total_laps = []
     team_2_total_laps = []
+    n_races = Ergast().get_race_results(season=year, limit=1000)
+    for i in range(len(n_races.content)):
+        race = fastf1.get_session(year,  i + 1, 'R')
+        race.load(telemetry=True)
+        races.append(race)
+        session_names.append(race.event['Location'].split('-')[0])
 
-    for race in races:
         min_pos_t1 = race.results[race.results['TeamName'] == team_1]['Position'].min()
         d_t1 = race.results[race.results['Position'] == min_pos_t1]['Abbreviation'].min()
 
@@ -547,17 +545,8 @@ def race_diff(team_1, team_2, year):
         team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
         team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
 
-        seconds_box = 24
-        stints_t1 = team_1_laps['Stint'].value_counts()
-        stints_t1 = len(stints_t1[stints_t1 >= 3].index.tolist())
-        stints_t2 = team_2_laps['Stint'].value_counts()
-        stints_t2 = len(stints_t2[stints_t2 >= 3].index.tolist())
-
-        if stints_t2 is np.nan:
-            stints_t2 = 0
-
-        sum_t1 = team_1_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t1 - 1) * seconds_box))
-        sum_t2 = team_2_laps['LapTime'].sum() + pd.Timedelta(seconds=((stints_t2 - 1) * seconds_box))
+        sum_t1 = team_1_laps['LapTime'].sum()
+        sum_t2 = team_2_laps['LapTime'].sum()
 
         mean_t1 = sum_t1 / len(team_1_laps)
         if len(team_2_laps) == 0:
@@ -581,7 +570,6 @@ def race_diff(team_1, team_2, year):
             laps = team_1_total_laps[i]
         else:
             laps = team_2_total_laps[i]
-
 
         if mean_time_team_2 == 0:
             delta_laps.append(0)
