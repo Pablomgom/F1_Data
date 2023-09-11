@@ -238,7 +238,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     labels = labels1 + [entry.get_label() for entry in legend_elements]
 
     # Create a single legend with the handles and labels
-    ax[0].legend(handles, labels, loc='lower right')
+    ax[0].legend(handles, labels, loc='lower left')
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],
