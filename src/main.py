@@ -9,14 +9,16 @@ from src.onetime_analysis.onetime_analysis import *
 if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
-    #fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     #pitstops(2023, 14)
 
     #plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2022, 'Singapur', 'Q')
-    session.load()
+    session = fastf1.get_session(2018, 'Singapur', 'Q')
+    #session.load()
+
+    lucky_drivers()
 
     #qualy_diff_last_year(14)
     #performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
@@ -45,7 +47,7 @@ if __name__ == '__main__':
 
     #fastest_by_point_v2(session, 'Ferrari', 'Red Bull Racing')
 
-    #gear_changes(session, 'HAM')
+    #gear_changes(session, 'Speed')
 
     #tyre_strategies(session)
 
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     #qualy_results_ergast(qualy)
 
 
-    get_position_changes(races)
+    #get_position_changes(races)
 
     #get_circuitos()
 

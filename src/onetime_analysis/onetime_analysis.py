@@ -801,3 +801,61 @@ def plot_circuit():
         ax.text(text_x, text_y, track_z, txt, color='white')
         
     '''
+
+
+def lucky_drivers():
+
+    ergast = Ergast()
+    drivers_array = []
+    all_races = []
+    for i in range(1950, 2024):
+        races = ergast.get_race_results(season=i, limit=1000).content
+        for race in races:
+            all_races.append(race)
+            drivers_names = (race['givenName'] + ' ' + race['familyName']).values
+            for name in drivers_names:
+                drivers_array.append(name)
+        print(f'GET DATA {i}')
+
+    unique_drivers = set(drivers_array)
+    luck = {}
+    for name in unique_drivers:
+        luck[name] = 0
+
+    for driver in unique_drivers:
+        for race in all_races:
+            race_data = race[(race['givenName'] == driver.split(' ')[0]) & (race['familyName'] == driver.split(' ', 1)[1])]
+            if len(race_data) > 0:
+                teams = set(race_data['constructorId'])
+                for team in teams:
+                    teammate = race[race['constructorId'] == team]
+                    teammate = list(teammate['givenName'] + ' ' + teammate['familyName'].values)
+                    if len(teammate) > 1:
+                        loops = teammate.count(driver)
+                        teammate = [x for x in teammate if x != driver]
+                        teammate = set(teammate)
+                        for i in range(loops):
+                            for team_name in teammate:
+                                teammate_data = race[(race['givenName'] == team_name.split(' ')[0]) & (race['familyName'] == team_name.split(' ', 1)[1])]
+                                teammate_data = teammate_data[teammate_data['constructorId'] == team]
+                                status_d1 = race_data[race_data['constructorId'] == team]['status'].values[i]
+                                if len(teammate_data) > 0:
+                                    for j in range(len(teammate_data)):
+                                        status_d2 = teammate_data['status'].values[j]
+                                        if re.search(r'(Spun off|Accident|Collision|Finished|\+)', status_d1):
+                                            if not re.search(r'(Spun off|Accident|Collision|Finished|\+)', status_d2):
+                                                luck[driver] += 1
+                                        else:
+                                            if re.search(r'(Spun off|Accident|Collision|Finished|\+)', status_d2):
+                                                luck[driver] -= 1
+        print(driver)
+
+    # Sort dictionary by its values in ascending order
+    sorted_data = {k: v for k, v in sorted(luck.items(), key=lambda item: item[1], reverse=False)}
+
+    values = 0
+    for key, value in sorted_data.items():
+        print(f"{key}: {value}")
+        values += value
+    print(values)
+
