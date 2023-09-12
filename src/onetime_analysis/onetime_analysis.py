@@ -376,13 +376,13 @@ def get_topspeed():
     print(top_speed_array)
 
 
-def get_topspeed_in_session(session, column='Speed', DRS=None):
+def get_topspeed_in_session(session, column='Speed', fastest_lap=None):
 
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     circuit_speed = {}
     colors_dict = {}
 
-    if DRS is not None:
+    if fastest_lap is not None:
         drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
 
         drivers = list(drivers.reset_index(name='Count')['Driver'].values)
@@ -444,7 +444,7 @@ def get_topspeed_in_session(session, column='Speed', DRS=None):
 
     if column == 'Speed':
         order = True
-        if DRS is not None:
+        if fastest_lap is not None:
             column = 'Top Speeds (only the fastest lap from each driver)'
         else:
             column = 'Top Speeds'

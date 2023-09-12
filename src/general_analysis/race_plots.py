@@ -588,7 +588,7 @@ def race_diff(team_1, team_2, year):
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.04, "{:.2f} %".format(delta_laps[i]),
+            plt.text(session_names[i], delta_laps[i] + 0.02, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='top')
         else:  # If the bar is below y=0
             plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),

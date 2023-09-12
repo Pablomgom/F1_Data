@@ -219,7 +219,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     ax[0].set_xlabel('Distance')
     ax[0].set_ylabel('Speed')
     ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
-                    f'{" Lap " + str(lap) if lap is not None else ""} comparation: {driver_1} VS {driver_2}',
+                    f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
                     fontsize=24, y=1.1)
 
     twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
@@ -611,7 +611,7 @@ def fastest_by_point_v2(session, team_1, team_2):
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     tel_team_2 = lap_team_2.get_telemetry()
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, special_mode=True)
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, None)
 
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
 
@@ -685,7 +685,7 @@ def fastest_by_point_v2(session, team_1, team_2):
     legend_lines = [Line2D([0], [0], color='red', lw=4),
                     Line2D([0], [0], color='blue', lw=4)]
 
-    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'])
+    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='upper left', fontsize='x-large')
 
     plt.suptitle(f"TRACK DOMINANCE {team_1} vs {team_2}:"
                  f" {str(session.session_info['StartDate'].year) + ' ' + session.event.EventName} \n",
