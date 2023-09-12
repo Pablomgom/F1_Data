@@ -696,3 +696,28 @@ def fastest_by_point_v2(session, team_1, team_2):
     plt.savefig(path, dpi=400)
     plt.show()
 
+def qualy_margin(circuit, start=None, end=None):
+
+    ergast = Ergast()
+    dict_years = {}
+    dict_drivers = {}
+    if start is None:
+        start = 1950
+    if end is None:
+        end = 2024
+    for i in range(start, end):
+        qualy = ergast.get_qualifying_results(season=i, circuit=circuit, limit=1000)
+        if len(qualy.content) > 0:
+            data = qualy.content[0]
+            pole_time = data['Q3'][0]
+            second_time = data['Q3'][1]
+            diff = second_time - pole_time
+            dict_years[i] = diff.total_seconds()
+            dict_drivers[i] = f'from {data["familyName"][0]} to {data["familyName"][1]}'
+        print(str(i))
+
+    dict_years = {k: v for k, v in sorted(dict_years.items(), key=lambda item: item[1], reverse=False)}
+
+    for key, value in dict_years.items():
+        drivers = dict_drivers[key]
+        print(f'{key}: {value}s {drivers}')
