@@ -14,14 +14,14 @@ import matplotlib.patches as mpatches
 
 
 
-def performance_vs_last_year(team, delete_circuits):
+def performance_vs_last_year(team, delete_circuits=[], year=2023):
 
     ergast = Ergast()
-    prev_year = ergast.get_race_results(season=2022, limit=1000)
-    current_year = ergast.get_race_results(season=2023, limit=1000)
+    prev_year = ergast.get_race_results(season=year-1 , limit=1000)
+    current_year = ergast.get_race_results(season=year, limit=1000)
 
-    prev_cir = prev_year.description['circuitId'].values
-    current_cir = current_year.description['circuitId'].values
+    prev_cir = prev_year.description['raceName'].values
+    current_cir = current_year.description['raceName'].values
 
     def intersect_lists_ordered(list1, list2):
         return [item for item in list1 if item in list2]
@@ -30,20 +30,20 @@ def performance_vs_last_year(team, delete_circuits):
     race_index_prev = []
 
     for item in result:
-        if item in prev_year.description['circuitId'].values:
-            race_index_prev.append(prev_year.description['circuitId'].to_list().index(item) + 1)
+        if item in prev_year.description['raceName'].values:
+            race_index_prev.append(prev_year.description['raceName'].to_list().index(item) + 1)
 
     race_index_current = []
-    for i, item in current_year.description['circuitId'].items():
+    for i, item in current_year.description['raceName'].items():
         if item in result:
             race_index_current.append(i + 1)
 
     delta = []
     color = []
     for i in range(len(race_index_current)):
-        prev_year = fastf1.get_session(2022, race_index_prev[i], 'Q')
+        prev_year = fastf1.get_session(year-1, race_index_prev[i], 'Q')
         prev_year.load()
-        current_year = fastf1.get_session(2023, race_index_current[i], 'Q')
+        current_year = fastf1.get_session(year, race_index_current[i], 'Q')
         current_year.load()
 
         fast_prev_year = prev_year.laps.pick_team(team).pick_fastest()['LapTime']
@@ -59,16 +59,17 @@ def performance_vs_last_year(team, delete_circuits):
             else:
                 color.append('green')
 
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(24, 10))
     result = [track.replace('_', ' ').title() for track in result]
+    result = [track.split(' ')[0] for track in result]
     ax.bar(result, delta, color=color)
 
     for i in range(len(delta)):
         if delta[i] > 0:  # If the bar is above y=0
-            plt.text(result[i], delta[i] + 0.2, '+'+str(delta[i])+'s',
+            plt.text(result[i], delta[i] + 0.4, '+'+str(delta[i])+'s',
                      ha='center', va='top', fontsize=12)
         else:  # If the bar is below y=0
-            plt.text(result[i], delta[i] - 0.2, str(delta[i])+'s',
+            plt.text(result[i], delta[i] - 0.4, str(delta[i])+'s',
                      ha='center', va='bottom', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
@@ -79,17 +80,17 @@ def performance_vs_last_year(team, delete_circuits):
              marker='o', markersize=5.5, linewidth=3.5, label='Moving Average (4 last races)')
 
     # Add legend patches for the bar colors
-    red_patch = mpatches.Patch(color='red', label='2022 Faster')
-    green_patch = mpatches.Patch(color='green', label='2023 Faster')
+    red_patch = mpatches.Patch(color='red', label=f'{year - 1} Faster')
+    green_patch = mpatches.Patch(color='green', label=f'{year} Faster')
     plt.legend(handles=[green_patch, red_patch,
-                        plt.Line2D([], [], color='red', marker='o', markersize=5.5, linestyle='',
+                        plt.Line2D([], [], color='orange', marker='o', markersize=5.5, linestyle='',
                                    label='Moving Average (4 last circuits)')], fontsize='x-large', loc='upper left')
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
     plt.title(f'{team.upper()} QUALY COMPARISON: 2022 vs. 2023', fontsize=24)
     plt.xlabel('Circuit', fontsize=16)
     plt.ylabel('Time diff (seconds)', fontsize=16)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{team} QUALY COMPARATION 2022 vs 2023.png', dpi=450)
+    plt.savefig(f'../PNGs/{team} QUALY COMPARATION {year-1} vs {year}.png', dpi=450)
     plt.show()
 
 
