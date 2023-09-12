@@ -498,7 +498,7 @@ def get_topspeed_in_session(session, column='Speed', DRS=None):
     plt.show()
 
 
-def wins_in_circuit(circuit, end=None):
+def wins_in_circuit(circuit, start=None, end=None):
 
     ergast = Ergast()
     winners = pd.Series(dtype=str)
@@ -506,7 +506,9 @@ def wins_in_circuit(circuit, end=None):
     years = []
     if end is None:
         end = 2024
-    for i in range(1950, end):
+    if start is None:
+        start = 1950
+    for i in range(start, end):
         races = ergast.get_race_results(season=i, limit=1000)
         has_raced = races.description[races.description['circuitId'] == circuit]
         if len(has_raced) > 0:
