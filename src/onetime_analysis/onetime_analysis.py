@@ -121,26 +121,34 @@ def get_retirements_per_driver(driver, start=None, end=None):
     print(positions)
 
 
-def compare_drivers_season(d_1, d_2, season):
+def compare_drivers_season(d_1, d_2, season, DNFs=False):
 
     ergast = Ergast()
 
-    schedule = ergast.get_race_schedule(season=season, limit=1000)
     races = ergast.get_race_results(season=season, limit=1000)
     sprints = ergast.get_sprint_results(season=season, limit=1000)
     qualys = ergast.get_qualifying_results(season=season, limit=1000)
-    total_races = races.content + sprints.content
+    total_races = races.content
 
     race_result = []
     qualy_result = []
+    d1_points = 0
+    d2_points = 0
+    def process_drivers(array, race_type, d1_points, d2_points):
+        for race in array:
+            best_pos = race[race['familyName'].isin([d_1, d_2])]['position'].min()
+            status = race[race['familyName'].isin([d_1, d_2])]['status'].values
+            status = [i for i in status if '+' in i or 'Finished' in i]
+            driver = race[race['position'] == best_pos]['driverCode'].min()
+            if (DNFs and len(status) == 2) or not DNFs:
+                race_result.append(driver + f' - {race_type}')
+                d1_points += race[race['familyName'] == d_1]['points'][0]
+                d2_points += race[race['familyName'] == d_2]['points'][0]
 
-    for race in total_races:
-        best_pos = race[race['familyName'].isin([d_1, d_2])]['position'].min()
-        driver = race[race['position'] == best_pos]['driverCode'].min()
-        if race.shape[1] == 26:
-            race_result.append(driver + ' - Race')
-        elif race.shape[1] == 23:
-            race_result.append(driver + ' - Sprint')
+        return d1_points, d2_points
+
+    d1_points, d2_points = process_drivers(total_races, 'Race', d1_points, d2_points)
+    d1_points, d2_points = process_drivers(sprints.content, 'Sprint', d1_points, d2_points)
 
     for qualy in qualys.content:
         best_pos = qualy[qualy['familyName'].isin([d_1, d_2])]['position'].min()
@@ -148,7 +156,9 @@ def compare_drivers_season(d_1, d_2, season):
         qualy_result.append(driver)
 
     print(Counter(race_result))
-    print(Counter(qualy_result))
+    print(f'QUALYS: {Counter(qualy_result)}')
+    print(f'{d_1} points: {d1_points}')
+    print(f'{d_2} points: {d2_points}')
 
 
 
@@ -697,9 +707,6 @@ def plot_circuit():
     # Rotate the track map.
     rotated_track = rotate(track, angle=track_angle)
 
-    # Create 2D plot
-    def normalize(data):
-        return (data - np.min(data)) / (np.max(data) - np.min(data))
 
     def normalize(data):
         return (data - np.min(data)) / (np.max(data) - np.min(data))
