@@ -6,7 +6,7 @@ from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
 from fastf1 import utils, plotting
 from matplotlib.collections import LineCollection
-from matplotlib.colors import TwoSlopeNorm
+from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
@@ -354,7 +354,7 @@ def fastest_by_point(session, team_1, team_2):
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     tel_team_2 = lap_team_2.get_telemetry()
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, special_mode=True)
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, None)
 
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
 
@@ -668,7 +668,10 @@ def fastest_by_point_v2(session, team_1, team_2):
         f = interp1d(x_old, delta_time, kind='linear')
         delta_time = f(x_new)
     # Change the colormap to a diverging colormap
-    cmap = cm.get_cmap('coolwarm', 2)  # Discrete colormap with 2 colors
+    colors = [plotting.team_color(team_1), plotting.team_color(team_2)]
+
+    # Create a custom colormap
+    cmap = LinearSegmentedColormap.from_list("custom_cmap", colors, N=2)
     # Initialize the TwoSlopeNorm with 0.5 as the center
 
     # Update LineCollection with the new colormap and normalization
@@ -683,8 +686,8 @@ def fastest_by_point_v2(session, team_1, team_2):
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
 
     # Create custom legend
-    legend_lines = [Line2D([0], [0], color='red', lw=4),
-                    Line2D([0], [0], color='blue', lw=4)]
+    legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
+                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='upper left', fontsize='x-large')
 
