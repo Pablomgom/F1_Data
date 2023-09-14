@@ -14,10 +14,10 @@ if __name__ == '__main__':
     # plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2022, 'Singapur', 'FP2')
-    #session.load()
+    session = fastf1.get_session(2023, 'Monaco', 'R')
+    session.load()
 
-    # lucky_drivers()
+    # lucky_drivers(2017,2018)
 
     # qualy_diff_last_year(14)
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     # get_topspeed_in_session(session, 'Speed', fastest_lap=True)
 
-    # win_wdc(standings)
+    # win_wdc(2023)
 
     # driver_laptimes(session)
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     # race_distance(session, 'HAM', 'VER')
 
-    # driver_lap_times(session, 'VER')
+    # driver_lap_times(session, 'PER')
 
     # fastest_by_point_v2(session, 'Ferrari', 'Red Bull Racing')
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     # get_pit_stops(2018)
 
-    # compare_drivers_season('Hamilton', 'Rosberg', 2016)
+    # compare_drivers_season('Vettel', 'Alonso', 2012)
 
     # qualy_results_ergast(qualy)
 
@@ -94,4 +94,4 @@ if __name__ == '__main__':
 
     # get_topspeed()
 
-    get_driver_results_circuit('hamilton', 'marina_bay', 2008)
+    # get_driver_results_circuit('hamilton', 'marina_bay', 2008)

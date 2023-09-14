@@ -8,7 +8,9 @@ import re
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 
-def win_wdc(standings):
+def win_wdc(year):
+    ergast = Ergast()
+    standings = ergast.get_driver_standings(season=year)
     driver_standings = standings.content[0]
 
     POINTS_FOR_SPRINT = 8 + 25 + 1  # Winning the sprint, race and fastest lap
@@ -42,8 +44,8 @@ def win_wdc(standings):
     plt.bar(driver_standings['driverCode'], driver_standings['points'], label='Current Points')
     plt.axhline(y=driver_standings['points'].max(), color='r', linestyle='--', label='Points cap')
 
-    plt.xlabel('Points')
-    plt.ylabel('Drivers')
+    plt.xlabel('Drivers')
+    plt.ylabel('Points')
     plt.title(
         f'Who can still win the WDC? - Season {standings.description.season[0]} with {len(events)} races remaining')
     plt.legend()

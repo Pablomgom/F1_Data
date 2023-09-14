@@ -801,11 +801,15 @@ def plot_circuit():
     '''
 
 
-def lucky_drivers():
+def lucky_drivers(start=None, end=None):
+    if start is None:
+        start = 1950
+    if end is None:
+        end = 2024
     ergast = Ergast()
     drivers_array = []
     all_races = []
-    for i in range(1950, 2024):
+    for i in range(start, end):
         races = ergast.get_race_results(season=i, limit=1000).content
         for race in races:
             all_races.append(race)
@@ -820,6 +824,8 @@ def lucky_drivers():
         luck[name] = 0
 
     for driver in unique_drivers:
+        if driver == 'Fernando Alonso':
+            a = 1
         for race in all_races:
             race_data = race[
                 (race['givenName'] == driver.split(' ')[0]) & (race['familyName'] == driver.split(' ', 1)[1])]
