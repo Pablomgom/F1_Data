@@ -148,7 +148,7 @@ def qualy_diff_last_year(round_id):
     plt.savefig(f'../PNGs/{current.event.EventName} QUALY COMPARATION 2022 vs 2023.png', dpi=450)
     plt.show()
 
-def overlying_laps(session, driver_1, driver_2, lap=None):
+def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'black'
 
@@ -165,8 +165,12 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
         for i in session.laps.pick_driver(driver_2).pick_lap(lap).iterlaps():
             d2_lap = i[1]
 
+        d1_lap = session.laps.split_qualifying_sessions()[1].pick_driver(driver_1)
+        d2_lap = session.laps.split_qualifying_sessions()[1].pick_driver(driver_2)
+
     else:
-        #session.laps.split_qualifying_sessions()[0].pick_driver('ALO')
+        #d1_lap = session.laps.split_qualifying_sessions()[1].pick_driver(driver_1).pick_fastest()
+        #d2_lap = session.laps.split_qualifying_sessions()[1].pick_driver(driver_2).pick_fastest()
         d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
         d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
@@ -213,7 +217,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
         colors = ['green' if x > 0 else 'red' for x in delta_time]
         twin = ax[0].twinx()
         for i in range(1, len(delta_time)):
-            twin.plot(compare_tel['Distance'][i - 1:i + 1], delta_time[i - 1:i + 1], color=colors[i],
+            twin.plot(ref_tel['Distance'][i - 1:i + 1], delta_time[i - 1:i + 1], color=colors[i],
                       alpha=0.5, label='delta')
 
     # Set the labels for the axes
@@ -347,12 +351,17 @@ def gear_changes(session, col='nGear'):
 
 
 
-def fastest_by_point(session, team_1, team_2):
-    lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
-    tel_team_1 = lap_team_1.get_telemetry()
+def fastest_by_point(session, team_1, team_2, scope='Team'):
+    if scope == 'Team':
+        lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
+        tel_team_1 = lap_team_1.get_telemetry()
 
-    lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
-    tel_team_2 = lap_team_2.get_telemetry()
+        lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
+    else:
+        lap_team_1 = session.laps.pick_driver(team_1).pick_fastest()
+        tel_team_1 = lap_team_1.get_telemetry()
+
+        lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
 
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, None)
 
@@ -610,7 +619,6 @@ def fastest_by_point_v2(session, team_1, team_2):
     tel_team_1 = lap_team_1.get_telemetry()
 
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
-    tel_team_2 = lap_team_2.get_telemetry()
 
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, None)
 
@@ -634,12 +642,14 @@ def fastest_by_point_v2(session, team_1, team_2):
 
     for i in range(num_stretches):
         start_idx = i * stretch_len + delta_time.index[0]
+        if start_idx != 0:
+            start_idx -= 1
         end_idx = (i + 1) * stretch_len - 1 + delta_time.index[0]  # -1 to get the last element of the stretch
 
         start_value = delta_time[start_idx]
         end_value = delta_time[end_idx]
 
-        stretch_value = 1 if start_value < end_value else 0  # 1 for team_1, 0 for team_2
+        stretch_value = 0 if start_value < end_value else 1  # 1 for team_1, 0 for team_2
 
         stretched_delta_time.extend([stretch_value] * stretch_len)
 
@@ -648,7 +658,7 @@ def fastest_by_point_v2(session, team_1, team_2):
         start_value = delta_time[num_stretches * stretch_len]
         end_value = delta_time.iloc[-1]  # last value in delta_time
 
-        stretch_value = 1 if start_value < end_value else 0  # 1 for team_1, 0 for team_2
+        stretch_value = 0 if start_value < end_value else 1  # 1 for team_1, 0 for team_2
 
         stretched_delta_time.extend([stretch_value] * (len(delta_time) - num_stretches * stretch_len))
 

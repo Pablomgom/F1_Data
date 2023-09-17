@@ -380,7 +380,7 @@ def get_topspeed():
     print(top_speed_array)
 
 
-def get_topspeed_in_session(session, column='Speed', fastest_lap=None):
+def get_topspeed_in_session(session, column='Speed', fastest_lap=None, DRS=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     circuit_speed = {}
     colors_dict = {}
@@ -417,9 +417,9 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None):
         for lap in laps.iterrows():
             try:
                 if column == 'Speed':
-                    if lap[1].telemetry['DRS'].max() >= 10:
+                    if lap[1].telemetry['DRS'].max() >= 10 and not DRS:
                         top_speed = 0
-                    else:
+                    elif column == 'Speed':
                         top_speed = max(lap[1].telemetry[column])
                 else:
                     top_speed = round(lap[1][column].total_seconds(), 3)
@@ -458,6 +458,8 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None):
         x_fix = 0.75
         order = False
         column = f"{column[:-5]} {column[-5:-4]} Times"
+        if not DRS:
+            column += 'without DRS'
 
     circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=order)}
 
@@ -471,7 +473,7 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None):
                    edgecolor='white')
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}')
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
-    if column == 'Speed':
+    if 'Speed' in column:
         y_label = 'Max speed'
     else:
         y_label = 'Sector time'
