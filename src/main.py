@@ -9,14 +9,14 @@ from src.onetime_analysis.onetime_analysis import *
 if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
-    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    # fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     # pitstops(2023, 15, ['Alonso_2', 'Sargeant_2'])
 
     # plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Singapore', 'R')
-    session.load()
+    session = fastf1.get_session(2022, 'Suzuka', 'R')
+    # session.load()
 
     # lucky_drivers(2017,2018)
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # qualy_diff('Alpine', 'Ferrari', 15)
 
-    race_diff('Aston Martin', 'Mercedes', 2023)
+    # race_diff('Aston Martin', 'Mercedes', 2023)
 
     # position_changes(session)
 
@@ -56,11 +56,11 @@ if __name__ == '__main__':
 
     ergast = Ergast()
     drivers = ergast.get_driver_info(season=1959, limit=1000)
-    races = ergast.get_race_results(season=2010, round=15, limit=1000)
+    races = ergast.get_race_results(season=2022, round=18, limit=1000)
     qualy = ergast.get_qualifying_results(season=2018, round=16, limit=1000)
     sprints = ergast.get_sprint_results(season=1962, limit=1000)
     schedule = ergast.get_race_schedule(season=1962, limit=1000)
-    circuitos = ergast.get_circuits(season=1951, round=6, limit=1000)
+    circuitos = ergast.get_circuits(season=2023, round=16, limit=1000)
     circuito = circuitos.circuitId.min()
 
     # get_fastest_punctuable_lap('marina_bay', start=2008, all_drivers=False)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     # day_all_races()
 
-    # wins_in_circuit(circuito, end=1977)
+    # wins_in_circuit(circuito, end=2023)
 
     # get_pit_stops(2018)
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # qualy_results_ergast(qualy)
 
-    # get_position_changes(races)
+    get_position_changes(races)
 
     # get_circuitos()
 
@@ -95,4 +95,4 @@ if __name__ == '__main__':
 
     # get_topspeed()
 
-    # get_driver_results_circuit('alonso', 'suzuka', 2001)
+    # get_driver_results_circuit('sainz', 'suzuka', 2015)
