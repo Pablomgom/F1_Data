@@ -43,16 +43,86 @@ def win_wdc(year):
               f"Theoretical max points: {driver_max_points}, "
               f"Can win: {can_win}")
 
-    plt.figure(figsize=(10, 6))
-    plt.bar(driver_standings['driverCode'], driver_standings['points'] + points, label='Maximum Points Possible')
-    plt.bar(driver_standings['driverCode'], driver_standings['points'], label='Current Points')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bars = plt.bar(driver_standings['driverCode'], driver_standings['points'] + points, label='Maximum Points Possible')
+
+    def my_rounded_top_rect(x, y, width, height, color):
+        corner_radius = min(5 * width, height / 2)
+
+        # Calculate the starting point for the curves based on height
+        # Calculate the starting point for the curves based on height
+        curve_start_y = y + height * 0.98 - corner_radius
+        curve_end_x_left = x + width/2
+        curve_end_x_right = x + width/2
+
+        # Vertices for the rectangle with rounded top
+        verts = [
+            (x, y),  # bottom-left
+            (x, curve_start_y),  # start of left curve
+            (x, y + height),  # Control point for top-left curve
+            (curve_end_x_left, y + height),  # end of left curve and start of top-left curve
+            (curve_end_x_right, y + height),  # end of top-left curve and start of top-right curve
+            (x + width, y + height),  # Control point for top-right curve
+            (x + width, curve_start_y),  # end of top-right curve
+            (x + width, y),  # bottom-right
+            (x, y)  # close polygon
+        ]
+
+        codes = [
+            mpath.Path.MOVETO,
+            mpath.Path.LINETO,
+            mpath.Path.CURVE3,
+            mpath.Path.CURVE3,
+            mpath.Path.LINETO,
+            mpath.Path.CURVE3,
+            mpath.Path.CURVE3,
+            mpath.Path.LINETO,
+            mpath.Path.CLOSEPOLY
+        ]
+
+        path = mpath.Path(verts, codes)
+        patch = mpatches.PathPatch(path, facecolor=color, edgecolor=color)
+        return patch
+
+    for bar in bars:
+        bar.set_visible(False)
+
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = my_rounded_top_rect(x, y, width, height,  '#008000')
+        rounded_box.set_facecolor('#008000')
+        ax.add_patch(rounded_box)
+
+    bars = plt.bar(driver_standings['driverCode'], driver_standings['points'], label='Current Points')
+
+    for bar in bars:
+        bar.set_visible(False)
+
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = my_rounded_top_rect(x, y, width, height,  '#FF0000')
+        rounded_box.set_facecolor('#FF0000')
+        ax.add_patch(rounded_box)
+
     plt.axhline(y=driver_standings['points'].max(), color='r', linestyle='--', label='Points cap')
 
     plt.xlabel('Drivers')
     plt.ylabel('Points')
     plt.title(
         f'Who can still win the WDC? - Season {standings.description.season[0]} with {len(events)} races remaining')
-    plt.legend()
+    legend_lines = [Line2D([0], [0], color='#008000', lw=4),
+                    Line2D([0], [0], color='#FF0000', lw=4),
+                    Line2D([0], [0], color='red', lw=2.5, linestyle='--')]
+
+    plt.legend(legend_lines, ['Max possible points', 'Current points', 'Points cap'],
+               loc='upper right', fontsize='large')
+    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
 
     plt.savefig(f"../PNGs/CAN WIN WDC - SEASON{standings.description.season[0]} AT {len(events)} REMAINING.png",
                 dpi=400)

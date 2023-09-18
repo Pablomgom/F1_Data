@@ -59,10 +59,10 @@ def rounded_top_rect(x, y, width, height, corner_radius, edgecolor):
             # Bezier curves for the top left corner
             (x, max(base_y, base_y + height - corner_radius)),
             (x, base_y + height),
-            (x + corner_radius, base_y + height),
+            (x + corner_radius + 0.1, base_y + height),
 
             # Top straight line
-            (x + width - corner_radius, base_y + height),
+            (x + width - corner_radius - 0.1, base_y + height),
 
             # Bezier curves for the top right corner
             (x + width - corner_radius, base_y + height),
@@ -138,33 +138,14 @@ def race_pace_teammates(team, rounds):
             team_1_laps = race.laps.pick_driver(drivers[0])
             team_2_laps = race.laps.pick_driver(drivers[1])
 
-            '''
-            sc_laps = team_1_laps.pick_track_status('4567', 'any')
-            n_stints_t1 = team_1_laps[~team_1_laps['LapNumber'].isin(sc_laps['LapNumber'].values)]
-            n_stints_t1 = n_stints_t1[~np.isnan(n_stints_t1['PitInTime'])]
-            n_stints_t1 = n_stints_t1[]
-            n_stints_t1 = n_stints_t1['LapNumber'].values - 2
-
-
-            n_stints_t2 = team_2_laps[~team_2_laps['LapNumber'].isin(sc_laps['LapNumber'].values)]
-            n_stints_t2 = n_stints_t2[~np.isnan(n_stints_t2['PitInTime'])]
-            n_stints_t2 = n_stints_t2['LapNumber'].values - 2
-            '''
             max_laps = min(len(team_1_laps), len(team_2_laps))
 
             team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
             team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
-            '''
-            seconds_box = 24
-            stints_t1 = len([i for i in n_stints_t1 if i in team_1_laps['LapNumber'].values])
-            stints_t2 = len([i for i in n_stints_t2 if i in team_1_laps['LapNumber'].values])
-            '''
+
             sum_t1 = team_1_laps['LapTime'].sum()
             sum_t2 = team_2_laps['LapTime'].sum()
-            '''
-            sum_t1 += pd.Timedelta(seconds=((stints_t1 - 1) * seconds_box))
-            sum_t2 += pd.Timedelta(seconds=((stints_t2 - 1) * seconds_box)))
-            '''
+
             mean_t1 = sum_t1 / len(team_1_laps)
             mean_t2 = sum_t2 / len(team_2_laps)
 
@@ -259,8 +240,6 @@ def race_pace_teammates(team, rounds):
             plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
                      ha='center', va='bottom', fontsize=12)
 
-    plt.axhline(0, color='white', linewidth=0.8)
-
     # Convert your list to a Pandas Series
     delta_laps = pd.Series(differences)
     mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
@@ -286,6 +265,7 @@ def race_pace_teammates(team, rounds):
     plt.legend(legend_lines, unique_drivers,
                loc='lower left', fontsize='x-large')
 
+    plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
     plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', fontsize=26)
     plt.xlabel('Circuit', fontsize=16)
@@ -672,7 +652,7 @@ def race_diff(team_1, team_2, year):
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(15, 7))
+    fig, ax1 = plt.subplots(figsize=(24, 11))
     plt.rcParams["font.family"] = "Fira Sans"
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
     colors = []
@@ -752,7 +732,7 @@ def race_diff(team_1, team_2, year):
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     ax1.yaxis.grid(True, linestyle='--')
     title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
-    plt.title(f'{team_1} VS {team_2} {year} race time difference', fontdict=title_font_properties)
+    plt.title(f'{team_1} VS {team_2} {year} race pace difference', fontdict=title_font_properties)
 
     font_properties = {'family': 'Fira Sans', 'size': 12}
 
@@ -762,7 +742,7 @@ def race_diff(team_1, team_2, year):
 
     for label in ax1.get_yticklabels():
         label.set_fontproperties(font_properties)
-
+    plt.tight_layout()
     plt.savefig(f"../PNGs/{team_2} VS {team_1} {year} race time difference.png", dpi=400)
 
     # Show the plot

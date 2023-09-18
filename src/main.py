@@ -16,11 +16,11 @@ if __name__ == '__main__':
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 'Singapore', 'R')
-    #session.load()
+    session.load()
 
     # lucky_drivers(2017,2018)
 
-    qualy_diff_last_year(15)
+    # qualy_diff_last_year(14)
 
     # performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # driver_race_times_per_tyre(session, 'LEC')
 
-    # get_topspeed_in_session(session, 'Speed')
+    # get_topspeed_in_session(session, 'Sector1Time')
 
     # win_wdc(2023)
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # qualy_diff('Alpine', 'Ferrari', 15)
 
-    # race_diff('Aston Martin', 'McLaren', 2023)
+    race_diff('Aston Martin', 'Mercedes', 2023)
 
     # position_changes(session)
 
@@ -95,4 +95,4 @@ if __name__ == '__main__':
 
     # get_topspeed()
 
-    # get_driver_results_circuit('hamilton', 'marina_bay', 2008)
+    # get_driver_results_circuit('alonso', 'suzuka', 2001)

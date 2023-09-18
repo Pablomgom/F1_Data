@@ -51,19 +51,32 @@ def performance_vs_last_year(team, delete_circuits=[], year=2023):
         fast_current_year = current_year.laps.pick_team(team).pick_fastest()['LapTime']
         if result[i] in delete_circuits:
             delta.append(np.nan)
-            color.append('red')
+            color.append('#FF0000')
         else:
             delta_time = round(fast_current_year.total_seconds() - fast_prev_year.total_seconds(), 3)
             delta.append(delta_time)
             if delta_time > 0:
-                color.append('red')
+                color.append('#FF0000')
             else:
-                color.append('green')
+                color.append('#008000')
 
     fig, ax = plt.subplots(figsize=(24, 10))
     result = [track.replace('_', ' ').title() for track in result]
     result = [track.split(' ')[0] for track in result]
-    ax.bar(result, delta, color=color)
+    bars = ax.bar(result, delta, color=color)
+
+    for bar in bars:
+        bar.set_visible(False)
+    i = 0
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color[i])
+        rounded_box.set_facecolor(color[i])
+        ax.add_patch(rounded_box)
+        i += 1
 
     for i in range(len(delta)):
         if delta[i] > 0:  # If the bar is above y=0
@@ -106,8 +119,6 @@ def qualy_diff_last_year(round_id):
     teams = current.content[0]['constructorId'].values
     teams = pd.Series(teams).drop_duplicates(keep='first').values
     teams[teams == 'alfa'] = 'alfa romeo'
-    teams = teams.astype(np.dtype('<U12'))
-    teams = np.char.replace(teams, "_", " ")
 
     previous = fastf1.get_session(2022, index_pre_circuit + 1, 'Q')
     previous.load()

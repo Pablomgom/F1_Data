@@ -503,6 +503,19 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None, DRS=True)
 
     bars = ax1.bar(list(circuit_speed.keys()), list(circuit_speed.values()), color=colors,
                    edgecolor='white')
+    for bar in bars:
+        bar.set_visible(False)
+    i = 0
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i])
+        rounded_box.set_facecolor(colors[i])
+        ax1.add_patch(rounded_box)
+        i += 1
+
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}')
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
