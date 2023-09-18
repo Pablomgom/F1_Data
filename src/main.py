@@ -10,13 +10,13 @@ if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
-    # pitstops(2023, 14)
+    pitstops(2023, 15, ['Alonso_2', 'Sargeant_2'])
 
     # plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 'Singapore', 'R')
-    session.load()
+    #session.load()
 
     # lucky_drivers(2017,2018)
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # driver_race_times_per_tyre(session, 'LEC')
 
-    get_topspeed_in_session(session, 'Speed')
+    # get_topspeed_in_session(session, 'Speed')
 
     # win_wdc(2023)
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # qualy_diff('Alpine', 'Ferrari', 12)
 
-    # race_diff('Red Bull Racing', 'Aston Martin', 2023)
+    race_diff('Aston Martin', 'McLaren', 2023)
 
     # position_changes(session)
 

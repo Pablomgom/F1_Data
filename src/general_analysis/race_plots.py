@@ -3,10 +3,11 @@ import re
 import fastf1
 import pandas as pd
 from fastf1.ergast import Ergast
+from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from fastf1 import plotting
 
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, patches
 import seaborn as sns
 import numpy as np
 
@@ -18,6 +19,97 @@ import math
 
 from matplotlib.ticker import FuncFormatter
 
+
+def lighten_color(hex_color, factor=0.2):
+    """
+    Lighten a given hex color code.
+
+    Args:
+        hex_color (str): Hex color code, e.g., "#RRGGBB"
+        factor (float): Factor by which to lighten the color, where 0 <= factor <= 1.
+                        0 means no change, 1 means white.
+
+    Returns:
+        str: Lightened hex color code.
+    """
+    # Ensure the hex code starts with "#"
+    hex_color = hex_color.strip('#')
+
+    # Convert hex to RGB
+    r = int(hex_color[:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+
+    # Lighten each RGB component
+    r = int(r + (255 - r) * factor)
+    g = int(g + (255 - g) * factor)
+    b = int(b + (255 - b) * factor)
+
+    # Convert RGB back to hex
+    return "#{:02X}{:02X}{:02X}".format(r, g, b)
+
+def rounded_top_rect(x, y, width, height, corner_radius, edgecolor):
+    """Create a rectangle path with rounded top."""
+    if height > 0:
+        base_y = max(0, y)  # Ensure the starting y value is non-negative
+        verts = [
+            (x, base_y),  # Bottom left
+            (x, max(base_y, base_y + height - corner_radius)),  # Start of top-left curve
+
+            # Bezier curves for the top left corner
+            (x, max(base_y, base_y + height - corner_radius)),
+            (x, base_y + height),
+            (x + corner_radius, base_y + height),
+
+            # Top straight line
+            (x + width - corner_radius, base_y + height),
+
+            # Bezier curves for the top right corner
+            (x + width - corner_radius, base_y + height),
+            (x + width, base_y + height),
+            (x + width, max(base_y, base_y + height - corner_radius)),
+
+            # Right straight line and close the polygon
+            (x + width, base_y),
+            (x, base_y)
+        ]
+    else:
+        y += height
+        height = abs(height)
+        verts = [
+            (x, y + height),  # Top left
+            (x, min(0, y + corner_radius)),  # Start of bottom-left curve
+            # Bezier curves for the bottom left corner
+            (x, min(0, y + corner_radius)),
+            (x, y),
+            (x + corner_radius, y),
+            # Bottom straight line
+            (x + width - corner_radius, y),
+            # Bezier curves for the bottom right corner
+            (x + width - corner_radius, y),
+            (x + width, y),
+            (x + width, min(0, y + corner_radius)),
+            # Right straight line and close the polygon
+            (x + width, y + height),
+            (x, y + height)
+        ]
+
+    codes = [
+        patches.Path.MOVETO,
+        patches.Path.LINETO,
+        patches.Path.CURVE4,
+        patches.Path.CURVE4,
+        patches.Path.CURVE4,
+        patches.Path.LINETO,
+        patches.Path.CURVE4,
+        patches.Path.CURVE4,
+        patches.Path.CURVE4,
+        patches.Path.LINETO,
+        patches.Path.CLOSEPOLY,
+    ]
+    path = patches.Path(verts, codes)
+    lighter_color = lighten_color(edgecolor, factor=0.3)
+    return patches.PathPatch(path, edgecolor=lighter_color)
 
 def race_pace_teammates(team):
 
@@ -576,28 +668,53 @@ def race_diff(team_1, team_2, year):
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(25, 12))
+    fig, ax1 = plt.subplots(figsize=(15, 7))
+    plt.rcParams["font.family"] = "Fira Sans"
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
+    colors = []
+    labels = []
 
     for i in range(len(session_names)):
         color = plotting.team_color(team_1) if delta_laps[i] > 0 else plotting.team_color(team_2)
+        colors.append(color)
         label = f'{team_1} faster' if delta_laps[i] > 0 else f'{team_2} faster'
-        plt.bar(session_names[i], delta_laps[i], color=color, label=label)
+        labels.append(label)
+
+    bars = plt.bar(session_names, delta_laps, color=colors, label=labels)
+
+    for bar in bars:
+        bar.set_visible(False)
+
+    # Overlay rounded rectangle patches on top of the original bars
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        if height > 0:
+            color = plotting.team_color(team_1)
+        else:
+            color = plotting.team_color(team_2)
+
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color)
+        rounded_box.set_facecolor(color)
+        ax1.add_patch(rounded_box)
 
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.02, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='top')
+            plt.text(session_names[i], delta_laps[i] + 0.03, "{:.2f} %".format(delta_laps[i]),
+                     ha='center', va='top', font='Fira Sans', fontsize=15)
         else:  # If the bar is below y=0
             plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='bottom')
+                     ha='center', va='bottom', font='Fira Sans', fontsize=15)
 
     # Set the labels and title
-    plt.ylabel(f'Percentage time difference', fontsize=16)
-    plt.xlabel('Circuit', fontsize=16)
+    plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     ax1.yaxis.grid(True, linestyle='--')
-    plt.title(f'{team_1} VS {team_2} {year} race time difference', fontsize=24)
+    title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
+    plt.title(f'{team_1} VS {team_2} {year} race time difference', fontdict=title_font_properties)
 
     step = 0.2
 
@@ -609,8 +726,11 @@ def race_diff(team_1, team_2, year):
 
     delta_laps = pd.Series(delta_laps)
     mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
-
-    plt.plot(session_names, mean_y, color='red',
+    if team_1 == 'Ferrari' or team_2 == 'Ferrari':
+        ma_color = 'white'
+    else:
+        ma_color = 'red'
+    plt.plot(session_names, mean_y, color=ma_color,
              marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
 
     if min(delta_laps) < 0:
@@ -622,11 +742,23 @@ def race_diff(team_1, team_2, year):
 
     plt.yticks(yticks, [f'{tick:.2f} %' for tick in yticks])
 
-    # To avoid repeating labels in the legend, we handle them separately
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
-    plt.legend(by_label.values(), by_label.keys(), loc='upper left')
+
+    legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
+                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4),
+                    Line2D([0], [0], color=ma_color, lw=4)]
+
+    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
+               loc='lower left', fontsize='x-large')
+
+    font_properties = {'family': 'Fira Sans', 'size': 12}
+
+    # Set x-ticks and y-ticks font
+    for label in ax1.get_xticklabels():
+        label.set_fontproperties(font_properties)
+
+    for label in ax1.get_yticklabels():
+        label.set_fontproperties(font_properties)
 
     plt.savefig(f"../PNGs/{team_2} VS {team_1} {year} race time difference.png", dpi=400)
 

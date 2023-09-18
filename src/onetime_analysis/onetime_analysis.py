@@ -2,6 +2,8 @@ import fastf1
 import numpy as np
 import pandas as pd
 import re
+
+from fastf1 import plotting
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
 from collections import Counter
@@ -9,10 +11,11 @@ import matplotlib.patches as mpatches
 from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
+from src.general_analysis.race_plots import rounded_top_rect
 from src.general_analysis.table import render_mpl_table
 
 
-def pitstops(year, round=None):
+def pitstops(year, round=None, exclude=None):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
@@ -48,20 +51,49 @@ def pitstops(year, round=None):
 
         pitstops['Driver'] = pitstops['Driver'].apply(update_name)
 
+    if exclude is not None:
+        pitstops = pitstops[~pitstops['Driver'].isin(exclude)]
+
     bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
                    edgecolor='white')
 
     for bar in bars:
-        height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom', fontsize=14)
+        bar.set_visible(False)
 
-    ax1.set_title(f'PIT STOP TIMES IN 2023 ITALIAN GP', fontsize=28)
-    ax1.set_xlabel('Driver', fontweight='bold', fontsize=20)
-    ax1.set_ylabel('Avg time (s)', fontweight='bold', fontsize=20)
+    # Overlay rounded rectangle patches on top of the original bars
+    i = 0
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i])
+        rounded_box.set_facecolor(colors[i])
+        ax1.add_patch(rounded_box)
+        i += 1
+
+
+    for bar in bars:
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom',
+                 font='Fira Sans', fontsize=14)
+
+    ax1.set_title(f'PIT STOP TIMES IN 2023 ITALIAN GP', font='Fira Sans', fontsize=28)
+    ax1.set_xlabel('Driver', font='Fira Sans', fontsize=20)
+    ax1.set_ylabel('Time (s)', font='Fira Sans', fontweight='bold', fontsize=20)
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=18)
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)
+    font_properties = {'family': 'Fira Sans', 'size': 14}
+
+    # Set x-ticks and y-ticks font
+    for label in ax1.get_xticklabels():
+        label.set_fontproperties(font_properties)
+
+    for label in ax1.get_yticklabels():
+        label.set_fontproperties(font_properties)
     plt.tight_layout()
     plt.savefig(f'../PNGs/PIT STOP AVG TIME {year}', dpi=400)
     plt.show()
