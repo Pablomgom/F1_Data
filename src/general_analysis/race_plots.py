@@ -205,7 +205,6 @@ def position_changes(session):
     plotting.setup_mpl(misc_mpl_mods=False)
 
     fig, ax = plt.subplots(figsize=(8.0, 4.9))
-
     for drv in session.drivers:
         drv_laps = session.laps.pick_driver(drv)
         abb = drv_laps['Driver'].iloc[0]
@@ -471,7 +470,7 @@ def driver_laptimes(race):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
-    point_finishers = ['1', '11', '55', '16', '63', '44', '23', '4', '14', '77']
+    point_finishers = ['55', '4', '44', '16', '1', '10', '81', '11' ,'40', '20']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
@@ -663,7 +662,7 @@ def race_distance(session, driver_1, driver_2):
             colors.append('green')
         else:
             colors.append('red')
-    plt.figure(figsize=(37, 8))
+    fig, ax = plt.subplots(figsize=(37, 8))
     # Bar Plot
     bars = plt.bar(laps, progressive_sum, color=colors, width=0.9)
 
@@ -694,7 +693,7 @@ def race_distance(session, driver_1, driver_2):
         if end_y >= 0:
             start_y = -15
             dy = 13
-            text_y = -18
+            text_y = -16
         else:
             start_y = end_y - 15
             dy = 10
@@ -731,7 +730,7 @@ def race_distance(session, driver_1, driver_2):
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.title(f'Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}', fontsize=20)
     plt.grid(True, axis='y')
-
+    ax.set_yticks([20, 15, 10, 5, 0, -5, -10, -15, -20])
 
     # Display the plot
     plt.tight_layout()  # Adjusts plot parameters for a better layout

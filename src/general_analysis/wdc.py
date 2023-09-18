@@ -107,9 +107,6 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         team_mate_points = 0
         team_mates_names = []
 
-        if i == 1974:
-            a = 1
-
         (points, team_mate_points,
          team_mates_names, append_races) = process_race_data(
                                     races.content, driver, points, team_mate_points, team_mates_names, DNFs)
@@ -150,7 +147,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
 
     # Create bars for Driver 1
     plt.bar(r1, points_per_year, width=barWidth, color="#8B0000",
-            edgecolor='white', label=driver.split(" ")[0])
+            edgecolor='white', label=driver.split(" ")[1])
 
     added_to_legend = set()
     # Create bars for Driver 2 with varying names

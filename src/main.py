@@ -7,6 +7,7 @@ from src.general_analysis.wdc import *
 from src.onetime_analysis.onetime_analysis import *
 
 if __name__ == '__main__':
+
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     # pitstops(2023, 14)
@@ -14,20 +15,20 @@ if __name__ == '__main__':
     # plot_circuit()
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Monaco', 'R')
+    session = fastf1.get_session(2023, 'Singapore', 'R')
     session.load()
 
     # lucky_drivers(2017,2018)
 
-    # qualy_diff_last_year(14)
+    # qualy_diff_last_year(15)
 
     # performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
 
     # race_pace_teammates('Ferrari')
 
-    # driver_race_times_per_tyre(session, 'VER')
+    # driver_race_times_per_tyre(session, 'LEC')
 
-    # get_topspeed_in_session(session, 'Speed', fastest_lap=True)
+    get_topspeed_in_session(session, 'Speed')
 
     # win_wdc(2023)
 
@@ -39,13 +40,13 @@ if __name__ == '__main__':
 
     # position_changes(session)
 
-    # overlying_laps(session, 'HAM', 'BOT')
+    #overlying_laps(session, 'SAI', 'RUS')
 
-    # race_distance(session, 'HAM', 'VER')
+    # race_distance(session, 'HAM', 'SAI')
 
-    # driver_lap_times(session, 'PER')
+    # driver_lap_times(session, 'SAI')
 
-    # fastest_by_point_v2(session, 'Ferrari', 'Red Bull Racing')
+    # fastest_by_point_v2(session, 'Ferrari', 'Mercedes')
 
     # gear_changes(session, 'Speed')
 
@@ -56,7 +57,7 @@ if __name__ == '__main__':
     ergast = Ergast()
     drivers = ergast.get_driver_info(season=1959, limit=1000)
     races = ergast.get_race_results(season=2010, round=15, limit=1000)
-    qualy = ergast.get_qualifying_results(season=2008, round=6, limit=1000)
+    qualy = ergast.get_qualifying_results(season=2018, round=16, limit=1000)
     sprints = ergast.get_sprint_results(season=1962, limit=1000)
     schedule = ergast.get_race_schedule(season=1962, limit=1000)
     circuitos = ergast.get_circuits(season=1951, round=6, limit=1000)
@@ -90,7 +91,7 @@ if __name__ == '__main__':
 
     # get_retirements()
 
-    # wdc_comparation('Mario Andretti', 1950, 1983)
+    # wdc_comparation('Esteban Ocon', 2014, 2024)
 
     # get_topspeed()
 
