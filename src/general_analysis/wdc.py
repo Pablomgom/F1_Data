@@ -1,11 +1,15 @@
 import fastf1
 import numpy as np
-from PIL import Image
+import matplotlib.path as mpath
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm, image as mpimg
 import re
+import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+
+from src.general_analysis.race_plots import rounded_top_rect
 
 
 def win_wdc(year):
@@ -129,7 +133,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         formatted_string = ' - '.join(formatted_elements)
         fixed_names.append(formatted_string)
 
-    plt.figure(figsize=(25, 8))
+    fig, ax1 = plt.subplots(figsize=(22, 10))
     # Bar width
     barWidth = 0.45
 
@@ -146,44 +150,121 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
     name_to_color = {name: color_map(i) for i, name in enumerate(all_teammate_names)}
 
     # Create bars for Driver 1
-    plt.bar(r1, points_per_year, width=barWidth, color="#8B0000",
-            edgecolor='white', label=driver.split(" ")[1])
+    bars = plt.bar(r1, points_per_year, color="#8B0000", width=barWidth,
+            edgecolor='white')
+
+    def my_rounded_top_rect(x, y, width, height, color):
+        corner_radius = min(5 * width, height / 2)
+
+        # Calculate the starting point for the curves based on height
+        # Calculate the starting point for the curves based on height
+        curve_start_y = y + height * 0.98 - corner_radius
+        curve_end_x_left = x + width/2
+        curve_end_x_right = x + width/2
+
+        # Vertices for the rectangle with rounded top
+        verts = [
+            (x, y),  # bottom-left
+            (x, curve_start_y),  # start of left curve
+            (x, y + height),  # Control point for top-left curve
+            (curve_end_x_left, y + height),  # end of left curve and start of top-left curve
+            (curve_end_x_right, y + height),  # end of top-left curve and start of top-right curve
+            (x + width, y + height),  # Control point for top-right curve
+            (x + width, curve_start_y),  # end of top-right curve
+            (x + width, y),  # bottom-right
+            (x, y)  # close polygon
+        ]
+
+        codes = [
+            mpath.Path.MOVETO,
+            mpath.Path.LINETO,
+            mpath.Path.CURVE3,
+            mpath.Path.CURVE3,
+            mpath.Path.LINETO,
+            mpath.Path.CURVE3,
+            mpath.Path.CURVE3,
+            mpath.Path.LINETO,
+            mpath.Path.CLOSEPOLY
+        ]
+
+        path = mpath.Path(verts, codes)
+        patch = mpatches.PathPatch(path, facecolor=color, edgecolor=color)
+        return patch
+
+    for bar in bars:
+        bar.set_alpha(0)
+
+    # Overlay rounded rectangle patches on top of the original bars
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        rounded_box = my_rounded_top_rect(x, y, width, height, "#8B0000")
+        rounded_box.set_facecolor("#8B0000")
+        ax1.add_patch(rounded_box)
 
     added_to_legend = set()
     # Create bars for Driver 2 with varying names
     for i, (r, point, name) in enumerate(zip(r2, team_mates_points_per_year, fixed_names)):
         # Use the appropriate color from our map
         color = name_to_color[name]
+
+        # Create the original bar for the legend
         if name not in added_to_legend:
-            plt.bar(r, point, width=barWidth, edgecolor='white', color=color, label=name)
+            bar = plt.bar(r, point, width=barWidth, edgecolor='white', color=color)
             added_to_legend.add(name)
         else:
-            plt.bar(r, point, width=barWidth, edgecolor='white', color=color)
+            bar = plt.bar(r, point, width=barWidth, edgecolor='white', color=color)
+
+        # Hide the original bar
+        for b in bar:
+            b.set_alpha(0)
+
+        # Create rounded rectangle patch and add it to the axes
+        height = bar[0].get_height()
+        x, y = bar[0].get_xy()
+        width = bar[0].get_width()
+        rounded_box = my_rounded_top_rect(x, y, width, height, color)
+        ax1.add_patch(rounded_box)
 
     def add_labels(x_positions, values, offset=0.5):
         for x, value in zip(x_positions, values):
             plt.text(x, value + offset, '{:.1f}'.format(value), ha='center', va='bottom', zorder=5,
-                     fontsize=14)
+                     font='Fira Sans', fontsize=14)
     add_labels(r1, points_per_year)
     add_labels(r2, team_mates_points_per_year)
 
+    legend_lines = [Line2D([0], [0], color="#8B0000", lw=4)]
+    names_legend = [driver.split(" ")[1]]
+    colors_added = []
+    for name in fixed_names:
+        color = name_to_color[name]
+        if color not in colors_added:
+            hex_code = "#{:02X}{:02X}{:02X}".format(round(255 * color[0]),
+                                                              round(255 * color[1]), round(255 * color[2]))
+            line = Line2D([0], [0], color=hex_code, lw=4)
+            legend_lines.append(line)
+            names_legend.append(name)
+            colors_added.append(color)
+
+    plt.legend(legend_lines, names_legend,
+               loc='upper left', fontsize='x-large')
     # Add some details
-    plt.title('Driver Points by Year')
-    plt.xlabel('Year', fontweight='bold', fontsize=15)
-    plt.ylabel('Points', fontweight='bold', fontsize=15)
+
+    plt.xlabel('Year', font='Fira Sans', fontsize=20)
+    plt.ylabel('Points', font='Fira Sans', fontsize=20)
     plt.xticks([(x1 + x2) / 2 for x1, x2 in zip(r1, r2)], years)
 
-    plt.legend(loc='best', fontsize=13)
-
     plt.title(f'{driver} points comparison per year with his teammates {"- excluding mechanical DNFs" if DNFs else ""}',
-              fontsize=25
+              font='Fira Sans', fontsize=25,
               )
     plt.gca().yaxis.grid(True, linestyle='dashed')
     plt.gca().xaxis.grid(False)
     plt.tick_params(axis='x', which='both', pad=15)
-    plt.xticks(fontsize=14)  # for x-axis
-    plt.yticks(fontsize=14)  # for y-axis
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.xticks(font='Fira Sans', fontsize=20)  # for x-axis
+    plt.yticks(font='Fira Sans', fontsize=20)  # for y-axis
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
+
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver} POINTS COMPARISON WDC {"DNFs" if DNFs is True else ""}.png', dpi=300)
 

@@ -50,7 +50,7 @@ def lighten_color(hex_color, factor=0.2):
 
 def rounded_top_rect(x, y, width, height, corner_radius, edgecolor):
     """Create a rectangle path with rounded top."""
-    if height > 0:
+    if height >= 0:
         base_y = max(0, y)  # Ensure the starting y value is non-negative
         verts = [
             (x, base_y),  # Bottom left

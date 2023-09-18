@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
-    pitstops(2023, 15, ['Alonso_2', 'Sargeant_2'])
+    # pitstops(2023, 15, ['Alonso_2', 'Sargeant_2'])
 
     # plot_circuit()
 
@@ -34,13 +34,13 @@ if __name__ == '__main__':
 
     # driver_laptimes(session)
 
-    # qualy_diff('Alpine', 'Ferrari', 12)
+    qualy_diff('Alpine', 'Ferrari', 12)
 
-    race_diff('Aston Martin', 'McLaren', 2023)
+    # race_diff('Aston Martin', 'McLaren', 2023)
 
     # position_changes(session)
 
-    #overlying_laps(session, 'SAI', 'RUS')
+    # overlying_laps(session, 'SAI', 'RUS')
 
     # race_distance(session, 'HAM', 'SAI')
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     # get_retirements()
 
-    # wdc_comparation('Esteban Ocon', 2014, 2024)
+    # wdc_comparation('Daniel Ricciardo', 2011, 2024)
 
     # get_topspeed()
 
