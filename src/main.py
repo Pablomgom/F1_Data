@@ -20,11 +20,11 @@ if __name__ == '__main__':
 
     # lucky_drivers(2017,2018)
 
-    # qualy_diff_last_year(15)
+    qualy_diff_last_year(15)
 
     # performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
 
-    # race_pace_teammates('Ferrari')
+    # race_pace_teammates('Ferrari', 15)
 
     # driver_race_times_per_tyre(session, 'LEC')
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     # driver_laptimes(session)
 
-    qualy_diff('Alpine', 'Ferrari', 12)
+    # qualy_diff('Alpine', 'Ferrari', 15)
 
     # race_diff('Aston Martin', 'McLaren', 2023)
 

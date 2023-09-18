@@ -12,6 +12,7 @@ from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
 import matplotlib.patches as mpatches
 
+from src.general_analysis.race_plots import rounded_top_rect
 
 
 def performance_vs_last_year(team, delete_circuits=[], year=2023):
@@ -129,7 +130,20 @@ def qualy_diff_last_year(round_id):
         colors.append(color)
 
     fig, ax = plt.subplots(figsize=(18, 8))
-    ax.bar(teams_to_plot, delta_times, color=colors)
+    bars = ax.bar(teams_to_plot, delta_times, color=colors)
+
+    for bar in bars:
+        bar.set_visible(False)
+    i = 0
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i])
+        rounded_box.set_facecolor(colors[i])
+        ax.add_patch(rounded_box)
+        i += 1
 
     for i in range(len(delta_times)):
         if delta_times[i] > 0:  # If the bar is above y=0
@@ -501,7 +515,7 @@ def qualy_diff(team_1, team_2, session):
 
     for qualy in qualys:
 
-        qualy_result = qualy.results['Q3'][:10].append(qualy.results['Q2'][10:15]).append(qualy.results['Q1'][15:20])
+        qualy_result = pd.concat([qualy.results['Q3'][:10], qualy.results['Q2'][10:15], qualy.results['Q1'][15:20]])
         team_1_lap = qualy.laps.pick_team(team_1).pick_fastest()['LapTime']
         index = qualy_result[qualy_result == team_1_lap].index
         if len(index) == 0:
@@ -550,60 +564,91 @@ def qualy_diff(team_1, team_2, session):
 
         delta_laps.append(percentage_diff)
 
-    plt.figure(figsize=(13, 7))
-
+    fig, ax1 = plt.subplots(figsize=(13, 7))
+    colors = []
+    labels = []
     for i in range(len(session_names)):
         color = plotting.team_color(team_1) if delta_laps[i] > 0 else plotting.team_color(team_2)
+        colors.append(color)
         label = f'{team_1} faster' if delta_laps[i] > 0 else f'{team_2} faster'
-        plt.bar(session_names[i], delta_laps[i], color=color, label=label)
+        labels.append(label)
 
-    mean_y = np.mean(delta_laps)
-    # Draw horizontal line at y=mean_y
-    plt.axhline(mean_y, color='red', linewidth=2, label='Mean distance')
+    bars = plt.bar(session_names, delta_laps, color=colors, label=labels)
+
+    for bar in bars:
+        bar.set_visible(False)
+
+        # Overlay rounded rectangle patches on top of the original bars
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        if height > 0:
+            color = plotting.team_color(team_1)
+        else:
+            color = plotting.team_color(team_2)
+
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color)
+        rounded_box.set_facecolor(color)
+        ax1.add_patch(rounded_box)
+
     if min(delta_laps) < 0:
         plt.axhline(0, color='black', linewidth=2)
 
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.1, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='top')
+            plt.text(session_names[i], delta_laps[i] + 0.03, "{:.2f} %".format(delta_laps[i]),
+                     ha='center', va='top', font='Fira Sans', fontsize=15)
         else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.08, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='bottom')
-
-    # Set the labels and title
-    plt.ylabel(f'Percentage time difference', fontsize=14)
-    plt.xlabel('Circuito', fontsize=14)
-    plt.title(f'{team_1} VS {team_2} time difference', fontsize=14)
-
+            plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
+                     ha='center', va='bottom', font='Fira Sans', fontsize=15)
     step = 0.2
 
-    start = np.ceil(abs(min(delta_laps) / step))
     if min(delta_laps) < 0:
         start = np.floor(min(delta_laps) / step) * step
     else:
         start = np.ceil(min(delta_laps) / step) * step
     end = np.ceil(max(delta_laps) / step) * step
 
+    delta_laps = pd.Series(delta_laps)
+    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
+    if team_1 == 'Ferrari' or team_2 == 'Ferrari':
+        ma_color = 'white'
+    else:
+        ma_color = 'red'
+    plt.plot(session_names, mean_y, color=ma_color,
+             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
+
+    if min(delta_laps) < 0:
+        plt.axhline(0, color='white', linewidth=2)
+
     # Generate a list of ticks from minimum to maximum y values considering 0.0 value and step=0.2
     yticks = list(np.arange(start, end + step, step))
-    yticks.append(mean_y)
-    delete = None
-    for i in range(len(yticks)):
-        if abs(yticks[i] - mean_y) < 0.075:
-            delete = yticks[i]
-            break
-    if delete is not None:
-        yticks.remove(delete)
     yticks = sorted(yticks)
 
-    plt.yticks(yticks, [f'{tick:.2f} %' if tick != mean_y else f'{tick:.2f} %' for tick in yticks])
+    plt.yticks(yticks, [f'{tick:.2f} %' for tick in yticks])
 
-    # To avoid repeating labels in the legend, we handle them separately
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys())
+    legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
+                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4),
+                    Line2D([0], [0], color=ma_color, lw=4)]
+
+    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
+               loc='lower left', fontsize='x-large')
+
+    plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
+    ax1.yaxis.grid(True, linestyle='--')
+    title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
+    plt.title(f'{team_1} VS {team_2} qualy time difference', fontdict=title_font_properties)
+    font_properties = {'family': 'Fira Sans', 'size': 12}
+    for label in ax1.get_xticklabels():
+        label.set_fontproperties(font_properties)
+
+    for label in ax1.get_yticklabels():
+        label.set_fontproperties(font_properties)
+    plt.tight_layout()
 
     plt.savefig(f"../PNGs/{team_2} VS {team_1} time difference.png",
                 dpi=400)

@@ -111,14 +111,14 @@ def rounded_top_rect(x, y, width, height, corner_radius, edgecolor):
     lighter_color = lighten_color(edgecolor, factor=0.3)
     return patches.PathPatch(path, edgecolor=lighter_color)
 
-def race_pace_teammates(team):
+def race_pace_teammates(team, rounds):
 
     circuits = []
     legend = []
     color = []
     differences = []
     context = ''
-    for i in range(14):
+    for i in range(rounds):
 
         race = fastf1.get_session(2023, i + 1, 'R')
         race.load()
@@ -170,15 +170,15 @@ def race_pace_teammates(team):
 
             if mean_t1 > mean_t2:
                 legend.append(f'{drivers[1]} faster')
-                color.append('blue')
+                color.append('#0000FF')
             else:
                 legend.append(f'{drivers[0]} faster')
                 if drivers[0] == 'RIC':
-                    color.append('white')
+                    color.append('#FFFFFF')
                 elif drivers[0] == 'LAW':
-                    color.append('green')
+                    color.append('#008000')
                 else:
-                    color.append('orange')
+                    color.append('#FFA500')
 
             original_value = mean_t1.total_seconds()
             new_value = mean_t2.total_seconds()
@@ -232,16 +232,24 @@ def race_pace_teammates(team):
         else:
             differences.append(0)
             legend.append(f'{drivers[1]} faster')
-            color.append('blue')
+            color.append('#0000FF')
 
-    fig, ax = plt.subplots(figsize=(18, 10))
+    fig, ax1 = plt.subplots(figsize=(18, 10))
 
-    # Create bar objects and keep them in a list
-    bars = []
+    bars = plt.bar(circuits, differences, color=color)
+    for bar in bars:
+        bar.set_visible(False)
 
-    for c, d, col in zip(circuits, differences, color):
-        bar = ax.bar(c, d, color=col)
-        bars.append(bar)
+    i = 0
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color[i])
+        rounded_box.set_facecolor(color[i])
+        ax1.add_patch(rounded_box)
+        i += 1
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
@@ -254,33 +262,29 @@ def race_pace_teammates(team):
     plt.axhline(0, color='white', linewidth=0.8)
 
     # Convert your list to a Pandas Series
-    differences_series = pd.Series(differences)
+    delta_laps = pd.Series(differences)
+    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
+    ma_color = 'red'
+    plt.plot(circuits, mean_y, color=ma_color,
+             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
 
-    # Calculate the rolling mean
-    mean_y = differences_series.rolling(window=4, min_periods=1).mean().tolist()
+    legend_lines = []
+    unique_colors = []
+    unique_drivers = []
+    i = 0
+    for c_color in color:
+        if c_color not in unique_colors:
+            unique_colors.append(c_color)
+            unique_drivers.append(legend[i])
+            legend_p = Line2D([0], [0], color=c_color, lw=4)
+            legend_lines.append(legend_p)
+        i += 1
 
-    plt.plot(circuits, mean_y, color='red',
-             marker='o', markersize=5.5, linewidth=3.5, label='Moving Average (4 last races)')
+    unique_drivers.append('Moving Average (4 last races)')
+    unique_colors.append(ma_color)
 
-    # Create legend using unique labels
-    legend_unique = list(set(legend))  # unique legend items
-    legend_handles = {l: None for l in legend_unique}  # initialize dictionary to hold legend handles
-
-    # Loop through to find the corresponding handles for unique legend items
-    for l, b in zip(legend, bars):
-        if legend_handles[l] is None:
-            legend_handles[l] = b[0]
-
-    # Create handles and labels list for the legend
-    all_legend_handles = [legend_handles[l] for l in legend_unique]
-    all_legend_labels = legend_unique
-
-    # Add the handle and label for the Moving Average
-    ma_handle = plt.Line2D([0], [0], marker='o', color='red', linestyle='-', linewidth=3.5, markersize=5.5)
-    all_legend_handles.append(ma_handle)
-    all_legend_labels.append('Moving Average (4 last races)')
-
-    plt.legend(all_legend_handles, all_legend_labels, fontsize='x-large', loc='upper left')
+    plt.legend(legend_lines, unique_drivers,
+               loc='lower left', fontsize='x-large')
 
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
     plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', fontsize=26)
@@ -709,13 +713,6 @@ def race_diff(team_1, team_2, year):
             plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
                      ha='center', va='bottom', font='Fira Sans', fontsize=15)
 
-    # Set the labels and title
-    plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
-    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
-    ax1.yaxis.grid(True, linestyle='--')
-    title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
-    plt.title(f'{team_1} VS {team_2} {year} race time difference', fontdict=title_font_properties)
-
     step = 0.2
 
     if min(delta_laps) < 0:
@@ -750,6 +747,12 @@ def race_diff(team_1, team_2, year):
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
                loc='lower left', fontsize='x-large')
+    # Set the labels and title
+    plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
+    ax1.yaxis.grid(True, linestyle='--')
+    title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
+    plt.title(f'{team_1} VS {team_2} {year} race time difference', fontdict=title_font_properties)
 
     font_properties = {'family': 'Fira Sans', 'size': 12}
 
