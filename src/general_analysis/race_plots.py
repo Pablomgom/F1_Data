@@ -652,7 +652,7 @@ def race_diff(team_1, team_2, year):
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(24, 11))
+    fig, ax1 = plt.subplots(figsize=(10, 9))
     plt.rcParams["font.family"] = "Fira Sans"
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
     colors = []
@@ -742,6 +742,7 @@ def race_diff(team_1, team_2, year):
 
     for label in ax1.get_yticklabels():
         label.set_fontproperties(font_properties)
+    plt.xticks(rotation=90)
     plt.tight_layout()
     plt.savefig(f"../PNGs/{team_2} VS {team_1} {year} race time difference.png", dpi=400)
 

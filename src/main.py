@@ -9,7 +9,7 @@ from src.onetime_analysis.onetime_analysis import *
 if __name__ == '__main__':
 
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
-    # fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     # pitstops(2023, 15, ['Alonso_2', 'Sargeant_2'])
 
     # plot_circuit()
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # qualy_diff('Alpine', 'Ferrari', 15)
 
-    # race_diff('Aston Martin', 'Mercedes', 2023)
+    race_diff('Aston Martin', 'Mercedes', 2023)
 
     # position_changes(session)
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # qualy_results_ergast(qualy)
 
-    get_position_changes(races)
+    # get_position_changes(races)
 
     # get_circuitos()
 
