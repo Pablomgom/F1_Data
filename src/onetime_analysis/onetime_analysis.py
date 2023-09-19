@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import re
 
+from adjustText import adjust_text
 from fastf1 import plotting
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
 from collections import Counter
 import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
@@ -86,6 +88,8 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
 
         full_gas = telemetry[telemetry['Throttle'].isin([100, 99])]
         full_gas = len(full_gas) / len(telemetry)
+        brakes = telemetry[telemetry['Throttle'] == 100]
+        full_brakes = len(brakes) / len(telemetry)
         data.append([corners_per_meter, max_speed, q1, median, q3, avg, full_gas])
 
         circuits.append(session.event.Location)
@@ -118,30 +122,47 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
     for cluster_id in np.unique(y_kmeans):
         cluster_means[cluster_id] = data[y_kmeans == cluster_id].mean(axis=0)
 
-    plt.figure(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
+    texts = []
     colors = ['red', 'blue', 'green']  # Assuming 3 clusters; extend this list if there are more clusters
 
     for i, name in enumerate(circuits):
-        plt.scatter(principal_components[i, 0], principal_components[i, 1], color=colors[y_kmeans[i]], s=100)
-        plt.text(principal_components[i, 0], principal_components[i, 1], name)
+        ax.scatter(principal_components[i, 0], principal_components[i, 1], color=colors[y_kmeans[i]], s=100)
+        texts.append(ax.text(principal_components[i, 0], principal_components[i, 1], name,
+                             font='Fira Sans', fontsize=13))
 
-    '''
-    for cluster_id, color in enumerate(colors):
-        info = ', '.join([f'F{i + 1}: {mean:.2f}' for i, mean in enumerate(cluster_means[cluster_id])])
-        plt.text(plt.xlim()[1], plt.ylim()[0] + cluster_id * 0.5, f'Cluster {cluster_id + 1}: {info}', color=color,
-                 horizontalalignment='right', verticalalignment='bottom', fontsize=9)
-    # Plot cluster centroids and their names
-    '''
-
+    # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
-        plt.text(center[0], center[1], f'Center {i+1}', fontsize=12, ha='right')
+        match i:
+            case 0:
+                type = 'Low speed tracks'
+            case 1:
+                type = 'Medium speed tracks'
+            case 2:
+                type = 'High speed tracks'
+            case _:
+                type = 'WTF IS A KILOMETER'
+        texts.append(ax.text(center[0], center[1], type, font='Fira Sans',
+                             fontsize=16, ha='right'))
+        ax.scatter(center[0], center[1], s=300, c='#FF8C00')
 
-    plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='yellow')
+    # Automatically adjust the positions to minimize overlaps
+    adjust_text(texts, autoalign='xy', ha='right', va='bottom', only_move={'points': 'y', 'text': 'xy'})
 
-    plt.title('2D PCA of Circuits')
-    plt.xlabel('Principal Component 1')
-    plt.ylabel('Principal Component 2')
+    legend_lines =[Line2D([0], [0], color='red', lw=4),
+                   Line2D([0], [0], color='blue', lw=4),
+                   Line2D([0], [0], color='green', lw=4)]
+
+    plt.legend(legend_lines, ['Low speed tracks', 'Medium speed tracks', 'High speed tracks'],
+               loc='upper right', fontsize='x-large')
+
+    ax.axis('off')
+    ax.grid(False)
+    plt.title('SIMILARITY BETWEEN CIRCUITS', font='Fira Sans', fontsize=28)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig('../PNGs/Track clusters.png', dpi=400)
     plt.show()
 
 
@@ -210,7 +231,7 @@ def pitstops(year, round=None, exclude=None):
         ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom',
                  font='Fira Sans', fontsize=14)
 
-    ax1.set_title(f'PIT STOP TIMES IN 2023 ITALIAN GP', font='Fira Sans', fontsize=28)
+    ax1.set_title(f'PIT STOP TIMES IN 2023', font='Fira Sans', fontsize=28)
     ax1.set_xlabel('Driver', font='Fira Sans', fontsize=20)
     ax1.set_ylabel('Time (s)', font='Fira Sans', fontweight='bold', fontsize=20)
     plt.xticks(fontsize=10)
