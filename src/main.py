@@ -14,6 +14,8 @@ if __name__ == '__main__':
 
     # plot_circuit()
 
+    cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
+
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2022, 'Suzuka', 'R')
     # session.load()
@@ -36,7 +38,7 @@ if __name__ == '__main__':
 
     # qualy_diff('Alpine', 'Ferrari', 15)
 
-    race_diff('Aston Martin', 'Mercedes', 2023)
+    # race_diff('Aston Martin', 'Mercedes', 2023)
 
     # position_changes(session)
 

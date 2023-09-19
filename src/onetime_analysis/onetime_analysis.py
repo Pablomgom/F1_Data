@@ -14,6 +14,137 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from src.general_analysis.race_plots import rounded_top_rect
 from src.general_analysis.table import render_mpl_table
 
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+
+
+def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
+
+    session_type = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'SS', 'R']
+    circuits = []
+
+    data = []
+    for i in range(0, rounds + 1):
+        fast_laps = []
+        for type in session_type:
+            try:
+                print(f'{i}: {type}')
+                if i == rounds:
+                    session = fastf1.get_session(prev_year, circuit, type)
+                else:
+                    session = fastf1.get_session(year, i + 1, type)
+                session.load()
+                fast_laps.append(session.laps.pick_fastest())
+            except:
+                print(f'{type} not in this event')
+
+        fastest_lap = pd.Timedelta(days=1)
+        telemetry = None
+        for lap in fast_laps:
+            if lap['LapTime'] < fastest_lap:
+                try:
+                    telemetry = lap.telemetry
+                    fastest_lap = lap['LapTime']
+                except:
+                    print('Telemetry error')
+
+        corners = len(session.get_circuit_info().corners)
+        length = max(telemetry['Distance'])
+        corners_per_meter = length/corners
+        max_speed = max(telemetry['Speed'])
+        sorted_speed = sorted(telemetry['Speed'])
+
+        def get_percentile(data, percentile):
+            size = len(data)
+            return data[int((size - 1) * percentile)]
+
+        def get_quartiles(data):
+            data = sorted(data)
+
+            # Calculate the median
+            size = len(data)
+            if size % 2 == 0:
+                median = (data[size // 2 - 1] + data[size // 2]) / 2
+            else:
+                median = data[size // 2]
+
+            # Calculate Q1 (25th percentile) and Q3 (75th percentile)
+            lower_half = data[:size // 2] if size % 2 == 0 else data[:size // 2]
+            upper_half = data[size // 2:] if size % 2 == 0 else data[size // 2 + 1:]
+
+            q1 = get_percentile(lower_half, 0.5)
+            q3 = get_percentile(upper_half, 0.5)
+
+            avg = sum(data) / size
+
+            return q1, median, q3, avg
+
+        q1, median, q3, avg = get_quartiles(sorted_speed)
+
+        full_gas = telemetry[telemetry['Throttle'].isin([100, 99])]
+        full_gas = len(full_gas) / len(telemetry)
+        data.append([corners_per_meter, max_speed, q1, median, q3, avg, full_gas])
+
+        circuits.append(session.event.Location)
+
+    data = StandardScaler().fit_transform(data)
+
+    # Use PCA to reduce dimensions to 2D for visualization
+    pca = PCA(n_components=2)
+    principal_components = pca.fit_transform(data)
+
+    if clusters is None:
+        wcss = []
+        for i in range(1, 11):
+            kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
+            kmeans.fit(data)
+            wcss.append(kmeans.inertia_)
+        plt.figure(figsize=(10, 5))
+        plt.plot(range(1, 11), wcss, marker='o', linestyle='--')
+        plt.title('Elbow Method')
+        plt.xlabel('Number of clusters')
+        plt.ylabel('WCSS')
+        plt.show()
+        exit(0)
+
+    kmeans = KMeans(n_clusters=clusters, init='k-means++', random_state=42)
+    y_kmeans = kmeans.fit_predict(data)
+
+    # Calculate mean of the original features for each cluster
+    cluster_means = {}
+    for cluster_id in np.unique(y_kmeans):
+        cluster_means[cluster_id] = data[y_kmeans == cluster_id].mean(axis=0)
+
+    plt.figure(figsize=(12, 8))
+
+    colors = ['red', 'blue', 'green']  # Assuming 3 clusters; extend this list if there are more clusters
+
+    for i, name in enumerate(circuits):
+        plt.scatter(principal_components[i, 0], principal_components[i, 1], color=colors[y_kmeans[i]], s=100)
+        plt.text(principal_components[i, 0], principal_components[i, 1], name)
+
+    '''
+    for cluster_id, color in enumerate(colors):
+        info = ', '.join([f'F{i + 1}: {mean:.2f}' for i, mean in enumerate(cluster_means[cluster_id])])
+        plt.text(plt.xlim()[1], plt.ylim()[0] + cluster_id * 0.5, f'Cluster {cluster_id + 1}: {info}', color=color,
+                 horizontalalignment='right', verticalalignment='bottom', fontsize=9)
+    # Plot cluster centroids and their names
+    '''
+
+    for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
+        plt.text(center[0], center[1], f'Center {i+1}', fontsize=12, ha='right')
+
+    plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='yellow')
+
+    plt.title('2D PCA of Circuits')
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.show()
+
+
 
 def pitstops(year, round=None, exclude=None):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
