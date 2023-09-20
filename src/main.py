@@ -1,20 +1,68 @@
+import matplotlib.pyplot as plt
 from fastf1.ergast import Ergast
+from matplotlib.font_manager import FontProperties
+
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
 from src.general_analysis.race_plots import *
 from src.general_analysis.race_videos import *
 from src.general_analysis.wdc import *
-from src.onetime_analysis.onetime_analysis import *
+from src.variables.variables import *
+#from src.onetime_analysis.onetime_analysis import *
 
 if __name__ == '__main__':
-
-    fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
-    pitstops(2023)
+    upgrades = pd.read_csv('../resources/upgrades.csv', sep='|')
+    upgrades = upgrades[upgrades['Reason'] == 'Performance']
+    team_categories = pd.Categorical(upgrades['Team'], categories=upgrades['Team'].unique(), ordered=True)
+    race_categories = pd.Categorical(upgrades['Race'], categories=upgrades['Race'].unique(), ordered=True)
+    ct = pd.crosstab(team_categories, race_categories)
+    cumulative_sum = ct.cumsum(axis=1)
+    ordered_colors = [team_colors_2023[team] for team in cumulative_sum.index]
+    transposed = cumulative_sum.transpose()
+    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors)
+
+    plt.title("Cumulative Performance Upgrades for Each Team", font='Fira Sans', fontsize=28)
+    plt.xlabel("Races", font='Fira Sans', fontsize=18)
+    plt.ylabel("Number of Upgrades", font='Fira Sans', fontsize=18)
+    races = cumulative_sum.columns
+    plt.xticks(ticks=range(len(races)), labels=races, rotation=90)
+
+    # Initialize the previous y-value
+    prev_y = None
+    offset = 1
+    # Annotate the last value of each line
+    for team, color in zip(transposed.columns, ordered_colors):
+        y_value = transposed[team].iloc[-1]
+        if prev_y is not None and abs(prev_y - y_value) < offset:
+            y_value += offset
+        ax.annotate(f"{y_value:.0f}",
+                    xy=(len(races) - 1, y_value),
+                    xytext=(10, 0),  # 5 points horizontal offset
+                    textcoords="offset points",
+                    va="center",
+                    ha="left",
+                    font='Fira Sans',
+                    fontsize=12,
+                    color=color)
+        prev_y = y_value
+
+    font = FontProperties(family='Fira Sans', size=12)
+    plt.legend(prop=font, loc="upper left")
+    plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
+               rotation=90, fontsize=12, fontname='Fira Sans')
+    plt.yticks(fontsize=12, fontname='Fira Sans')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()  # Adjusts the plot layout for better visibility
+    plt.savefig('../PNGs/UPGRADES.png', dpi=400)
+    plt.show()
+    fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
+
+    # pitstops(2023)
 
     # plot_circuit()
 
-    cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
+    # cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2022, 'Suzuka', 'R')
@@ -40,7 +88,7 @@ if __name__ == '__main__':
 
     # race_diff('Aston Martin', 'Mercedes', 2023)
 
-    # position_changes(session)
+    position_changes(session)
 
     # overlying_laps(session, 'SAI', 'RUS')
 

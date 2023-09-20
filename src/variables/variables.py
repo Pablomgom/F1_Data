@@ -21,10 +21,24 @@ team_colors = {
     "Caterham": "#0C5A00",
     "Marussia": "#B14747",
     "Haas F1 Team": "#FFFFFF",
+    "Haas": "#FFFFFF",
     "Manor Marussia": "#B14747",
     "Alfa Romeo": "#510000",
     "Racing Point": "#FF7AED",
     "AlphaTauri": "#07226A",
+}
+
+team_colors_2023 = {
+    'Mercedes': '#00d2be',
+    'Ferrari': '#dc0000',
+    'Red Bull': '#0600ef',
+    'McLaren': '#ff8700',
+    'Alpine': '#0090ff',
+    'Aston Martin': '#006f62',
+    'Alfa Romeo': '#900000',
+    'AlphaTauri': '#2b4562',
+    'Haas': '#ffffff',
+    'Williams': '#005aff'
 }
 
 max_races = {
