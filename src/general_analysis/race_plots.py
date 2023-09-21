@@ -167,8 +167,8 @@ def race_pace_teammates(team, rounds):
             delta_diff = ((new_value - original_value) / original_value) * 100
             differences.append(round(delta_diff, 2))
 
-            stint_d1 = race.laps.pick_driver(drivers[0]).pick_quicklaps().pick_wo_box()[:n_total_laps]['Stint'].value_counts()
-            stint_d2 = race.laps.pick_driver(drivers[1]).pick_quicklaps().pick_wo_box()[:n_total_laps]['Stint'].value_counts()
+            stint_d1 = race.laps.pick_driver(drivers[0])[:max_laps]['Stint'].value_counts()
+            stint_d2 = race.laps.pick_driver(drivers[1])[:max_laps]['Stint'].value_counts()
 
             stint_d1 = stint_d1.sort_index()
             stint_d1.index = [1.0 if idx == stint_d1.index[0] else idx for idx in stint_d1.index]
@@ -215,7 +215,7 @@ def race_pace_teammates(team, rounds):
             legend.append(f'{drivers[1]} faster')
             color.append('#0000FF')
 
-    fig, ax1 = plt.subplots(figsize=(18, 10))
+    fig, ax1 = plt.subplots(figsize=(14, 10))
 
     bars = plt.bar(circuits, differences, color=color)
     for bar in bars:
@@ -235,10 +235,10 @@ def race_pace_teammates(team, rounds):
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
             plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
-                     ha='center', va='top', fontsize=12)
+                     ha='center', va='top', font='Fira Sans', fontsize=12)
         elif differences[i] < 0:  # If the bar is below y=0
             plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
-                     ha='center', va='bottom', fontsize=12)
+                     ha='center', va='bottom', font='Fira Sans', fontsize=12)
 
     # Convert your list to a Pandas Series
     delta_laps = pd.Series(differences)
@@ -267,10 +267,10 @@ def race_pace_teammates(team, rounds):
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', fontsize=26)
-    plt.xlabel('Circuit', fontsize=16)
-    plt.ylabel('Time diff (seconds)', fontsize=16)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=26)
+    plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
+    plt.ylabel('Time diff (seconds)',font='Fira Sans', fontsize=16)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f'../PNGs/RACE DIFF BETWEEN {team} TEAMMATES.png', dpi=450)
     plt.show()

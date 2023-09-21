@@ -13,6 +13,7 @@ from src.onetime_analysis.onetime_analysis import *
 if __name__ == '__main__':
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
+    plt.rcParams["font.family"] = "Fira Sans"
 
     # plot_upgrades('Circuit Specific')
 
@@ -20,11 +21,11 @@ if __name__ == '__main__':
 
     # plot_circuit()
 
-    # cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
+    cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2022, 'Suzuka', 'R')
-    # session.load()
+    session = fastf1.get_session(2021, 'Russia', 'Q')
+    #session.load()
 
     # lucky_drivers(2017,2018)
 
@@ -83,7 +84,7 @@ if __name__ == '__main__':
 
     # get_pit_stops(2018)
 
-    # compare_drivers_season('Vettel', 'Alonso', 2012)
+    # compare_drivers_season('Hamilton', 'Russell', 2023, DNFs=True)
 
     # qualy_results_ergast(qualy)
 
@@ -107,4 +108,8 @@ if __name__ == '__main__':
 
     # mean_points_per_team(2023)
 
-    qualy_margin('suzuka', start=1950, end=2024)
+    # qualy_margin('suzuka', start=1950, end=2024)
+
+    #compare_amount_points('mercedes', 0, end=2010)
+
+    #compare_qualy_results('red_bull', 12.1, end=2010)

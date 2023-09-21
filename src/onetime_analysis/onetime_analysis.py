@@ -25,6 +25,64 @@ import matplotlib.pyplot as plt
 from src.variables.variables import team_colors_2023
 
 
+def compare_qualy_results(team, threshold, end=None, exclude=None):
+    if end is None:
+        end = 1950
+    ergast = Ergast()
+    for year in range(2023, end, -1):
+        qualys = ergast.get_qualifying_results(season=year, limit=1000)
+        qualys_data = qualys.content
+        qualys_data.reverse()
+        circuits = list(qualys.description['circuitId'])
+        circuits.reverse()
+        for i in range(len(qualys_data)):
+            exclude_qualy = False
+            data = qualys_data[i]
+            team_data = data[data['constructorId'] == team]
+            check = data[data['constructorId'] == team]['position'].mean()
+            print(f'{check} in {year} in {circuits[i]}')
+            if exclude is not None:
+                for circuit, year_dict in exclude.items():
+                    if circuit == circuits[i] and year_dict == year:
+                        exclude_qualy = True
+            if exclude_qualy:
+                continue
+            if check >= threshold:
+                print(f"""
+                {year} in {circuits[i]}
+                {list(team_data['driverId'])}
+                {list(team_data['position'])}
+                {check} points                
+                """)
+                exit(0)
+
+def compare_amount_points(team, threshold, end=None, exclude=None):
+    if end is None:
+        end = 1950
+    ergast = Ergast()
+    for year in range(2023, end, -1):
+        races = ergast.get_race_results(season=year, limit=1000)
+        races_data = races.content
+        races_data.reverse()
+        circuits = list(races.description['circuitId'])
+        circuits.reverse()
+        for i in range(len(races_data)):
+            data = races_data[i]
+            team_data = data[data['constructorId'] == team]
+            check = data[data['constructorId'] == team]['points'].sum()
+            print(f'{check} in {year} in {circuits[i]}')
+            if exclude is not None and check == exclude:
+                break
+            if check <= threshold:
+                print(f"""
+                {year} in {circuits[i]}
+                {list(team_data['driverId'])}
+                {list(team_data['position'])}
+                {check} points                
+                """)
+                exit(0)
+
+
 def mean_points_per_team(year):
 
     ergast = Ergast()
@@ -58,6 +116,7 @@ def mean_points_per_team(year):
     plt.yticks(yticks, fontsize=12, fontname='Fira Sans')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()  # Adjusts the plot layout for better visibility
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
 def plot_upgrades(scope=None):
@@ -105,6 +164,7 @@ def plot_upgrades(scope=None):
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.yticks(fontsize=12, fontname='Fira Sans')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()  # Adjusts the plot layout for better visibility
     plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
     plt.show()
