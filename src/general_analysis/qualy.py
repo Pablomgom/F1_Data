@@ -778,9 +778,19 @@ def qualy_margin(circuit, start=None, end=None):
     for i in range(start, end):
         qualy = ergast.get_qualifying_results(season=i, circuit=circuit, limit=1000)
         if len(qualy.content) > 0:
+            if i == 1994:
+                a = 1
             data = qualy.content[0]
-            pole_time = data['Q3'][0]
-            second_time = data['Q3'][1]
+            try:
+                pole_time = data['Q3'][0]
+                second_time = data['Q3'][1]
+            except:
+                try:
+                    pole_time = data['Q2'][0]
+                    second_time = data['Q2'][1]
+                except:
+                    pole_time = data['Q1'][0]
+                    second_time = data['Q1'][1]
             diff = second_time - pole_time
             dict_years[i] = diff.total_seconds()
             dict_drivers[i] = f'from {data["familyName"][0]} to {data["familyName"][1]}'

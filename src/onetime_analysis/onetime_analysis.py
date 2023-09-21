@@ -9,6 +9,7 @@ from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
 from collections import Counter
 import matplotlib.patches as mpatches
+from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -21,7 +22,92 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
+from src.variables.variables import team_colors_2023
 
+
+def mean_points_per_team(year):
+
+    ergast = Ergast()
+    races = ergast.get_race_results(season=year, limit=1000)
+    teams = set(races.content[0]['constructorName'])
+    team_points = pd.DataFrame(columns=['Team', 'Points', 'Circuit'])
+    circuits = np.array(races.description['circuitId'])
+    circuits = [i.replace('_', ' ').title() for i in circuits]
+    for i in range(len(races.content)):
+        for team in teams:
+            points = races.content[i][races.content[i]['constructorName'] == team]['points'].sum()
+            row = [team, points, circuits[i]]
+            team_points = team_points._append(pd.Series(row, index=team_points.columns), ignore_index=True)
+
+    team_categories = pd.Categorical(team_points['Team'], categories=team_points['Team'].unique(), ordered=True)
+    race_categories = pd.Categorical(team_points['Circuit'], categories=team_points['Circuit'].unique(), ordered=True)
+    ct = pd.crosstab(team_categories, race_categories, values=team_points['Points'], aggfunc='sum')
+    ma_points = ct.rolling(window=4, min_periods=1, axis=1).mean()
+    ordered_colors = [team_colors_2023[team] for team in ma_points.index]
+    transposed = ma_points.transpose()
+    ax = transposed.plot(figsize=(12, 12), marker='o', color=ordered_colors)
+
+    font = FontProperties(family='Fira Sans', size=12)
+    plt.title(f"Average points in the last 4 races", font='Fira Sans', fontsize=28)
+    plt.xlabel("Races", font='Fira Sans', fontsize=18)
+    plt.ylabel("Avg. Points", font='Fira Sans', fontsize=18)
+    plt.legend(prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
+    plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
+               rotation=90, fontsize=12, fontname='Fira Sans')
+    yticks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
+    plt.yticks(yticks, fontsize=12, fontname='Fira Sans')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()  # Adjusts the plot layout for better visibility
+    plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
+    plt.show()
+def plot_upgrades(scope=None):
+    upgrades = pd.read_csv('../resources/upgrades.csv', sep='|')
+    if scope is not None:
+        upgrades = upgrades[upgrades['Reason'] == scope]
+    team_categories = pd.Categorical(upgrades['Team'], categories=upgrades['Team'].unique(), ordered=True)
+    race_categories = pd.Categorical(upgrades['Race'], categories=upgrades['Race'].unique(), ordered=True)
+    ct = pd.crosstab(team_categories, race_categories)
+    cumulative_sum = ct.cumsum(axis=1)
+    ordered_colors = [team_colors_2023[team] for team in cumulative_sum.index]
+    transposed = cumulative_sum.transpose()
+    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors)
+
+    if scope is None:
+        scope = ''
+    plt.title(f"Cumulative {scope} Upgrades for Each Team", font='Fira Sans', fontsize=28)
+    plt.xlabel("Races", font='Fira Sans', fontsize=18)
+    plt.ylabel("Number of Upgrades", font='Fira Sans', fontsize=18)
+    races = cumulative_sum.columns
+    plt.xticks(ticks=range(len(races)), labels=races, rotation=90)
+
+    # Initialize the previous y-value
+    prev_y = None
+    offset = 1
+    # Annotate the last value of each line
+    for team, color in zip(transposed.columns, ordered_colors):
+        y_value = transposed[team].iloc[-1]
+        if prev_y is not None and abs(prev_y - y_value) < offset:
+            y_value += offset
+        ax.annotate(f"{y_value:.0f}",
+                    xy=(len(races) - 1, y_value),
+                    xytext=(10, 0),  # 5 points horizontal offset
+                    textcoords="offset points",
+                    va="center",
+                    ha="left",
+                    font='Fira Sans',
+                    fontsize=13,
+                    color=color)
+        prev_y = y_value
+
+    font = FontProperties(family='Fira Sans', size=12)
+    plt.legend(prop=font, loc="upper left")
+    plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
+               rotation=90, fontsize=12, fontname='Fira Sans')
+    plt.yticks(fontsize=12, fontname='Fira Sans')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()  # Adjusts the plot layout for better visibility
+    plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
+    plt.show()
 
 def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
 
