@@ -250,7 +250,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     ax[0].set_ylabel('Speed')
     ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
                     f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
-                    fontsize=24, y=1.1)
+                    font='Fira Sans' , fontsize=24, y=1.1)
 
     twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     twin.set_ylabel('Time diff (s)')
@@ -347,7 +347,7 @@ def gear_changes(session, col='nGear'):
         lc_comp = LineCollection(segments, norm=plt.Normalize(1, cmap.N + 1), cmap=cmap)
         text = 'Gear Shift'
     else:
-        cmap = cm.get_cmap('viridis')
+        cmap = cm.get_cmap('coolwarm')
         min_speed, max_speed = data.min(), data.max()  # Min and max speeds for normalization
         lc_comp = LineCollection(segments, norm=plt.Normalize(min_speed, max_speed), cmap=cmap)
         lc_comp.set_array(data)

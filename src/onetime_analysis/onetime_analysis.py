@@ -119,10 +119,13 @@ def mean_points_per_team(year):
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
+
+
 def plot_upgrades(scope=None):
     upgrades = pd.read_csv('../resources/upgrades.csv', sep='|')
     if scope is not None:
         upgrades = upgrades[upgrades['Reason'] == scope]
+        upgrades = upgrades[upgrades['Race'] != 'Bahrain']
     team_categories = pd.Categorical(upgrades['Team'], categories=upgrades['Team'].unique(), ordered=True)
     race_categories = pd.Categorical(upgrades['Race'], categories=upgrades['Race'].unique(), ordered=True)
     ct = pd.crosstab(team_categories, race_categories)
@@ -133,7 +136,9 @@ def plot_upgrades(scope=None):
 
     if scope is None:
         scope = ''
-    plt.title(f"Cumulative {scope} Upgrades for Each Team", font='Fira Sans', fontsize=28)
+    else:
+        scope += ' '
+    plt.title(f"Cumulative {scope}Upgrades for Each Team", font='Fira Sans', fontsize=28)
     plt.xlabel("Races", font='Fira Sans', fontsize=18)
     plt.ylabel("Number of Upgrades", font='Fira Sans', fontsize=18)
     races = cumulative_sum.columns
@@ -168,6 +173,8 @@ def plot_upgrades(scope=None):
     plt.tight_layout()  # Adjusts the plot layout for better visibility
     plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
     plt.show()
+    pd.set_option('display.max_columns', None)
+    print(transposed)
 
 def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
 
@@ -280,6 +287,7 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
 
     # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
+        '''
         match i:
             case 0:
                 type = 'Low speed tracks'
@@ -289,6 +297,7 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
                 type = 'High speed tracks'
             case _:
                 type = 'WTF IS A KILOMETER'
+        '''
         texts.append(ax.text(center[0], center[1], type, font='Fira Sans',
                              fontsize=16, ha='right'))
         ax.scatter(center[0], center[1], s=300, c='#FF8C00')
@@ -814,7 +823,8 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None, DRS=True)
         ax1.add_patch(rounded_box)
         i += 1
 
-    ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}')
+    ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}',
+                  font='Fira Sans', fontsize=28)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
         y_label = 'Max speed'

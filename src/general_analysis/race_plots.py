@@ -348,6 +348,8 @@ def driver_lap_times(race, driver, fastest_laps=True):
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
+    plotting.COMPOUND_COLORS['TEST_UNKNOWN'] = 'grey'
+
     sns.scatterplot(data=driver_laps_filter,
                     x="LapNumber",
                     y="LapTime_seconds",
@@ -398,7 +400,7 @@ def driver_lap_times(race, driver, fastest_laps=True):
                         fontsize=8,
                         color='red',
                         bbox=bbox_props)  # Adding the white box here
-    plt.title(f"{driver} LONG RUNS", fontsize=18)
+    plt.title(f"{driver} LONG RUNS", font='Fira Sans', fontsize=24)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
     ax.legend()
     # Turn on major grid lines

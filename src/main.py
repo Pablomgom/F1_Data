@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
 
@@ -15,17 +14,17 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    # plot_upgrades('Circuit Specific')
+    plot_upgrades('Circuit Specific')
 
     # pitstops(2023)
 
     # plot_circuit()
 
-    cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
+    # cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2021, 'Russia', 'Q')
-    #session.load()
+    session = fastf1.get_session(2023, 'Suzuka', 'FP2')
+    session.load()
 
     # lucky_drivers(2017,2018)
 
@@ -37,7 +36,7 @@ if __name__ == '__main__':
 
     # driver_race_times_per_tyre(session, 'LEC')
 
-    # get_topspeed_in_session(session, 'Sector1Time')
+    # get_topspeed_in_session(session, 'Sector3Time')
 
     # win_wdc(2023)
 
@@ -49,13 +48,13 @@ if __name__ == '__main__':
 
     # position_changes(session)
 
-    # overlying_laps(session, 'SAI', 'RUS')
+    # overlying_laps(session, 'VER', 'PER')
 
     # race_distance(session, 'HAM', 'SAI')
 
-    # driver_lap_times(session, 'SAI')
+    # driver_lap_times(session, 'RUS')
 
-    # fastest_by_point_v2(session, 'Ferrari', 'Mercedes')
+    # fastest_by_point_v2(session, 'Ferrari', 'Red Bull Racing')
 
     # gear_changes(session, 'Speed')
 
