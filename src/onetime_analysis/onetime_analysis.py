@@ -13,6 +13,7 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from statsmodels.tsa.arima.model import ARIMA
 
 from src.general_analysis.race_plots import rounded_top_rect
 from src.general_analysis.table import render_mpl_table
@@ -83,17 +84,56 @@ def compare_amount_points(team, threshold, end=None, exclude=None):
                 exit(0)
 
 
-def mean_points_per_team(year):
+def mean_points_per_team(year, session='Q', predict=False):
 
     ergast = Ergast()
-    races = ergast.get_race_results(season=year, limit=1000)
-    teams = set(races.content[0]['constructorName'])
-    team_points = pd.DataFrame(columns=['Team', 'Points', 'Circuit'])
-    circuits = np.array(races.description['circuitId'])
+    data = ergast.get_race_results(season=year, limit=1000)
+    teams = set(data.content[0]['constructorName'])
+    circuits = np.array(data.description['circuitId'])
     circuits = [i.replace('_', ' ').title() for i in circuits]
-    for i in range(len(races.content)):
+    team_points = pd.DataFrame(columns=['Team', 'Points', 'Circuit'])
+    yticks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
+    if session == 'Q':
+        data = ergast.get_qualifying_results(season=year, limit=1000)
+        yticks = [1, 3, 6, 9, 12, 15, 18, 20]
+        title = 'Average qualy position in the last 4 races'
+    else:
+        if predict:
+            title = 'Average points prediction in the last 4 races'
+        else:
+            title = 'Average points in the last 4 races'
+    def append_duplicate_number(arr):
+
+        # Dictionary to keep track of counts of appearances
+        counts = {}
+
+        # List to store processed items
+        result = []
+
+        for item in arr:
+            # Check if item is duplicate
+            if arr.count(item) > 1:
+                # Increment the count for this item, or set to 1 if not seen before
+                counts[item] = counts.get(item, 0) + 1
+                # Append the count to the item and add to result
+                result.append(f"{item} {counts[item]}")
+            else:
+                result.append(item)
+
+        # Convert the result list back to ndarray
+        result_arr = np.array(result)
+
+        return result_arr
+
+    circuits = append_duplicate_number(circuits)
+    for i in range(len(data.content)):
         for team in teams:
-            points = races.content[i][races.content[i]['constructorName'] == team]['points'].sum()
+            if circuits[i] == 'Red Bull Ring':
+                a = 1
+            if session == 'Q':
+                points = data.content[i][data.content[i]['constructorName'] == team]['position'].mean()
+            else:
+                points = data.content[i][data.content[i]['constructorName'] == team]['points'].sum()
             row = [team, points, circuits[i]]
             team_points = team_points._append(pd.Series(row, index=team_points.columns), ignore_index=True)
 
@@ -103,18 +143,53 @@ def mean_points_per_team(year):
     ma_points = ct.rolling(window=4, min_periods=1, axis=1).mean()
     ordered_colors = [team_colors_2023[team] for team in ma_points.index]
     transposed = ma_points.transpose()
+    if predict:
+        forecasted_data = []
+        for team in transposed.columns:
+            model = ARIMA(transposed[team], order=(5, 1, 1))
+            model_fit = model.fit()
+            forecast = model_fit.forecast(steps=6)
+            forecasted_data.append(forecast)
+
+        # Transpose the forecasted data and create a DataFrame
+        forecasted_df = pd.DataFrame(forecasted_data).transpose()
+        forecasted_df.columns = transposed.columns
+
+        circuits = ergast.get_race_schedule(season=year, limit=1000)['circuitId'].values
+        start_index = len(transposed)
+        end_index = start_index + len(forecasted_df)
+        new_indices = [circuits[i].title().replace('_',' ') for i in range(start_index, end_index)]
+        forecasted_df.index = new_indices
+
+        # Append this DataFrame to the original DataFrame
+        transposed = pd.concat([transposed, forecasted_df])
+        transposed = transposed.where(transposed >= 0, 0)
+
     ax = transposed.plot(figsize=(12, 12), marker='o', color=ordered_colors)
 
+    if predict:
+        start_x = len(transposed) - len(forecasted_df)  # Start of forecast
+        end_x = len(transposed) - 1  # End of forecast (which is essentially the length of your combined data)
+        ax.axvspan(start_x, end_x, facecolor='green', alpha=0.2)
+        ax.annotate('Predictions', xy=((start_x + end_x) / 2, ax.get_ylim()[1] - 1),
+                    xycoords='data', ha='center', fontsize=16, color='black', alpha=0.7,
+                    verticalalignment='top', bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor="none"))
+
     font = FontProperties(family='Fira Sans', size=12)
-    plt.title(f"Average points in the last 4 races", font='Fira Sans', fontsize=28)
+    plt.title(title, font='Fira Sans', fontsize=28)
     plt.xlabel("Races", font='Fira Sans', fontsize=18)
     plt.ylabel("Avg. Points", font='Fira Sans', fontsize=18)
-    plt.legend(prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
+    predict_patch = mpatches.Patch(color='green', alpha=0.5, label='Predictions')
+    handles, labels = ax.get_legend_handles_labels()
+    if predict:
+        handles.append(predict_patch)
+    plt.legend(handles=handles, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
-    yticks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
     plt.yticks(yticks, fontsize=12, fontname='Fira Sans')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    if session == 'Q':
+        ax.invert_yaxis()
     plt.tight_layout()  # Adjusts the plot layout for better visibility
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
@@ -176,26 +251,32 @@ def plot_upgrades(scope=None):
     pd.set_option('display.max_columns', None)
     print(transposed)
 
-def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
+def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
     session_type = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'SS', 'R']
     circuits = []
-
     data = []
-    for i in range(0, rounds + 1):
+    if prev_year is None:
+        add_round = 0
+    else:
+        add_round = 1
+    for i in range(0, rounds + add_round):
+        prev_session = None
         fast_laps = []
         for type in session_type:
             try:
-                print(f'{i}: {type}')
                 if i == rounds:
                     session = fastf1.get_session(prev_year, circuit, type)
+                    print(f'{i}: {type}')
                 else:
                     session = fastf1.get_session(year, i + 1, type)
                 session.load()
+                prev_session = session
                 fast_laps.append(session.laps.pick_fastest())
             except:
                 print(f'{type} not in this event')
 
+        session = prev_session
         fastest_lap = pd.Timedelta(days=1)
         telemetry = None
         for lap in fast_laps:
@@ -241,9 +322,15 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
 
         full_gas = telemetry[telemetry['Throttle'].isin([100, 99])]
         full_gas = len(full_gas) / len(telemetry)
-        brakes = telemetry[telemetry['Throttle'] == 100]
-        full_brakes = len(brakes) / len(telemetry)
-        data.append([corners_per_meter, max_speed, q1, median, q3, avg, full_gas])
+        lifting = telemetry[(telemetry['Throttle'] >= 1) & (telemetry['Throttle'] <= 99)]
+        lifting = len(lifting) / len(telemetry)
+        no_gas = telemetry[telemetry['Throttle'] == 0]
+        no_gas = len(no_gas) / len(telemetry)
+        brakes = telemetry[telemetry['Brake'] == 100]
+        brakes = len(brakes) / len(telemetry)
+        no_brakes = telemetry[telemetry['Brake'] == 0]
+        no_brakes = len(no_brakes) / len(telemetry)
+        data.append([corners_per_meter, max_speed, q1, median, q3, avg, full_gas, lifting])
 
         circuits.append(session.event.Location)
 
@@ -287,17 +374,17 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
 
     # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
-        '''
+
         match i:
             case 0:
-                type = 'Low speed tracks'
-            case 1:
                 type = 'Medium speed tracks'
+            case 1:
+                type = 'Low speed tracks'
             case 2:
                 type = 'High speed tracks'
             case _:
                 type = 'WTF IS A KILOMETER'
-        '''
+
         texts.append(ax.text(center[0], center[1], type, font='Fira Sans',
                              fontsize=16, ha='right'))
         ax.scatter(center[0], center[1], s=300, c='#FF8C00')
@@ -305,12 +392,12 @@ def cluster_circuits(year, rounds, prev_year, circuit, clusters=None):
     # Automatically adjust the positions to minimize overlaps
     adjust_text(texts, autoalign='xy', ha='right', va='bottom', only_move={'points': 'y', 'text': 'xy'})
 
-    legend_lines =[Line2D([0], [0], color='red', lw=4),
-                   Line2D([0], [0], color='blue', lw=4),
+    legend_lines =[Line2D([0], [0], color='blue', lw=4),
+                   Line2D([0], [0], color='red', lw=4),
                    Line2D([0], [0], color='green', lw=4)]
 
     plt.legend(legend_lines, ['Low speed tracks', 'Medium speed tracks', 'High speed tracks'],
-               loc='upper right', fontsize='x-large')
+               loc='upper right', bbox_to_anchor=(1, 0.85), fontsize='x-large')
 
     ax.axis('off')
     ax.grid(False)
@@ -334,7 +421,7 @@ def pitstops(year, round=None, exclude=None):
     pitstops = pitstops.sort_values(by='Time', ascending=True)
     pitstops['Time'] = pitstops['Time'].round(2)
 
-    fig, ax1 = plt.subplots(figsize=(29, 10))
+    fig, ax1 = plt.subplots(figsize=(17, 10))
     drivers = [i for i in pitstops['Driver']]
     colors = []
 
@@ -354,7 +441,7 @@ def pitstops(year, round=None, exclude=None):
                 name_count[name] += 1
             else:
                 name_count[name] = 1
-            return f"{name}_{name_count[name]}"
+            return f"{name} {name_count[name]}"
 
         pitstops['Driver'] = pitstops['Driver'].apply(update_name)
 
@@ -384,9 +471,9 @@ def pitstops(year, round=None, exclude=None):
     for bar in bars:
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom',
-                 font='Fira Sans', fontsize=14)
+                 font='Fira Sans', fontsize=12)
 
-    ax1.set_title(f'PIT STOP TIMES IN 2023', font='Fira Sans', fontsize=28)
+    ax1.set_title(f'PIT STOP TIMES IN 2023 SUZUKA', font='Fira Sans', fontsize=28)
     ax1.set_xlabel('Driver', font='Fira Sans', fontsize=20)
     ax1.set_ylabel('Time (s)', font='Fira Sans', fontweight='bold', fontsize=20)
     plt.xticks(fontsize=10)
@@ -401,6 +488,9 @@ def pitstops(year, round=None, exclude=None):
 
     for label in ax1.get_yticklabels():
         label.set_fontproperties(font_properties)
+    plt.xticks(rotation=90)
+    ymin, ymax = ax1.get_ylim()
+    ax1.set_ylim([1.6, ymax])
     plt.tight_layout()
     plt.savefig(f'../PNGs/PIT STOP AVG TIME {year}', dpi=400)
     plt.show()
@@ -506,25 +596,48 @@ def get_pit_stops(year):
     circuits = [item.replace("_", " ").title() for item in circuits]
 
     n_pit_stops = []
-    for i in range(len(schedule)):
-        pit_stop = ergast.get_pit_stops(season=year, round=i + 1, limit=1000)
-        n_pit_stops.append(len(pit_stop.content[0]))
+    if year == 2023:
+        pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
+        pitstops = pitstops[pitstops['Year'] == year]
+        pitstops = pitstops.groupby('Race_ID')['Pos'].max()
+        pitstops = pitstops.to_frame()
+        circuits = [circuits[i] for i in range(len(pitstops))]
+        pitstops['Circuits'] = circuits
+        n_pit_stops = np.array(pitstops['Pos'])
 
-    fig, ax1 = plt.subplots(figsize=(32, 8))
+    else:
+        for i in range(len(schedule)):
+            pit_stop = ergast.get_pit_stops(season=year, round=i + 1, limit=1000)
+            n_pit_stops.append(len(pit_stop.content[0]))
+
+    fig, ax1 = plt.subplots(figsize=(12, 8))
 
     total = sum(n_pit_stops)
     mean = round(total / len(n_pit_stops), 2)
-
     bars = ax1.bar(circuits, n_pit_stops, color="#AED6F1", edgecolor='white', label='Total Pitstops')
-    ax1.set_title(f'PIT STOPS IN {year} (Total: {total} - Avg: {mean})')
-    ax1.set_xlabel('Circuit', fontweight='bold')
-    ax1.set_ylabel('Total Pitstops', fontweight='bold')
+    ax1.set_title(f'PIT STOPS IN {year} (Total: {total} - Avg: {mean})', font='Fira Sans', fontsize=24)
+    ax1.set_xlabel('Circuit', font='Fira Sans', fontsize=16)
+    ax1.set_ylabel('Total Pitstops', font='Fira Sans', fontsize=16)
     ax1.yaxis.grid(False)
     ax1.xaxis.grid(False)
 
     for bar in bars:
+        bar.set_visible(False)
+
+    # Overlay rounded rectangle patches on top of the original bars
+    for bar in bars:
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + 1, f'{height}', ha='center', va='bottom', fontsize=14)
+        x, y = bar.get_xy()
+        width = bar.get_width()
+
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.3, '#AED6F1')
+        rounded_box.set_facecolor('#AED6F1')
+        ax1.add_patch(rounded_box)
+
+    for bar in bars:
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.5, f'{height}', ha='center', va='bottom', fontsize=14)
 
     ax2 = ax1.twinx()
     mean_pits = [round(i / 20, 2) for i in n_pit_stops]
@@ -532,23 +645,23 @@ def get_pit_stops(year):
     total = sum(mean_pits)
     mean = round(total / len(mean_pits), 2)
 
-    ax2.plot(circuits, mean_pits, color='blue', marker='o', linestyle='dashed', linewidth=2, markersize=8,
+    ax2.plot(circuits, mean_pits, color='red', linestyle='dashed', linewidth=2, markersize=8,
              label='Avg PitStops per driver')
     ax2.set_ylabel(f'PitStops per driver (Avg per race: {mean})', fontweight='bold')
     ax2.yaxis.grid(True, linestyle='dashed')
 
     for i, value in enumerate(mean_pits):
-        ax2.annotate(f'{value}', (i, value), textcoords="offset points", xytext=(0, -18), ha='center',
+        ax2.annotate(f'{value}', (i, value), textcoords="offset points", xytext=(0, -12), ha='center',
                      fontsize=12, bbox=dict(boxstyle='round,pad=0.3', edgecolor='white', facecolor='black'))
 
     # Add a legend
-    handles1, labels1 = ax1.get_legend_handles_labels()
+    rounded_bar_legend = mpatches.Patch(facecolor='#AED6F1', label='Total Pitstops')
     handles2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(handles1 + handles2, labels1 + labels2, loc='upper left')
+    ax1.legend([rounded_bar_legend] + handles2, ['Total Pitstops'] + labels2, loc='upper left')
 
+    ax1.set_xticklabels(circuits, rotation=90)
     plt.tight_layout()
     plt.savefig(f'../PNGs/PIT STOPS IN {year}.png', dpi=400)
-
     plt.show()
 
 
@@ -731,23 +844,24 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None, DRS=True)
 
         for driver in drivers:
             lap = session.laps.pick_driver(driver).pick_fastest()
-            top_speed = max(lap.telemetry[column])
-            driver_speed = circuit_speed.get(driver)
-            team = lap.Team.lower()
-            if team == 'red bull racing':
-                team = 'red bull'
-            elif team == 'haas f1 team':
-                team = 'haas'
-            if driver_speed is not None:
-                if top_speed > driver_speed and column == 'Speed':
+            if lap.Team is not np.nan:
+                top_speed = max(lap.telemetry[column])
+                driver_speed = circuit_speed.get(driver)
+                team = lap.Team.lower()
+                if team == 'red bull racing':
+                    team = 'red bull'
+                elif team == 'haas f1 team':
+                    team = 'haas'
+                if driver_speed is not None:
+                    if top_speed > driver_speed and column == 'Speed':
+                        circuit_speed[driver] = top_speed
+                        colors_dict[driver] = team
+                    elif top_speed < driver_speed and column != 'Speed':
+                        circuit_speed[driver] = top_speed
+                        colors_dict[driver] = team
+                else:
                     circuit_speed[driver] = top_speed
                     colors_dict[driver] = team
-                elif top_speed < driver_speed and column != 'Speed':
-                    circuit_speed[driver] = top_speed
-                    colors_dict[driver] = team
-            else:
-                circuit_speed[driver] = top_speed
-                colors_dict[driver] = team
 
             print(circuit_speed)
     else:
@@ -1156,6 +1270,26 @@ def plot_circuit():
     '''
 
 
+def avg_driver_position(driver, team, year, session='Q'):
+
+    ergast = Ergast()
+    if session == 'Q':
+        data = ergast.get_qualifying_results(season=year, limit=1000)
+    else:
+        data = ergast.get_race_results(season=year, limit=1000)
+
+    position = []
+
+    for gp in data.content:
+        session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]
+        if len(session_data):
+            position.append(session_data['position'].values[0])
+        else:
+            print(f'{driver} not in {team}')
+
+    print(np.mean(position))
+
+
 def lucky_drivers(start=None, end=None):
     if start is None:
         start = 1950
@@ -1179,8 +1313,6 @@ def lucky_drivers(start=None, end=None):
         luck[name] = 0
 
     for driver in unique_drivers:
-        if driver == 'Fernando Alonso':
-            a = 1
         for race in all_races:
             race_data = race[
                 (race['givenName'] == driver.split(' ')[0]) & (race['familyName'] == driver.split(' ', 1)[1])]
@@ -1202,11 +1334,11 @@ def lucky_drivers(start=None, end=None):
                                 if len(teammate_data) > 0:
                                     for j in range(len(teammate_data)):
                                         status_d2 = teammate_data['status'].values[j]
-                                        if re.search(r'(Spun off|Accident|Collision|Finished|\+)', status_d1):
-                                            if not re.search(r'(Spun off|Accident|Collision|Finished|\+)', status_d2):
+                                        if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)', status_d1):
+                                            if not re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)', status_d2):
                                                 luck[driver] += 1
                                         else:
-                                            if re.search(r'(Spun off|Accident|Collision|Finished|\+)', status_d2):
+                                            if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)', status_d2):
                                                 luck[driver] -= 1
         print(driver)
 

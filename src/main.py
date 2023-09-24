@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
 
@@ -10,27 +11,30 @@ from src.variables.variables import *
 from src.onetime_analysis.onetime_analysis import *
 
 if __name__ == '__main__':
+
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    plot_upgrades('Circuit Specific')
+    # plot_upgrades('Circuit Specific')
 
     # pitstops(2023)
 
     # plot_circuit()
 
-    # cluster_circuits(2023, 15, 2022, 'Suzuka', 3)
+    cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Suzuka', 'FP2')
-    session.load()
+    session = fastf1.get_session(2023, 'Suzuka', 'R')
+    # session.load()
 
-    # lucky_drivers(2017,2018)
+    # lucky_drivers(1950,2024)
 
-    # qualy_diff_last_year(14)
+    # qualy_diff_last_year(16, 'suzuka')
 
-    # performance_vs_last_year('AlphaTauri', ['imola', 'catalunya', 'villeneuve', 'silverstone'])
+    # performance_vs_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
+
+    # qualy_diff_teammates('Aston Martin', 16)
 
     # race_pace_teammates('Ferrari', 15)
 
@@ -42,19 +46,19 @@ if __name__ == '__main__':
 
     # driver_laptimes(session)
 
-    # qualy_diff('Alpine', 'Ferrari', 15)
+    # qualy_diff('Aston Martin', 'McLaren', 16)
 
     # race_diff('Aston Martin', 'Mercedes', 2023)
 
     # position_changes(session)
 
-    # overlying_laps(session, 'VER', 'PER')
+    # overlying_laps(session, 'VER', 'NOR')
 
     # race_distance(session, 'HAM', 'SAI')
 
     # driver_lap_times(session, 'RUS')
 
-    # fastest_by_point_v2(session, 'Ferrari', 'Red Bull Racing')
+    # fastest_by_point(session, 'PIA', 'NOR', scope='D')
 
     # gear_changes(session, 'Speed')
 
@@ -64,10 +68,10 @@ if __name__ == '__main__':
 
     ergast = Ergast()
     drivers = ergast.get_driver_info(season=1959, limit=1000)
-    races = ergast.get_race_results(season=2022, round=18, limit=1000)
-    qualy = ergast.get_qualifying_results(season=2018, round=16, limit=1000)
-    sprints = ergast.get_sprint_results(season=1962, limit=1000)
-    schedule = ergast.get_race_schedule(season=1962, limit=1000)
+    races = ergast.get_race_results(season=1963, limit=1000)
+    qualy = ergast.get_qualifying_results(season=1963, round=16, limit=1000)
+    sprints = ergast.get_sprint_results(season=1963, limit=1000)
+    schedule = ergast.get_race_schedule(season=1963, limit=1000)
     circuitos = ergast.get_circuits(season=2023, round=16, limit=1000)
     circuito = circuitos.circuitId.min()
 
@@ -81,7 +85,7 @@ if __name__ == '__main__':
 
     # wins_in_circuit(circuito, end=2023)
 
-    # get_pit_stops(2018)
+    # get_pit_stops(2023)
 
     # compare_drivers_season('Hamilton', 'Russell', 2023, DNFs=True)
 
@@ -105,10 +109,12 @@ if __name__ == '__main__':
 
     # get_driver_results_circuit('max_verstappen', 'suzuka', 2015)
 
-    # mean_points_per_team(2023)
+    # mean_points_per_team(2023, session='R', predict=True)
 
     # qualy_margin('suzuka', start=1950, end=2024)
 
-    #compare_amount_points('mercedes', 0, end=2010)
+    # compare_amount_points('mclaren', -1, end=2010)
 
-    #compare_qualy_results('red_bull', 12.1, end=2010)
+    # compare_qualy_results('alphatauri', 19, end=2010)
+
+    avg_driver_position('albon', 'red_bull', 2019, session='Q')

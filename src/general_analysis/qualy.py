@@ -18,8 +18,8 @@ from src.general_analysis.race_plots import rounded_top_rect
 def performance_vs_last_year(team, delete_circuits=[], year=2023):
 
     ergast = Ergast()
-    prev_year = ergast.get_race_results(season=year-1 , limit=1000)
-    current_year = ergast.get_race_results(season=year, limit=1000)
+    prev_year = ergast.get_qualifying_results(season=year-1, limit=1000)
+    current_year = ergast.get_qualifying_results(season=year, limit=1000)
 
     prev_cir = prev_year.description['raceName'].values
     current_cir = current_year.description['raceName'].values
@@ -41,6 +41,8 @@ def performance_vs_last_year(team, delete_circuits=[], year=2023):
 
     delta = []
     color = []
+    result = [track.replace('_', ' ').title() for track in result]
+    result = [track.split(' ')[0] for track in result]
     for i in range(len(race_index_current)):
         prev_year = fastf1.get_session(year-1, race_index_prev[i], 'Q')
         prev_year.load()
@@ -61,8 +63,6 @@ def performance_vs_last_year(team, delete_circuits=[], year=2023):
                 color.append('#008000')
 
     fig, ax = plt.subplots(figsize=(24, 10))
-    result = [track.replace('_', ' ').title() for track in result]
-    result = [track.split(' ')[0] for track in result]
     bars = ax.bar(result, delta, color=color)
 
     for bar in bars:
@@ -81,10 +81,10 @@ def performance_vs_last_year(team, delete_circuits=[], year=2023):
     for i in range(len(delta)):
         if delta[i] > 0:  # If the bar is above y=0
             plt.text(result[i], delta[i] + 0.4, '+'+str(delta[i])+'s',
-                     ha='center', va='top', fontsize=12)
+                     ha='center', va='top', font='Fira Sans', fontsize=12)
         else:  # If the bar is below y=0
             plt.text(result[i], delta[i] - 0.4, str(delta[i])+'s',
-                     ha='center', va='bottom', fontsize=12)
+                     ha='center', va='bottom', font='Fira Sans', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
     differences_series = pd.Series(delta)
@@ -100,23 +100,29 @@ def performance_vs_last_year(team, delete_circuits=[], year=2023):
                         plt.Line2D([], [], color='orange', marker='o', markersize=5.5, linestyle='',
                                    label='Moving Average (4 last circuits)')], fontsize='x-large', loc='upper left')
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'{team.upper()} QUALY COMPARISON: 2022 vs. 2023', fontsize=24)
-    plt.xlabel('Circuit', fontsize=16)
-    plt.ylabel('Time diff (seconds)', fontsize=16)
+    plt.title(f'{team.upper()} QUALY COMPARISON: 2022 vs. 2023', font='Fira Sans', fontsize=24)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
+    plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{team} QUALY COMPARATION {year-1} vs {year}.png', dpi=450)
     plt.show()
 
 
 
-def qualy_diff_last_year(round_id):
+def qualy_diff_last_year(round_id, circuit=None):
 
     ergast = Ergast()
     current = ergast.get_qualifying_results(season=2023, round=round_id, limit=1000)
     previous = ergast.get_qualifying_results(season=2022, limit=1000)
-    current_circuit = current.description['circuitId'].values[0]
+    if circuit is not None:
+        get_teams = ergast.get_qualifying_results(season=2023, round=1, limit=1000)
+        current_circuit = circuit
+        teams = get_teams.content[0]['constructorId'].values
+    else:
+        current_circuit = current.description['circuitId'].values[0]
+        teams = current.content[0]['constructorId'].values
     index_pre_circuit = previous.description[previous.description['circuitId'] == current_circuit]['circuitId'].index[0]
-    teams = current.content[0]['constructorId'].values
+
     teams = pd.Series(teams).drop_duplicates(keep='first').values
     teams[teams == 'alfa'] = 'alfa romeo'
 
@@ -140,7 +146,7 @@ def qualy_diff_last_year(round_id):
         color = '#' + current.results[current.results['TeamName'] == team]['TeamColor'].values[0]
         colors.append(color)
 
-    fig, ax = plt.subplots(figsize=(18, 8))
+    fig, ax = plt.subplots(figsize=(12, 8))
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
     for bar in bars:
@@ -158,17 +164,17 @@ def qualy_diff_last_year(round_id):
 
     for i in range(len(delta_times)):
         if delta_times[i] > 0:  # If the bar is above y=0
-            plt.text(teams_to_plot[i], delta_times[i] + 0.08, '+'+str(delta_times[i])+'s',
+            plt.text(teams_to_plot[i], delta_times[i] + 0.05, '+'+str(delta_times[i])+'s',
                      ha='center', va='top', fontsize=12)
         else:  # If the bar is below y=0
-            plt.text(teams_to_plot[i], delta_times[i] - 0.08, str(delta_times[i])+'s',
+            plt.text(teams_to_plot[i], delta_times[i] - 0.05, str(delta_times[i])+'s',
                      ha='center', va='bottom', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'{current.event.EventName.upper()} QUALY COMPARISON: 2022 vs. 2023', fontsize=24)
-    plt.xlabel('Team', fontsize=16)
-    plt.ylabel('Time diff (seconds)', fontsize=16)
+    plt.title(f'{current.event.EventName.upper()} QUALY COMPARISON: 2022 vs. 2023', font='Fira Sans', fontsize=24)
+    plt.xlabel('Team', font='Fira Sans', fontsize=16)
+    plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{current.event.EventName} QUALY COMPARATION 2022 vs 2023.png', dpi=450)
     plt.show()
@@ -215,7 +221,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
 
     delta_time = adjust_to_final(delta_time, final_value)
 
-    fig, ax = plt.subplots(nrows=5,figsize=(16, 11), gridspec_kw={'height_ratios': [4,1,1,2,2]})
+    fig, ax = plt.subplots(nrows=6,figsize=(16, 11), gridspec_kw={'height_ratios': [4,1,1,1,2,2]})
 
     if lap is None:
         ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
@@ -282,7 +288,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     ax[1].set_ylabel('Brakes')
 
     ax[1].set_yticks([0, 1])  # Assuming the 'Brakes' data is normalized between 0 and 1
-    ax[1].set_yticklabels(['ON', 'OFF'])
+    ax[1].set_yticklabels(['OFF', 'ON'])
 
     ax[2].plot(ref_tel['Distance'], ref_tel['Throttle'],
                color='#0000FF',
@@ -297,33 +303,47 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     ax[2].set_yticks([0, 50, 100])  # Assuming the 'Brakes' data is normalized between 0 and 1
     ax[2].set_yticklabels(['0%', '50%', '100%'])
 
-    ax[3].plot(ref_tel['Distance'], ref_tel['nGear'],
+    ref_tel['DRS'] = np.where(ref_tel['DRS'] < 10, 0, 1)
+    compare_tel['DRS'] = np.where(compare_tel['DRS'] < 10, 0, 1)
+
+    ax[3].plot(ref_tel['Distance'], ref_tel['DRS'],
                color='#0000FF',
                label=driver_1)
-    ax[3].plot(compare_tel['Distance'], compare_tel['nGear'],
+    ax[3].plot(compare_tel['Distance'], compare_tel['DRS'],
                color='#FFA500',
                label=driver_2)
 
     ax[3].set_xlabel('Distance')
-    ax[3].set_ylabel('Gear')
+    ax[3].set_ylabel('DRS')
 
-    ax[4].plot(ref_tel['Distance'], ref_tel['RPM'],
+    ax[4].plot(ref_tel['Distance'], ref_tel['nGear'],
                color='#0000FF',
                label=driver_1)
-    ax[4].plot(compare_tel['Distance'], compare_tel['RPM'],
+    ax[4].plot(compare_tel['Distance'], compare_tel['nGear'],
                color='#FFA500',
                label=driver_2)
 
     ax[4].set_xlabel('Distance')
-    ax[4].set_ylabel('RPM')
+    ax[4].set_ylabel('Gear')
 
-    ax[3].set_yticks([2, 3, 4, 5, 6, 7, 8])  # Assuming the 'Brakes' data is normalized between 0 and 1
-    ax[3].set_yticklabels(['2', '3', '4', '5', '6', '7', '8'])
+    ax[5].plot(ref_tel['Distance'], ref_tel['RPM'],
+               color='#0000FF',
+               label=driver_1)
+    ax[5].plot(compare_tel['Distance'], compare_tel['RPM'],
+               color='#FFA500',
+               label=driver_2)
+
+    ax[5].set_xlabel('Distance')
+    ax[5].set_ylabel('RPM')
+
+    ax[4].set_yticks([2, 3, 4, 5, 6, 7, 8])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[4].set_yticklabels(['2', '3', '4', '5', '6', '7', '8'])
 
     ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[4].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[5].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
 
     # Display the plot
     plt.tight_layout()
@@ -517,7 +537,7 @@ def qualy_diff(team_1, team_2, session):
     session_names = []
 
     for i in range(session):
-        session = fastf1.get_session(2023, i + 1, 'Q')
+        session = fastf1.get_session(2020, i + 1, 'Q')
         session.load(telemetry=True)
         qualys.append(session)
         session_names.append(session.event['Location'].split('-')[0])
@@ -525,57 +545,16 @@ def qualy_diff(team_1, team_2, session):
     delta_laps = []
 
     for qualy in qualys:
-
-        qualy_result = pd.concat([qualy.results['Q3'][:10], qualy.results['Q2'][10:15], qualy.results['Q1'][15:20]])
-        team_1_lap = qualy.laps.pick_team(team_1).pick_fastest()['LapTime']
-        index = qualy_result[qualy_result == team_1_lap].index
-        if len(index) == 0:
-            index_q2 = qualy.results['Q2'][qualy.results['Q2']
-                                           == qualy.laps.pick_team(team_1).pick_fastest()['LapTime']].index
-            q_session_team_1 = 'Q2'
-
-            if len(index_q2) == 0:
-                q_session_team_1 = 'Q1'
-        else:
-            position = qualy_result.index.get_loc(qualy_result[qualy_result == team_1_lap].index[0])
-            if position < 10:
-                q_session_team_1 = 'Q3'
-            elif 10 <= position < 15:
-                q_session_team_1 = 'Q2'
-            else:
-                q_session_team_1 = 'Q1'
-
-        team_2_lap = qualy.laps.pick_team(team_2).pick_fastest()['LapTime']
-        index = qualy_result[qualy_result == team_2_lap].index
-        if len(index) == 0:
-            index_q2 = qualy.results['Q2'][qualy.results['Q2']
-                                           == qualy.laps.pick_team(team_1).pick_fastest()['LapTime']].index
-            q_session_team_2 = 'Q2'
-
-            if len(index_q2) == 0:
-                q_session_team_2 = 'Q1'
-
-        else:
-            position = qualy_result.index.get_loc(qualy_result[qualy_result == team_2_lap].index[0])
-            if position < 10:
-                q_session_team_2 = 'Q3'
-            elif 10 <= position < 15:
-                q_session_team_2 = 'Q2'
-            else:
-                q_session_team_2 = 'Q1'
-
-        session = min(q_session_team_1, q_session_team_2)
-
-        team_numbers_team_1 = qualy.results[qualy.results['TeamName'] == team_1].index
-        team_numbers_team_2 = qualy.results[qualy.results['TeamName'] == team_2].index
-        team_1_lap = qualy.results[session].loc[team_numbers_team_1].min().total_seconds() * 1000
-        team_2_lap = qualy.results[session].loc[team_numbers_team_2].min().total_seconds() * 1000
+        team_1_lap = qualy.laps.pick_team(team_1).pick_fastest()['LapTime'].total_seconds()
+        team_2_lap = qualy.laps.pick_team(team_2).pick_fastest()['LapTime'].total_seconds()
 
         percentage_diff = (team_2_lap - team_1_lap) / team_1_lap * 100
+        if qualy.event.Country == 'Canada':
+            delta_laps.append(0)
+        else:
+            delta_laps.append(percentage_diff)
 
-        delta_laps.append(percentage_diff)
-
-    fig, ax1 = plt.subplots(figsize=(13, 7))
+    fig, ax1 = plt.subplots(figsize=(14, 8))
     colors = []
     labels = []
     for i in range(len(session_names)):
@@ -610,11 +589,11 @@ def qualy_diff(team_1, team_2, session):
     # Add exact numbers above or below every bar based on whether it's a maximum or minimum
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.03, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='top', font='Fira Sans', fontsize=15)
+            plt.text(session_names[i], delta_laps[i] + 0.09, "{:.2f} %".format(delta_laps[i]),
+                     ha='center', va='top', font='Fira Sans', fontsize=13)
         else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='bottom', font='Fira Sans', fontsize=15)
+            plt.text(session_names[i], delta_laps[i] - 0.09, "{:.2f} %".format(delta_laps[i]),
+                     ha='center', va='bottom', font='Fira Sans', fontsize=13)
     step = 0.2
 
     if min(delta_laps) < 0:
@@ -659,6 +638,7 @@ def qualy_diff(team_1, team_2, session):
 
     for label in ax1.get_yticklabels():
         label.set_fontproperties(font_properties)
+    plt.xticks(rotation=90)
     plt.tight_layout()
 
     plt.savefig(f"../PNGs/{team_2} VS {team_1} time difference.png",
@@ -778,8 +758,6 @@ def qualy_margin(circuit, start=None, end=None):
     for i in range(start, end):
         qualy = ergast.get_qualifying_results(season=i, circuit=circuit, limit=1000)
         if len(qualy.content) > 0:
-            if i == 1994:
-                a = 1
             data = qualy.content[0]
             try:
                 pole_time = data['Q3'][0]
@@ -794,7 +772,7 @@ def qualy_margin(circuit, start=None, end=None):
             diff = second_time - pole_time
             dict_years[i] = diff.total_seconds()
             dict_drivers[i] = f'from {data["familyName"][0]} to {data["familyName"][1]}'
-        print(str(i))
+            print(str(i))
 
     dict_years = {k: v for k, v in sorted(dict_years.items(), key=lambda item: item[1], reverse=False)}
 

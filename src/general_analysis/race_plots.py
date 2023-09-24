@@ -111,6 +111,101 @@ def rounded_top_rect(x, y, width, height, corner_radius, edgecolor):
     lighter_color = lighten_color(edgecolor, factor=0.3)
     return patches.PathPatch(path, edgecolor=lighter_color)
 
+
+def qualy_diff_teammates(team, rounds):
+    circuits = []
+    legend = []
+    color = []
+    differences = []
+
+    for i in range(rounds):
+
+        qualy = fastf1.get_session(2023, i + 1, 'Q')
+        qualy.load()
+        circuits.append(qualy.event.Location.split('-')[0])
+        drivers = np.unique(qualy.laps.pick_team(team)['Driver'].values)
+        q1, q2, q3 = qualy.laps.split_qualifying_sessions()
+        if drivers[0] in q3['Driver'].unique() and drivers[1] in q3['Driver'].unique():
+            session = q3
+        elif drivers[0] in q2['Driver'].unique() and drivers[1] in q2['Driver'].unique():
+            session = q2
+        else:
+            session = q1
+        d0_time = session.pick_driver(drivers[0]).pick_fastest()['LapTime'].total_seconds()
+        d1_time = session.pick_driver(drivers[1]).pick_fastest()['LapTime'].total_seconds()
+
+        if d0_time > d1_time:
+            legend.append(f'{drivers[1]} faster')
+            color.append('#0000FF')
+        else:
+            legend.append(f'{drivers[0]} faster')
+            color.append('#FFA500')
+
+        delta_diff = ((d0_time - d1_time) / d1_time) * 100
+        differences.append(round(delta_diff, 2))
+
+    fig, ax1 = plt.subplots(figsize=(12, 9))
+
+    bars = plt.bar(circuits, differences, color=color)
+    for bar in bars:
+        bar.set_visible(False)
+
+    i = 0
+    for bar in bars:
+        height = bar.get_height()
+        x, y = bar.get_xy()
+        width = bar.get_width()
+        # Create a fancy bbox with rounded corners and add it to the axes
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color[i])
+        rounded_box.set_facecolor(color[i])
+        ax1.add_patch(rounded_box)
+        i += 1
+# Convert your list to a Pandas Series
+    delta_laps = pd.Series(differences)
+    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
+    ma_color = 'red'
+    plt.plot(circuits, mean_y, color=ma_color,
+             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
+
+    legend_lines = []
+    unique_colors = []
+    unique_drivers = []
+    i = 0
+    for c_color in color:
+        if c_color not in unique_colors:
+            unique_colors.append(c_color)
+            unique_drivers.append(legend[i])
+            legend_p = Line2D([0], [0], color=c_color, lw=4)
+            legend_lines.append(legend_p)
+        i += 1
+
+    for i in range(len(differences)):
+        if differences[i] > 0:  # If the bar is above y=0
+            plt.text(circuits[i], differences[i] + 0.06, str(differences[i]) + '%',
+                     ha='center', va='top', font='Fira Sans', fontsize=11.5)
+        elif differences[i] < 0:  # If the bar is below y=0
+            plt.text(circuits[i], differences[i] - 0.07, str(differences[i]) + '%',
+                     ha='center', va='bottom', font='Fira Sans', fontsize=11.5)
+
+    legend_lines.append(Line2D([0], [0], color='red', lw=4))
+    unique_drivers.append('Moving Average (4 last qualys)')
+
+
+    plt.legend(legend_lines, unique_drivers,
+               loc='upper left', fontsize='x-large')
+
+    plt.axhline(0, color='white', linewidth=0.8)
+    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
+    plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=24)
+    plt.xticks(ticks=range(len(circuits)), labels=circuits,
+               rotation=90, fontsize=12, fontname='Fira Sans')
+    plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
+    plt.ylabel('Time diff (percentage)',font='Fira Sans', fontsize=16)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=450)
+    plt.show()
+
 def race_pace_teammates(team, rounds):
 
     circuits = []
@@ -215,7 +310,7 @@ def race_pace_teammates(team, rounds):
             legend.append(f'{drivers[1]} faster')
             color.append('#0000FF')
 
-    fig, ax1 = plt.subplots(figsize=(14, 10))
+    fig, ax1 = plt.subplots(figsize=(12, 9))
 
     bars = plt.bar(circuits, differences, color=color)
     for bar in bars:
@@ -234,11 +329,11 @@ def race_pace_teammates(team, rounds):
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
-                     ha='center', va='top', font='Fira Sans', fontsize=12)
+            plt.text(circuits[i], differences[i] + 0.05, str(differences[i]) + '%',
+                     ha='center', va='top', font='Fira Sans', fontsize=11.5)
         elif differences[i] < 0:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
-                     ha='center', va='bottom', font='Fira Sans', fontsize=12)
+            plt.text(circuits[i], differences[i] - 0.05, str(differences[i]) + '%',
+                     ha='center', va='bottom', font='Fira Sans', fontsize=11.5)
 
     # Convert your list to a Pandas Series
     delta_laps = pd.Series(differences)
@@ -263,11 +358,13 @@ def race_pace_teammates(team, rounds):
     unique_colors.append(ma_color)
 
     plt.legend(legend_lines, unique_drivers,
-               loc='lower left', fontsize='x-large')
+               loc='upper left', fontsize='x-large')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
     plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=26)
+    plt.xticks(ticks=range(len(circuits)), labels=circuits,
+               rotation=90, fontsize=12, fontname='Fira Sans')
     plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (seconds)',font='Fira Sans', fontsize=16)
     plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
@@ -450,6 +547,8 @@ def tyre_strategies(session):
     drivers = session.drivers
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
+    drivers = ['VER', 'NOR', 'PIA', 'LEC', 'HAM', 'SAI', 'RUS', 'ALO', 'OCO', 'GAS',
+               'LAW', 'TSU', 'ZHO', 'HUL', 'MAG', 'ALB', 'SAR', 'STR', 'PER', 'BOT']
 
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
 
@@ -505,7 +604,7 @@ def tyre_strategies(session):
             else:
                 alpha = 0.65
                 rgb_color = mcolors.to_rgb(plotting.COMPOUND_COLORS[row["Compound"]])
-                color = tuple([x * 0.8 for x in rgb_color])
+                color = tuple([x * 0.95 for x in rgb_color])
 
             plt.barh(
                 y=driver,
@@ -526,7 +625,7 @@ def tyre_strategies(session):
     patches = {k: patches[k] for k in sorted(patches.keys(), key=lambda x: (x.split()[1], x.split()[0]))}
     plt.legend(handles=patches.values(), bbox_to_anchor=(0.5, -0.1), loc='upper center', ncol=2)
 
-    fig.suptitle(session.event.OfficialEventName, fontsize=12)
+    fig.suptitle(session.event.OfficialEventName, font='Fira Sans', fontsize=14)
     plt.xlabel("Lap Number")
     plt.grid(False)
     # invert the y-axis so drivers that finish higher are closer to the top
@@ -548,7 +647,7 @@ def driver_laptimes(race):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
-    point_finishers = ['55', '4', '44', '16', '1', '10', '81', '11' ,'40', '20']
+    point_finishers = ['1', '4', '81', '16', '44', '55', '63', '14', '31', '10']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
@@ -654,7 +753,7 @@ def race_diff(team_1, team_2, year):
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
             delta_laps.append(delta)
 
-    fig, ax1 = plt.subplots(figsize=(10, 9))
+    fig, ax1 = plt.subplots(figsize=(10, 8))
     plt.rcParams["font.family"] = "Fira Sans"
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
     colors = []
@@ -690,12 +789,12 @@ def race_diff(team_1, team_2, year):
     for i in range(len(session_names)):
         if delta_laps[i] > 0:  # If the bar is above y=0
             plt.text(session_names[i], delta_laps[i] + 0.03, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='top', font='Fira Sans', fontsize=15)
+                     ha='center', va='top', font='Fira Sans', fontsize=12)
         else:  # If the bar is below y=0
             plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='bottom', font='Fira Sans', fontsize=15)
+                     ha='center', va='bottom', font='Fira Sans', fontsize=12)
 
-    step = 0.2
+    step = 0.3
 
     if min(delta_laps) < 0:
         start = np.floor(min(delta_laps) / step) * step
@@ -728,7 +827,7 @@ def race_diff(team_1, team_2, year):
                     Line2D([0], [0], color=ma_color, lw=4)]
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
-               loc='lower left', fontsize='x-large')
+               loc='lower left', fontsize='large')
     # Set the labels and title
     plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
