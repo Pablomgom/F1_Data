@@ -48,26 +48,26 @@ def lighten_color(hex_color, factor=0.2):
     # Convert RGB back to hex
     return "#{:02X}{:02X}{:02X}".format(r, g, b)
 
-def rounded_top_rect(x, y, width, height, corner_radius, edgecolor):
+def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0):
     """Create a rectangle path with rounded top."""
     if height >= 0:
         base_y = max(0, y)  # Ensure the starting y value is non-negative
         verts = [
             (x, base_y),  # Bottom left
-            (x, max(base_y, base_y + height - corner_radius)),  # Start of top-left curve
+            (x, max(base_y, base_y + height - corner_radius) + y_offset),  # Start of top-left curve
 
             # Bezier curves for the top left corner
-            (x, max(base_y, base_y + height - corner_radius)),
+            (x, max(base_y, base_y + height - corner_radius) + y_offset),
             (x, base_y + height),
-            (x + corner_radius + 0.1, base_y + height),
+            (x + corner_radius, base_y + height),
 
             # Top straight line
-            (x + width - corner_radius - 0.1, base_y + height),
+            (x + width - corner_radius, base_y + height),
 
             # Bezier curves for the top right corner
             (x + width - corner_radius, base_y + height),
             (x + width, base_y + height),
-            (x + width, max(base_y, base_y + height - corner_radius)),
+            (x + width, max(base_y, base_y + height - corner_radius) + y_offset),
 
             # Right straight line and close the polygon
             (x + width, base_y),
@@ -362,12 +362,12 @@ def race_pace_teammates(team, rounds):
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'RACE PACE COMPARATION BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=26)
+    plt.title(f'RACE PACE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=26)
     plt.xticks(ticks=range(len(circuits)), labels=circuits,
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
-    plt.ylabel('Time diff (seconds)',font='Fira Sans', fontsize=16)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
+    plt.ylabel('Time diff (percentage)',font='Fira Sans', fontsize=16)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=16, color='white', alpha=0.6)
     plt.tight_layout()
     plt.savefig(f'../PNGs/RACE DIFF BETWEEN {team} TEAMMATES.png', dpi=450)
     plt.show()

@@ -1,3 +1,5 @@
+import math
+
 import fastf1
 import numpy as np
 import pandas as pd
@@ -374,7 +376,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
     # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
-
+        '''
         match i:
             case 0:
                 type = 'Medium speed tracks'
@@ -384,6 +386,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
                 type = 'High speed tracks'
             case _:
                 type = 'WTF IS A KILOMETER'
+        '''
 
         texts.append(ax.text(center[0], center[1], type, font='Fira Sans',
                              fontsize=16, ha='right'))
@@ -409,29 +412,52 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
 
 
-def pitstops(year, round=None, exclude=None):
+def pitstops(year, round=None, exclude=None, points=False):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
+    colors = []
     if round is None:
-        pitstops = pitstops.groupby('Driver')['Time'].mean()
+        if points:
+            pitstops = pitstops.groupby('Team')['Points'].sum()
+        else:
+            pitstops = pitstops.groupby('Driver')['Time'].mean()
     else:
         pitstops = pitstops[pitstops['Race_ID'] == round]
     pitstops = pitstops.reset_index()
-    pitstops = pitstops.sort_values(by='Time', ascending=True)
-    pitstops['Time'] = pitstops['Time'].round(2)
+    if points:
+        pitstops = pitstops.sort_values(by='Points', ascending=False)
+        color_data = [i for i in pitstops['Team']]
+        for c_data in color_data:
+            colors.append(team_colors_2023[c_data])
+        plot_size = (10, 9)
+        annotate_fontsize = 16
+        y_offset_rounded = -10
+        y_offset_annotate = 1
+        title = 'DHL PIT STOPS POINTS'
+        y_label = 'Points'
+        x_label = 'Teams'
+    else:
+        pitstops = pitstops.sort_values(by='Time', ascending=True)
+        pitstops['Time'] = pitstops['Time'].round(2)
+        drivers = [i for i in pitstops['Driver']]
+        plot_size = (17, 10)
+        annotate_fontsize = 12
+        y_offset_rounded = 0
+        y_offset_annotate = 0.05
+        title = 'PIT STOP TIMES'
+        y_label = 'Time (s)'
+        x_label = 'Driver'
 
-    fig, ax1 = plt.subplots(figsize=(17, 10))
-    drivers = [i for i in pitstops['Driver']]
-    colors = []
+        for driver in drivers:
+            for key, value in fastf1.plotting.DRIVER_COLORS.items():
+                parts = key.split(" ", 1)
+                new_key = parts[1] if len(parts) > 1 else key
+                if (new_key == driver.lower()) or (new_key == 'guanyu' and driver == 'Zhou'):
+                    colors.append(value)
+                    break
 
-    for driver in drivers:
-        for key, value in fastf1.plotting.DRIVER_COLORS.items():
-            parts = key.split(" ", 1)
-            new_key = parts[1] if len(parts) > 1 else key
-            if (new_key == driver.lower()) or (new_key == 'guanyu' and driver == 'Zhou'):
-                colors.append(value)
-                break
+    fig, ax1 = plt.subplots(figsize=plot_size)
 
     if round is not None:
         name_count = {}
@@ -448,8 +474,12 @@ def pitstops(year, round=None, exclude=None):
     if exclude is not None:
         pitstops = pitstops[~pitstops['Driver'].isin(exclude)]
 
-    bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
-                   edgecolor='white')
+    if points:
+        bars = ax1.bar(pitstops['Team'], pitstops['Points'], color=colors,
+                       edgecolor='white')
+    else:
+        bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
+                       edgecolor='white')
 
     for bar in bars:
         bar.set_visible(False)
@@ -462,20 +492,21 @@ def pitstops(year, round=None, exclude=None):
         width = bar.get_width()
 
         # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i])
+        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i], y_offset=y_offset_rounded)
         rounded_box.set_facecolor(colors[i])
         ax1.add_patch(rounded_box)
         i += 1
 
-
     for bar in bars:
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f'{height}', ha='center', va='bottom',
-                 font='Fira Sans', fontsize=12)
+        if points:
+            height = math.ceil(height)
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + y_offset_annotate, f'{height}', ha='center', va='bottom',
+                 font='Fira Sans', fontsize=annotate_fontsize)
 
-    ax1.set_title(f'PIT STOP TIMES IN 2023 SUZUKA', font='Fira Sans', fontsize=28)
-    ax1.set_xlabel('Driver', font='Fira Sans', fontsize=20)
-    ax1.set_ylabel('Time (s)', font='Fira Sans', fontweight='bold', fontsize=20)
+    ax1.set_title(title, font='Fira Sans', fontsize=28)
+    ax1.set_xlabel(x_label, font='Fira Sans', fontsize=20)
+    ax1.set_ylabel(y_label, font='Fira Sans', fontweight='bold', fontsize=20)
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=18)
     ax1.yaxis.grid(True, linestyle='--')

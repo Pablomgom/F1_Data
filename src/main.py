@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
 
@@ -18,15 +17,15 @@ if __name__ == '__main__':
 
     # plot_upgrades('Circuit Specific')
 
-    # pitstops(2023)
+    pitstops(2023, points=True)
 
     # plot_circuit()
 
-    cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
+    # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 'Suzuka', 'R')
-    # session.load()
+    #session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -36,7 +35,7 @@ if __name__ == '__main__':
 
     # qualy_diff_teammates('Aston Martin', 16)
 
-    # race_pace_teammates('Ferrari', 15)
+    # race_pace_teammates('McLaren', 16)
 
     # driver_race_times_per_tyre(session, 'LEC')
 
@@ -117,4 +116,4 @@ if __name__ == '__main__':
 
     # compare_qualy_results('alphatauri', 19, end=2010)
 
-    avg_driver_position('albon', 'red_bull', 2019, session='Q')
+    # avg_driver_position('perez', 'red_bull', 2023, session='Q')
