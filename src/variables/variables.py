@@ -43,6 +43,32 @@ team_colors_2023 = {
     'Williams': '#005aff'
 }
 
+driver_colors_2023 = {
+    'BOT': '#900000',
+    'ZHO': '#500000',
+    'DEV': '#1e3d61',
+    'TSU': '#356cac',
+    'RIC': '#2b4562',
+    'LAW': '#2b4562',
+    'GAS': '#0090ff',
+    'OCO': '#70c2ff',
+    'ALO': '#006f62',
+    'STR': '#25a617',
+    'DRU': '#2f9b90',
+    'LEC': '#dc0000',
+    'SAI': '#ff8181',
+    'SHW': '#9c0000',
+    'MAG': '#ffffff',
+    'HUL': '#cacaca',
+    'PIA': '#ff8700',
+    'NOR': '#eeb370',
+    'HAM': '#00d2be',
+    'RUS': '#24ffff',
+    'VER': '#0600ef',
+    'PER': '#716de2',
+    'ALB': '#005aff',
+    'SAR': '#012564'}
+
 max_races = {
     1950 : 4,
     1951 : 4,

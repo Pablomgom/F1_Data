@@ -24,9 +24,8 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Suzuka', 'R')
+    session = fastf1.get_session(2023, 'Singapore', 'R')
     #session.load()
-
     # lucky_drivers(1950,2024)
 
     # qualy_diff_last_year(16, 'suzuka')
@@ -120,6 +119,6 @@ if __name__ == '__main__':
 
     # avg_driver_position('perez', 'red_bull', 2023, session='Q')
 
-    full_compare_drivers_season(2023, 'leclerc', 'sainz', 'ferrari')
+    full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', 'team', 8)
 
 

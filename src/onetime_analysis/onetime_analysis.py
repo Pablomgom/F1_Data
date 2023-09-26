@@ -25,76 +25,121 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-from src.variables.variables import team_colors_2023
+from src.variables.variables import team_colors_2023, driver_colors_2023
 
 
 
-def full_compare_drivers_season(year, d1, d2, team):
+def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None):
 
     ergast = Ergast()
-    d1_avg_pos = avg_driver_position(d1, team, year)
-    d2_avg_pos = avg_driver_position(d2, team, year)
-    d1_race_results = ergast.get_race_results(season=year, driver=d1).content
-    d1_code = d1_race_results[0]['driverCode'].values[0]
-    d1_mean_race_pos = np.mean([i['position'].values[0] for i in d1_race_results])
-    d1_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d1_race_results
-                                    if re.search(r'(Finished|\+)', i['status'].max())])
+    if mode == 'team':
+        race_results = ergast.get_race_results(season=year, constructor=team, limit=1000).content
+        race_part_1 = [race_results[i] for i in range(split)]
+        race_part_2 = [race_results[i] for i in range(split, len(race_results))]
+        qualy_results = ergast.get_qualifying_results(season=year, constructor=team, limit=1000).content
+        qualy_part_1 = [qualy_results[i] for i in range(split)]
+        qualy_part_2 = [qualy_results[i] for i in range(split, len(qualy_results))]
+        constructor_data_p1 = ergast.get_constructor_standings(season=year, constructor=team, round=split, limit=1000)
+        constructor_data_p2 = ergast.get_constructor_standings(season=year, constructor=team, round=len(race_results), limit=1000)
 
-    d1_dnf_count = len([i['position'].values[0] for i in d1_race_results
-                                    if not re.search(r'(Finished|\+)', i['status'].max())])
+        avg_grid_p1 = np.mean([pos for i in qualy_part_1 for pos in i['position'].values])
+        avg_grid_p2 = np.mean([pos for i in qualy_part_2 for pos in i['position'].values])
 
-    d1_victories = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] == 1])
-    d1_podiums = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] <= 3])
+        avg_pos_p1 = np.mean([pos for i in race_part_1 if re.search(r'(Finished|\+)', i['status'].max())
+                              for pos in i['position'].values])
+        avg_pos_p2 = np.mean([pos for i in race_part_2 if re.search(r'(Finished|\+)', i['status'].max())
+                              for pos in i['position'].values])
+        dnf_p1 = len([pos for i in race_part_1 if not re.search(r'(Finished|\+)', i['status'].max())
+                              for pos in i['position'].values])
+        dnf_p2 = len([pos for i in race_part_2 if not re.search(r'(Finished|\+)', i['status'].max())
+                      for pos in i['position'].values])
+        top_10_d1 = len([pos for i in race_part_1 for pos in i['position'].values if pos <= 10])
+        podium_d1 = len([pos for i in race_part_1 for pos in i['position'].values if pos <= 3])
+        victories_d1 = len([pos for i in race_part_1 for pos in i['position'].values if pos == 1])
+        top_10_d2 = len([pos for i in race_part_2 for pos in i['position'].values if pos <= 10])
+        podium_d2 = len([pos for i in race_part_2 for pos in i['position'].values if pos <= 3])
+        victories_d2 = len([pos for i in race_part_2 for pos in i['position'].values if pos == 1])
+        points_d1 = constructor_data_p1.content[0]['points'].values[0]
+        points_d2 = constructor_data_p2.content[0]['points'].values[0]
+        team_pos_d1 = constructor_data_p1.content[0]['position'].values[0]
+        team_pos_d2 = constructor_data_p2.content[0]['position'].values[0]
 
-    d2_race_results = ergast.get_race_results(season=year, driver=d2).content
-    d2_code = d2_race_results[0]['driverCode'].values[0]
-    d2_mean_race_pos = np.mean([i['position'].values[0] for i in d2_race_results])
-    d2_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d2_race_results
-                                    if re.search(r'(Finished|\+)', i['status'].max())])
+        print(f"""
+            AVG.GRID: {avg_grid_p1} -> {avg_grid_p2}
+            AVG.RACE: {avg_pos_p1} -> {avg_pos_p2}
+            DNFs: {dnf_p1} -> {dnf_p2}
+            TOP 10: {top_10_d1} -> {top_10_d2}
+            PODIUMS: {podium_d1} -> {podium_d2}
+            VICTORIES: {victories_d1} -> {victories_d2}
+            POINTS: {points_d1} -> {points_d2 - points_d1}
+            TEAM POS: {team_pos_d1} -> {team_pos_d2}
+        
+        """)
 
-    d2_dnf_count = len([i['position'].values[0] for i in d2_race_results
-                    if not re.search(r'(Finished|\+)', i['status'].max())])
+    else:
+        d1_avg_pos = avg_driver_position(d1, team, year)
+        d2_avg_pos = avg_driver_position(d2, team, year)
+        d1_race_results = ergast.get_race_results(season=year, driver=d1, limit=1000).content
+        d1_code = d1_race_results[0]['driverCode'].values[0]
+        d1_mean_race_pos = np.mean([i['position'].values[0] for i in d1_race_results])
+        d1_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d1_race_results
+                                        if re.search(r'(Finished|\+)', i['status'].max())])
 
-    d2_victories = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] == 1])
-    d2_podiums = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] <= 3])
+        d1_dnf_count = len([i['position'].values[0] for i in d1_race_results
+                                        if not re.search(r'(Finished|\+)', i['status'].max())])
 
-    d1_points = ergast.get_driver_standings(season=2023, driver=d1).content[0]['points'].values[0]
-    d2_points = ergast.get_driver_standings(season=2023, driver=d2).content[0]['points'].values[0]
+        d1_victories = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] == 1])
+        d1_podiums = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] <= 3])
 
-    d1_percentage = round((d1_points / (d1_points + d2_points)) * 100, 2)
-    d2_percentage = round((d2_points / (d1_points + d2_points)) * 100, 2)
+        d2_race_results = ergast.get_race_results(season=year, driver=d2, limit=1000).content
+        d2_code = d2_race_results[0]['driverCode'].values[0]
+        d2_mean_race_pos = np.mean([i['position'].values[0] for i in d2_race_results])
+        d2_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d2_race_results
+                                        if re.search(r'(Finished|\+)', i['status'].max())])
 
-    d1_laps_ahead = 0
-    d2_laps_ahead = 0
-    for i in range(len(d1_race_results)):
-        session = fastf1.get_session(year, i + 1, 'R')
-        session.load()
-        d1_laps = session.laps.pick_driver(d1_code)
-        d2_laps = session.laps.pick_driver(d2_code)
-        laps_to_compare = min(len(d1_laps), len(d2_laps))
-        d1_pos = d1_laps[:laps_to_compare]['Position']
-        d2_pos = d2_laps[:laps_to_compare]['Position']
+        d2_dnf_count = len([i['position'].values[0] for i in d2_race_results
+                        if not re.search(r'(Finished|\+)', i['status'].max())])
 
-        for lap in range(laps_to_compare):
-            d1_lap_pos = d1_pos.values[lap]
-            d2_lap_pos = d2_pos.values[lap]
-            if d1_lap_pos < d2_lap_pos:
-                d1_laps_ahead += 1
-            else:
-                d2_laps_ahead += 1
-    d1_percentage_ahead = round((d1_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
-    d2_percentage_ahead = round((d2_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+        d2_victories = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] == 1])
+        d2_podiums = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] <= 3])
 
-    print(f"""
-        AVG GRID POS: {d1} - {d1_avg_pos} --- {d2} - {d2_avg_pos}
-        AVG RACE POS: {d1} - {d1_mean_race_pos} --- {d2} - {d2_mean_race_pos}
-        AVG RACE POS NO DNF: {d1} - {d1_mean_race_pos_no_dnf} --- {d2} - {d2_mean_race_pos_no_dnf}
-        VICTORIES: {d1} - {d1_victories} --- {d2} - {d2_victories}
-        PODIUMS: {d1} - {d1_podiums} --- {d2} - {d2_podiums}
-        DNFS: {d1} - {d1_dnf_count} --- {d2} - {d2_dnf_count}
-        POINTS: {d1} - {d1_points} {d1_percentage}% --- {d2} - {d2_points} {d2_percentage}%
-        LAPS IN FRONT: {d1} - {d1_laps_ahead} {d1_percentage_ahead}% --- {d2} - {d2_laps_ahead} {d2_percentage_ahead}%
-    """)
+        d1_points = ergast.get_driver_standings(season=2023, driver=d1).content[0]['points'].values[0]
+        d2_points = ergast.get_driver_standings(season=2023, driver=d2).content[0]['points'].values[0]
+
+        d1_percentage = round((d1_points / (d1_points + d2_points)) * 100, 2)
+        d2_percentage = round((d2_points / (d1_points + d2_points)) * 100, 2)
+
+        d1_laps_ahead = 0
+        d2_laps_ahead = 0
+        for i in range(len(d1_race_results)):
+            session = fastf1.get_session(year, i + 1, 'R')
+            session.load()
+            d1_laps = session.laps.pick_driver(d1_code)
+            d2_laps = session.laps.pick_driver(d2_code)
+            laps_to_compare = min(len(d1_laps), len(d2_laps))
+            d1_pos = d1_laps[:laps_to_compare]['Position']
+            d2_pos = d2_laps[:laps_to_compare]['Position']
+
+            for lap in range(laps_to_compare):
+                d1_lap_pos = d1_pos.values[lap]
+                d2_lap_pos = d2_pos.values[lap]
+                if d1_lap_pos < d2_lap_pos:
+                    d1_laps_ahead += 1
+                else:
+                    d2_laps_ahead += 1
+        d1_percentage_ahead = round((d1_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+        d2_percentage_ahead = round((d2_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+
+        print(f"""
+            AVG GRID POS: {d1} - {d1_avg_pos} --- {d2} - {d2_avg_pos}
+            AVG RACE POS: {d1} - {d1_mean_race_pos} --- {d2} - {d2_mean_race_pos}
+            AVG RACE POS NO DNF: {d1} - {d1_mean_race_pos_no_dnf} --- {d2} - {d2_mean_race_pos_no_dnf}
+            VICTORIES: {d1} - {d1_victories} --- {d2} - {d2_victories}
+            PODIUMS: {d1} - {d1_podiums} --- {d2} - {d2_podiums}
+            DNFS: {d1} - {d1_dnf_count} --- {d2} - {d2_dnf_count}
+            POINTS: {d1} - {d1_points} {d1_percentage}% --- {d2} - {d2_points} {d2_percentage}%
+            LAPS IN FRONT: {d1} - {d1_laps_ahead} {d1_percentage_ahead}% --- {d2} - {d2_laps_ahead} {d2_percentage_ahead}%
+        """)
 def compare_qualy_results(team, threshold, end=None, exclude=None):
     if end is None:
         end = 1950
@@ -210,9 +255,12 @@ def race_qualy_avg_metrics(year, session='Q', predict=False):
     team_categories = pd.Categorical(team_points['Team'], categories=team_points['Team'].unique(), ordered=True)
     race_categories = pd.Categorical(team_points['Circuit'], categories=team_points['Circuit'].unique(), ordered=True)
     ct = pd.crosstab(team_categories, race_categories, values=team_points['Points'], aggfunc='sum')
-    ma_points = ct.rolling(window=4, min_periods=1, axis=1).mean()
-    ordered_colors = [team_colors_2023[team] for team in ma_points.index]
-    transposed = ma_points.transpose()
+    if mode is not None:
+        ct = ct.cumsum(axis=1)
+    else:
+        ct = ct.rolling(window=4, min_periods=1, axis=1).mean()
+    ordered_colors = [team_colors_2023[team] for team in ct.index]
+    transposed = ct.transpose()
     if predict:
         forecasted_data = []
         for team in transposed.columns:
@@ -221,7 +269,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False):
             forecast = model_fit.forecast(steps=6)
             forecasted_data.append(forecast)
 
-        # Transpose the forecasted data and create a DataFrame
         forecasted_df = pd.DataFrame(forecasted_data).transpose()
         forecasted_df.columns = transposed.columns
 
@@ -231,7 +278,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False):
         new_indices = [circuits[i].title().replace('_', ' ') for i in range(start_index, end_index)]
         forecasted_df.index = new_indices
 
-        # Append this DataFrame to the original DataFrame
         transposed = pd.concat([transposed, forecasted_df])
         transposed = transposed.where(transposed >= 0, 0)
 
@@ -248,7 +294,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False):
     font = FontProperties(family='Fira Sans', size=12)
     plt.title(title, font='Fira Sans', fontsize=28)
     plt.xlabel("Races", font='Fira Sans', fontsize=18)
-    plt.ylabel("Avg. Points", font='Fira Sans', fontsize=18)
+    plt.ylabel("Total Points", font='Fira Sans', fontsize=18)
     predict_patch = mpatches.Patch(color='green', alpha=0.5, label='Predictions')
     handles, labels = ax.get_legend_handles_labels()
     if predict:
@@ -256,7 +302,10 @@ def race_qualy_avg_metrics(year, session='Q', predict=False):
     plt.legend(handles=handles, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
-    plt.yticks(yticks, fontsize=12, fontname='Fira Sans')
+    if mode is not None:
+        plt.yticks(fontsize=12, fontname='Fira Sans')
+    else:
+        plt.yticks(yticks, fontsize=12, fontname='Fira Sans')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     if session == 'Q':
         ax.invert_yaxis()
@@ -264,6 +313,12 @@ def race_qualy_avg_metrics(year, session='Q', predict=False):
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
+    if predict:
+        pd.options.display.max_colwidth = 50
+        pd.options.display.width = 1000
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        print(transposed)
 
 
 def plot_upgrades(scope=None):
@@ -1377,12 +1432,66 @@ def avg_driver_position(driver, team, year, session='Q'):
 
     position = []
 
-    for gp in data.content:
-        session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]
-        if len(session_data):
-            position.append(session_data['position'].values[0])
-        else:
-            print(f'{driver} not in {team}')
+    if driver is None:
+        drivers = []
+        for gp in data.content:
+            for d in gp['driverCode']:
+                drivers.append(d)
+        drivers_array = set(drivers)
+        drivers = {d: [] for d in drivers_array}
+        for gp in data.content:
+            for d in drivers_array:
+                data = gp[gp['driverCode'] == d]
+                if len(data) > 0:
+                    pos = data['position'].values[0]
+                    drivers[d].append(pos)
+        avg_grid = {}
+        for key, pos_array in drivers.items():
+            mean_pos = round(np.mean(pos_array), 2)
+            avg_grid[key] = mean_pos
+        avg_grid = dict(sorted(avg_grid.items(), key=lambda item: item[1]))
+        drivers = list(avg_grid.keys())
+        avg_pos = list(avg_grid.values())
+        colors = [driver_colors_2023[key] for key in drivers]
+        fig, ax = plt.subplots(figsize=(12, 6))  # Set the figure size (optional)
+        bars = plt.bar(drivers, avg_pos, color=colors)  # Plot the bar chart with specific colors (optional)
+
+        for bar in bars:
+            bar.set_visible(False)
+
+        i = 0
+        for bar in bars:
+            height = bar.get_height()
+            x, y = bar.get_xy()
+            width = bar.get_width()
+
+            # Create a fancy bbox with rounded corners and add it to the axes
+            rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i], -0.1)
+            rounded_box.set_facecolor(colors[i])
+            ax.add_patch(rounded_box)
+            i += 1
+
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, height + 0.2, f'{height}', ha='center',
+                     va='bottom',
+                     font='Fira Sans', fontsize=11)
+        plt.xlabel('Drivers', font='Fira Sans', fontsize=14)  # x-axis label (optional)
+        plt.ylabel('Avg Grid Position', font='Fira Sans', fontsize=14)  # y-axis label (optional)
+        plt.title('Average Grid Position Per Driver', font='Fira Sans', fontsize=20)  # Title (optional)
+        plt.xticks(rotation=90, fontsize=13)
+        plt.yticks(fontsize=13)
+        ax.yaxis.grid(True, linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=400)
+        plt.show()
+    else:
+        for gp in data.content:
+            session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]
+            if len(session_data) > 0:
+                position.append(session_data['position'].values[0])
+            else:
+                print(f'{driver} not in {team}')
 
     print(np.round(np.mean(position), 2))
     return np.round(np.mean(position), 2)
