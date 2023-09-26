@@ -15,7 +15,7 @@ import matplotlib.patches as mpatches
 from src.general_analysis.race_plots import rounded_top_rect
 
 
-def performance_vs_last_year(team, delete_circuits=[], year=2023):
+def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
 
     ergast = Ergast()
     prev_year = ergast.get_qualifying_results(season=year-1, limit=1000)
@@ -351,7 +351,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     plt.show()
 
 
-def gear_changes(session, col='nGear'):
+def plot_circuit_with_data(session, col='nGear'):
     lap = session.laps.pick_fastest()
     tel = lap.get_telemetry()
 
@@ -650,7 +650,7 @@ def qualy_diff(team_1, team_2, session):
 
 
 
-def fastest_by_point_v2(session, team_1, team_2):
+def track_dominance(session, team_1, team_2):
     lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
     tel_team_1 = lap_team_1.get_telemetry()
 

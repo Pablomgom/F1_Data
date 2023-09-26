@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # plot_upgrades('Circuit Specific')
 
-    pitstops(2023, points=True)
+    # dhl_pitstops(2023, points=True)
 
     # plot_circuit()
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     # qualy_diff_last_year(16, 'suzuka')
 
-    # performance_vs_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
+    # team_performance_vs_qualy_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
 
     # qualy_diff_teammates('Aston Martin', 16)
 
@@ -39,11 +39,11 @@ if __name__ == '__main__':
 
     # driver_race_times_per_tyre(session, 'LEC')
 
-    # get_topspeed_in_session(session, 'Sector3Time')
+    # get_fastest_data(session, 'Sector3Time')
 
     # win_wdc(2023)
 
-    # driver_laptimes(session)
+    # race_pace_top_10(session)
 
     # qualy_diff('Aston Martin', 'McLaren', 16)
 
@@ -55,11 +55,13 @@ if __name__ == '__main__':
 
     # race_distance(session, 'HAM', 'SAI')
 
-    # driver_lap_times(session, 'RUS')
+    # long_runs_FP2(session, 'RUS')
 
     # fastest_by_point(session, 'PIA', 'NOR', scope='D')
 
-    # gear_changes(session, 'Speed')
+    # track_dominance(session, 'Red Bull Racing', 'Ferrari')
+
+    # plot_circuit_with_data(session, 'Speed')
 
     # tyre_strategies(session)
 
@@ -76,15 +78,15 @@ if __name__ == '__main__':
 
     # get_fastest_punctuable_lap('marina_bay', start=2008, all_drivers=False)
 
-    # races_by_number(0)
+    # races_by_driver_dorsal(0)
 
-    # overtakes()
+    # plot_overtakes()
 
-    # day_all_races()
+    # get_historical_race_days()
 
-    # wins_in_circuit(circuito, end=2023)
+    # wins_and_poles_circuit(circuito, end=2023)
 
-    # get_pit_stops(2023)
+    # get_pit_stops_ergast(2023)
 
     # compare_drivers_season('Hamilton', 'Russell', 2023, DNFs=True)
 
@@ -104,11 +106,11 @@ if __name__ == '__main__':
 
     # wdc_comparation('Daniel Ricciardo', 2011, 2024)
 
-    # get_topspeed()
+    # get_topspeed(16)
 
     # get_driver_results_circuit('max_verstappen', 'suzuka', 2015)
 
-    # mean_points_per_team(2023, session='R', predict=True)
+    # race_qualy_avg_metrics(2023, session='R', predict=True)
 
     # qualy_margin('suzuka', start=1950, end=2024)
 
@@ -117,3 +119,7 @@ if __name__ == '__main__':
     # compare_qualy_results('alphatauri', 19, end=2010)
 
     # avg_driver_position('perez', 'red_bull', 2023, session='Q')
+
+    full_compare_drivers_season(2023, 'leclerc', 'sainz', 'ferrari')
+
+

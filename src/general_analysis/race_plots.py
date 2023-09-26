@@ -420,7 +420,7 @@ def position_changes(session):
     plt.show()
 
 
-def driver_lap_times(race, driver, fastest_laps=True):
+def long_runs_FP2(race, driver):
     plotting.setup_mpl(misc_mpl_mods=False)
 
     driver_laps = race.laps.pick_driver(driver)
@@ -642,7 +642,7 @@ def tyre_strategies(session):
     plt.show()
 
 
-def driver_laptimes(race):
+def race_pace_top_10(race):
 
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 

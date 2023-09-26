@@ -28,6 +28,73 @@ import matplotlib.pyplot as plt
 from src.variables.variables import team_colors_2023
 
 
+
+def full_compare_drivers_season(year, d1, d2, team):
+
+    ergast = Ergast()
+    d1_avg_pos = avg_driver_position(d1, team, year)
+    d2_avg_pos = avg_driver_position(d2, team, year)
+    d1_race_results = ergast.get_race_results(season=year, driver=d1).content
+    d1_code = d1_race_results[0]['driverCode'].values[0]
+    d1_mean_race_pos = np.mean([i['position'].values[0] for i in d1_race_results])
+    d1_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d1_race_results
+                                    if re.search(r'(Finished|\+)', i['status'].max())])
+
+    d1_dnf_count = len([i['position'].values[0] for i in d1_race_results
+                                    if not re.search(r'(Finished|\+)', i['status'].max())])
+
+    d1_victories = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] == 1])
+    d1_podiums = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] <= 3])
+
+    d2_race_results = ergast.get_race_results(season=year, driver=d2).content
+    d2_code = d2_race_results[0]['driverCode'].values[0]
+    d2_mean_race_pos = np.mean([i['position'].values[0] for i in d2_race_results])
+    d2_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d2_race_results
+                                    if re.search(r'(Finished|\+)', i['status'].max())])
+
+    d2_dnf_count = len([i['position'].values[0] for i in d2_race_results
+                    if not re.search(r'(Finished|\+)', i['status'].max())])
+
+    d2_victories = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] == 1])
+    d2_podiums = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] <= 3])
+
+    d1_points = ergast.get_driver_standings(season=2023, driver=d1).content[0]['points'].values[0]
+    d2_points = ergast.get_driver_standings(season=2023, driver=d2).content[0]['points'].values[0]
+
+    d1_percentage = round((d1_points / (d1_points + d2_points)) * 100, 2)
+    d2_percentage = round((d2_points / (d1_points + d2_points)) * 100, 2)
+
+    d1_laps_ahead = 0
+    d2_laps_ahead = 0
+    for i in range(len(d1_race_results)):
+        session = fastf1.get_session(year, i + 1, 'R')
+        session.load()
+        d1_laps = session.laps.pick_driver(d1_code)
+        d2_laps = session.laps.pick_driver(d2_code)
+        laps_to_compare = min(len(d1_laps), len(d2_laps))
+        d1_pos = d1_laps[:laps_to_compare]['Position']
+        d2_pos = d2_laps[:laps_to_compare]['Position']
+
+        for lap in range(laps_to_compare):
+            d1_lap_pos = d1_pos.values[lap]
+            d2_lap_pos = d2_pos.values[lap]
+            if d1_lap_pos < d2_lap_pos:
+                d1_laps_ahead += 1
+            else:
+                d2_laps_ahead += 1
+    d1_percentage_ahead = round((d1_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+    d2_percentage_ahead = round((d2_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+
+    print(f"""
+        AVG GRID POS: {d1} - {d1_avg_pos} --- {d2} - {d2_avg_pos}
+        AVG RACE POS: {d1} - {d1_mean_race_pos} --- {d2} - {d2_mean_race_pos}
+        AVG RACE POS NO DNF: {d1} - {d1_mean_race_pos_no_dnf} --- {d2} - {d2_mean_race_pos_no_dnf}
+        VICTORIES: {d1} - {d1_victories} --- {d2} - {d2_victories}
+        PODIUMS: {d1} - {d1_podiums} --- {d2} - {d2_podiums}
+        DNFS: {d1} - {d1_dnf_count} --- {d2} - {d2_dnf_count}
+        POINTS: {d1} - {d1_points} {d1_percentage}% --- {d2} - {d2_points} {d2_percentage}%
+        LAPS IN FRONT: {d1} - {d1_laps_ahead} {d1_percentage_ahead}% --- {d2} - {d2_laps_ahead} {d2_percentage_ahead}%
+    """)
 def compare_qualy_results(team, threshold, end=None, exclude=None):
     if end is None:
         end = 1950
@@ -59,6 +126,7 @@ def compare_qualy_results(team, threshold, end=None, exclude=None):
                 """)
                 exit(0)
 
+
 def compare_amount_points(team, threshold, end=None, exclude=None):
     if end is None:
         end = 1950
@@ -86,8 +154,7 @@ def compare_amount_points(team, threshold, end=None, exclude=None):
                 exit(0)
 
 
-def mean_points_per_team(year, session='Q', predict=False):
-
+def race_qualy_avg_metrics(year, session='Q', predict=False):
     ergast = Ergast()
     data = ergast.get_race_results(season=year, limit=1000)
     teams = set(data.content[0]['constructorName'])
@@ -104,6 +171,7 @@ def mean_points_per_team(year, session='Q', predict=False):
             title = 'Average points prediction in the last 4 races'
         else:
             title = 'Average points in the last 4 races'
+
     def append_duplicate_number(arr):
 
         # Dictionary to keep track of counts of appearances
@@ -160,7 +228,7 @@ def mean_points_per_team(year, session='Q', predict=False):
         circuits = ergast.get_race_schedule(season=year, limit=1000)['circuitId'].values
         start_index = len(transposed)
         end_index = start_index + len(forecasted_df)
-        new_indices = [circuits[i].title().replace('_',' ') for i in range(start_index, end_index)]
+        new_indices = [circuits[i].title().replace('_', ' ') for i in range(start_index, end_index)]
         forecasted_df.index = new_indices
 
         # Append this DataFrame to the original DataFrame
@@ -253,8 +321,8 @@ def plot_upgrades(scope=None):
     pd.set_option('display.max_columns', None)
     print(transposed)
 
-def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
+def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     session_type = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'SS', 'R']
     circuits = []
     data = []
@@ -291,7 +359,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
         corners = len(session.get_circuit_info().corners)
         length = max(telemetry['Distance'])
-        corners_per_meter = length/corners
+        corners_per_meter = length / corners
         max_speed = max(telemetry['Speed'])
         sorted_speed = sorted(telemetry['Speed'])
 
@@ -395,9 +463,9 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     # Automatically adjust the positions to minimize overlaps
     adjust_text(texts, autoalign='xy', ha='right', va='bottom', only_move={'points': 'y', 'text': 'xy'})
 
-    legend_lines =[Line2D([0], [0], color='blue', lw=4),
-                   Line2D([0], [0], color='red', lw=4),
-                   Line2D([0], [0], color='green', lw=4)]
+    legend_lines = [Line2D([0], [0], color='blue', lw=4),
+                    Line2D([0], [0], color='red', lw=4),
+                    Line2D([0], [0], color='green', lw=4)]
 
     plt.legend(legend_lines, ['Low speed tracks', 'Medium speed tracks', 'High speed tracks'],
                loc='upper right', bbox_to_anchor=(1, 0.85), fontsize='x-large')
@@ -411,8 +479,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     plt.show()
 
 
-
-def pitstops(year, round=None, exclude=None, points=False):
+def dhl_pitstops(year, round=None, exclude=None, points=False):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
@@ -620,7 +687,7 @@ def compare_drivers_season(d_1, d_2, season, DNFs=False):
     print(f'{d_2} points: {d2_points}')
 
 
-def get_pit_stops(year):
+def get_pit_stops_ergast(year):
     ergast = Ergast()
     schedule = ergast.get_race_schedule(season=year, limit=1000)
     circuits = schedule.circuitId.values
@@ -832,10 +899,10 @@ def get_circuitos():
         plt.show()
 
 
-def get_topspeed():
+def get_topspeed(gp):
     top_speed_array = []
 
-    for i in range(12):
+    for i in range(gp):
 
         session = fastf1.get_session(2023, i + 1, 'Q')
         session.load(telemetry=True, weather=False)
@@ -863,7 +930,7 @@ def get_topspeed():
     print(top_speed_array)
 
 
-def get_topspeed_in_session(session, column='Speed', fastest_lap=None, DRS=True):
+def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     circuit_speed = {}
     colors_dict = {}
@@ -1002,7 +1069,7 @@ def get_topspeed_in_session(session, column='Speed', fastest_lap=None, DRS=True)
     plt.show()
 
 
-def wins_in_circuit(circuit, start=None, end=None):
+def wins_and_poles_circuit(circuit, start=None, end=None):
     ergast = Ergast()
     winners = pd.Series(dtype=str)
     poles = pd.Series(dtype=str)
@@ -1044,7 +1111,7 @@ def wins_in_circuit(circuit, start=None, end=None):
     print(winners)
 
 
-def day_all_races():
+def get_historical_race_days():
     dict = {}
     ergast = Ergast()
     for i in range(1950, 2024):
@@ -1084,7 +1151,7 @@ def day_all_races():
             file.write(f'{key}: {value}\n')
 
 
-def overtakes():
+def plot_overtakes():
     df = pd.read_csv('../resources/Overtakes.csv')
     df = df[df['Season'] >= 1999]
     df = df[~df['Race'].str.contains('Sprint')]
@@ -1155,7 +1222,7 @@ def overtakes():
     plt.show()
 
 
-def races_by_number(number):
+def races_by_driver_dorsal(number):
     ergast = Ergast()
     drivers = pd.Series(dtype=str)
     for i in range(1950, 2024):
@@ -1302,7 +1369,6 @@ def plot_circuit():
 
 
 def avg_driver_position(driver, team, year, session='Q'):
-
     ergast = Ergast()
     if session == 'Q':
         data = ergast.get_qualifying_results(season=year, limit=1000)
@@ -1318,7 +1384,8 @@ def avg_driver_position(driver, team, year, session='Q'):
         else:
             print(f'{driver} not in {team}')
 
-    print(np.mean(position))
+    print(np.round(np.mean(position), 2))
+    return np.round(np.mean(position), 2)
 
 
 def lucky_drivers(start=None, end=None):
@@ -1359,17 +1426,20 @@ def lucky_drivers(start=None, end=None):
                         for i in range(loops):
                             for team_name in teammate:
                                 teammate_data = race[(race['givenName'] == team_name.split(' ')[0]) & (
-                                            race['familyName'] == team_name.split(' ', 1)[1])]
+                                        race['familyName'] == team_name.split(' ', 1)[1])]
                                 teammate_data = teammate_data[teammate_data['constructorId'] == team]
                                 status_d1 = race_data[race_data['constructorId'] == team]['status'].values[i]
                                 if len(teammate_data) > 0:
                                     for j in range(len(teammate_data)):
                                         status_d2 = teammate_data['status'].values[j]
-                                        if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)', status_d1):
-                                            if not re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)', status_d2):
+                                        if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)',
+                                                     status_d1):
+                                            if not re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)',
+                                                             status_d2):
                                                 luck[driver] += 1
                                         else:
-                                            if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)', status_d2):
+                                            if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)',
+                                                         status_d2):
                                                 luck[driver] -= 1
         print(driver)
 
@@ -1439,7 +1509,6 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
                     if '+' not in status and 'Finished' not in status:
                         position = 'DNF'
                     else:
-                        position = 'P'+str(position)
+                        position = 'P' + str(position)
                     team = results['constructorName'].values[0]
                     print(f'{year}: From P{grid} to {position} with {team}')
-
