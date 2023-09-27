@@ -119,6 +119,6 @@ if __name__ == '__main__':
 
     # avg_driver_position('perez', 'red_bull', 2023, session='Q')
 
-    full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', 'team', 8)
+    full_compare_drivers_season(2023, 'norris', 'piastri', 'aston_martin', 'team', 8)
 
 

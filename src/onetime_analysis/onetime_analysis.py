@@ -42,17 +42,30 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None):
         constructor_data_p1 = ergast.get_constructor_standings(season=year, constructor=team, round=split, limit=1000)
         constructor_data_p2 = ergast.get_constructor_standings(season=year, constructor=team, round=len(race_results), limit=1000)
 
-        avg_grid_p1 = np.mean([pos for i in qualy_part_1 for pos in i['position'].values])
-        avg_grid_p2 = np.mean([pos for i in qualy_part_2 for pos in i['position'].values])
+        avg_grid_p1 = np.round(np.mean([pos for i in qualy_part_1 for pos in i['position'].values]), 2)
+        avg_grid_p2 = np.round(np.mean([pos for i in qualy_part_2 for pos in i['position'].values]), 2)
 
-        avg_pos_p1 = np.mean([pos for i in race_part_1 if re.search(r'(Finished|\+)', i['status'].max())
-                              for pos in i['position'].values])
-        avg_pos_p2 = np.mean([pos for i in race_part_2 if re.search(r'(Finished|\+)', i['status'].max())
-                              for pos in i['position'].values])
-        dnf_p1 = len([pos for i in race_part_1 if not re.search(r'(Finished|\+)', i['status'].max())
-                              for pos in i['position'].values])
-        dnf_p2 = len([pos for i in race_part_2 if not re.search(r'(Finished|\+)', i['status'].max())
-                      for pos in i['position'].values])
+        positions_p1 = []
+        positions_p2 = []
+        dnf_p1 = []
+        dnf_p2 = []
+
+        for i in race_part_1:
+            positions_df = i[i['status'].apply(lambda x: bool(re.search(r'(Finished|\+)', x)))]
+            dnf_df = i[~i['status'].apply(lambda x: bool(re.search(r'(Finished|\+)', x)))]
+            positions_p1.extend(positions_df['position'].values)
+            dnf_p1.extend(dnf_df['position'].values)
+        avg_pos_p1 = np.round(np.mean(positions_p1), 2)
+        dnf_p1 = len(dnf_p1)
+
+        for i in race_part_2:
+            positions_df = i[i['status'].apply(lambda x: bool(re.search(r'(Finished|\+)', x)))]
+            dnf_df = i[~i['status'].apply(lambda x: bool(re.search(r'(Finished|\+)', x)))]
+            positions_p2.extend(positions_df['position'].values)
+            dnf_p2.extend(dnf_df['position'].values)
+        avg_pos_p2 = np.round(np.mean(positions_p2), 2)
+        dnf_p2 = len(dnf_p2)
+
         top_10_d1 = len([pos for i in race_part_1 for pos in i['position'].values if pos <= 10])
         podium_d1 = len([pos for i in race_part_1 for pos in i['position'].values if pos <= 3])
         victories_d1 = len([pos for i in race_part_1 for pos in i['position'].values if pos == 1])
