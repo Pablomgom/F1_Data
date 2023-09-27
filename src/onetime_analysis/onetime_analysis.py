@@ -29,7 +29,7 @@ from src.variables.variables import team_colors_2023, driver_colors_2023
 
 
 
-def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None):
+def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_team=None, d2_team=None):
 
     ergast = Ergast()
     if mode == 'team':
@@ -90,8 +90,14 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None):
         """)
 
     else:
-        d1_avg_pos = avg_driver_position(d1, team, year)
-        d2_avg_pos = avg_driver_position(d2, team, year)
+        if d1_team is not None:
+            d1_avg_pos = avg_driver_position(d1, d1_team, year)
+        else:
+            d1_avg_pos = avg_driver_position(d1, team, year)
+        if d2_team is not None:
+            d2_avg_pos = avg_driver_position(d2, d2_team, year)
+        else:
+            d2_avg_pos = avg_driver_position(d2, team, year)
         d1_race_results = ergast.get_race_results(season=year, driver=d1, limit=1000).content
         d1_code = d1_race_results[0]['driverCode'].values[0]
         d1_mean_race_pos = np.mean([i['position'].values[0] for i in d1_race_results])
@@ -116,32 +122,35 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None):
         d2_victories = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] == 1])
         d2_podiums = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] <= 3])
 
-        d1_points = ergast.get_driver_standings(season=2023, driver=d1).content[0]['points'].values[0]
-        d2_points = ergast.get_driver_standings(season=2023, driver=d2).content[0]['points'].values[0]
+        d1_points = ergast.get_driver_standings(season=year, driver=d1, limit=1000).content[0]['points'].values[0]
+        d2_points = ergast.get_driver_standings(season=year, driver=d2, limit=1000).content[0]['points'].values[0]
 
         d1_percentage = round((d1_points / (d1_points + d2_points)) * 100, 2)
         d2_percentage = round((d2_points / (d1_points + d2_points)) * 100, 2)
 
         d1_laps_ahead = 0
         d2_laps_ahead = 0
-        for i in range(len(d1_race_results)):
-            session = fastf1.get_session(year, i + 1, 'R')
-            session.load()
-            d1_laps = session.laps.pick_driver(d1_code)
-            d2_laps = session.laps.pick_driver(d2_code)
-            laps_to_compare = min(len(d1_laps), len(d2_laps))
-            d1_pos = d1_laps[:laps_to_compare]['Position']
-            d2_pos = d2_laps[:laps_to_compare]['Position']
+        d1_percentage_ahead = 0
+        d2_percentage_ahead = 0
+        if year >= 2018:
+            for i in range(len(d1_race_results)):
+                session = fastf1.get_session(year, i + 1, 'R')
+                session.load()
+                d1_laps = session.laps.pick_driver(d1_code)
+                d2_laps = session.laps.pick_driver(d2_code)
+                laps_to_compare = min(len(d1_laps), len(d2_laps))
+                d1_pos = d1_laps[:laps_to_compare]['Position']
+                d2_pos = d2_laps[:laps_to_compare]['Position']
 
-            for lap in range(laps_to_compare):
-                d1_lap_pos = d1_pos.values[lap]
-                d2_lap_pos = d2_pos.values[lap]
-                if d1_lap_pos < d2_lap_pos:
-                    d1_laps_ahead += 1
-                else:
-                    d2_laps_ahead += 1
-        d1_percentage_ahead = round((d1_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
-        d2_percentage_ahead = round((d2_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+                for lap in range(laps_to_compare):
+                    d1_lap_pos = d1_pos.values[lap]
+                    d2_lap_pos = d2_pos.values[lap]
+                    if d1_lap_pos < d2_lap_pos:
+                        d1_laps_ahead += 1
+                    else:
+                        d2_laps_ahead += 1
+            d1_percentage_ahead = round((d1_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
+            d2_percentage_ahead = round((d2_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
 
         print(f"""
             AVG GRID POS: {d1} - {d1_avg_pos} --- {d2} - {d2_avg_pos}
