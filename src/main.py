@@ -24,8 +24,8 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Singapore', 'R')
-    #session.load()
+    session = fastf1.get_session(2023, 'Silverstone', 'R')
+    # session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     # qualy_diff_teammates('Aston Martin', 16)
 
-    # race_pace_teammates('McLaren', 16)
+    race_pace_teammates('Aston Martin', 16)
 
     # driver_race_times_per_tyre(session, 'LEC')
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     # overlying_laps(session, 'VER', 'NOR')
 
-    # race_distance(session, 'HAM', 'SAI')
+    # race_distance(session, 'LEC', 'SAI')
 
     # long_runs_FP2(session, 'RUS')
 
