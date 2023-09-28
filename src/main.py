@@ -26,6 +26,7 @@ if __name__ == '__main__':
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 'Singapore', 'R')
     #session.load()
+
     # lucky_drivers(1950,2024)
 
     # qualy_diff_last_year(16, 'suzuka')
