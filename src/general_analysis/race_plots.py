@@ -1,5 +1,7 @@
 import re
+import statistics
 
+from src.race_pace_exceptions import race_exceptions
 import fastf1
 import pandas as pd
 from fastf1.ergast import Ergast
@@ -18,6 +20,8 @@ from datetime import timedelta
 import math
 
 from matplotlib.ticker import FuncFormatter
+
+from src.utils.utils import call_function_from_module
 
 
 def lighten_color(hex_color, factor=0.2):
@@ -214,12 +218,13 @@ def race_pace_teammates(team, rounds):
     differences = []
     context = ''
     for i in range(rounds):
-
         race = fastf1.get_session(2023, i + 1, 'R')
         race.load()
-        drivers = np.unique(race.laps.pick_team(team)['Driver'].values)
-        n_laps_d1 = len(race.laps.pick_driver(drivers[0]).pick_quicklaps())
-        n_laps_d2 = len(race.laps.pick_driver(drivers[1]).pick_quicklaps())
+        drivers = list(np.unique(race.laps.pick_team(team)['Driver'].values))
+        if team == 'Aston Martin' and 'STR' not in drivers:
+            drivers.append('STR')
+        n_laps_d1 = len(race.laps.pick_driver(drivers[0]).pick_quicklaps().pick_wo_box())
+        n_laps_d2 = len(race.laps.pick_driver(drivers[1]).pick_quicklaps().pick_wo_box())
         grid_pos_d1 = race.results[race.results['Abbreviation'] == drivers[0]]['GridPosition']
         grid_pos_d2 = race.results[race.results['Abbreviation'] == drivers[1]]['GridPosition']
         final_pos_d1 = race.results[race.results['Abbreviation'] == drivers[0]]['Position']
@@ -228,21 +233,38 @@ def race_pace_teammates(team, rounds):
 
         if n_laps_d2 >= 25 and n_laps_d1 >= 25:
 
-            n_total_laps = min(n_laps_d2, n_laps_d1)
-
             team_1_laps = race.laps.pick_driver(drivers[0])
             team_2_laps = race.laps.pick_driver(drivers[1])
 
             max_laps = min(len(team_1_laps), len(team_2_laps))
 
-            team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
-            team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
+            min_laps, max_laps = call_function_from_module(race_exceptions,
+                                                           f"{team.replace(' ', '_')}_{2023}",
+                                                           i + 1, max_laps)
 
-            sum_t1 = team_1_laps['LapTime'].sum()
-            sum_t2 = team_2_laps['LapTime'].sum()
+            team_1_laps = team_1_laps[min_laps:max_laps].pick_quicklaps().pick_wo_box()
+            team_2_laps = team_2_laps[min_laps:max_laps].pick_quicklaps().pick_wo_box()
 
-            mean_t1 = sum_t1 / len(team_1_laps)
-            mean_t2 = sum_t2 / len(team_2_laps)
+            mean_t1 = team_1_laps['LapTime'].mean().total_seconds()
+            mean_t2 = team_2_laps['LapTime'].mean().total_seconds()
+
+            avg_life_tyre_t1 = team_1_laps['TyreLife'].mean()
+            avg_life_tyre_t2 = team_2_laps['TyreLife'].mean()
+            if team == 'Ferrari' and race.event.Country == 'Spain':
+                avg_life_tyre_t1 = 11
+                avg_life_tyre_t2 = 11
+            print(drivers[0], avg_life_tyre_t1)
+            print(drivers[1], avg_life_tyre_t2)
+            if race.event.Country == 'Azerbaijan' or race.event.Location == 'Jeddah':
+                tyre_factor = 0.01
+            else:
+                tyre_factor = 0.05
+            if avg_life_tyre_t1 > avg_life_tyre_t2:
+                tyre_diff = avg_life_tyre_t1 - avg_life_tyre_t2
+                mean_t2 += (tyre_diff * tyre_factor)
+            else:
+                tyre_diff = avg_life_tyre_t2 - avg_life_tyre_t1
+                mean_t1 += (tyre_diff * tyre_factor)
 
             if mean_t1 > mean_t2:
                 legend.append(f'{drivers[1]} faster')
@@ -256,8 +278,8 @@ def race_pace_teammates(team, rounds):
                 else:
                     color.append('#FFA500')
 
-            original_value = mean_t1.total_seconds()
-            new_value = mean_t2.total_seconds()
+            original_value = mean_t1
+            new_value = mean_t2
 
             delta_diff = ((new_value - original_value) / original_value) * 100
             differences.append(round(delta_diff, 2))
@@ -310,7 +332,11 @@ def race_pace_teammates(team, rounds):
             legend.append(f'{drivers[1]} faster')
             color.append('#0000FF')
 
-    fig, ax1 = plt.subplots(figsize=(12, 9))
+    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
+
+    mean_diff = [i for i in differences if i != 0]
+    print(f'MEAN DIFF: {np.mean(mean_diff)}')
+    print(f'MEDIAN DIFF: {statistics.median(mean_diff)}')
 
     bars = plt.bar(circuits, differences, color=color)
     for bar in bars:
@@ -329,19 +355,11 @@ def race_pace_teammates(team, rounds):
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.05, str(differences[i]) + '%',
-                     ha='center', va='top', font='Fira Sans', fontsize=11.5)
+            plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
+                     ha='center', va='top', font='Fira Sans', fontsize=8)
         elif differences[i] < 0:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.05, str(differences[i]) + '%',
-                     ha='center', va='bottom', font='Fira Sans', fontsize=11.5)
-
-    # Convert your list to a Pandas Series
-    delta_laps = pd.Series(differences)
-    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
-    ma_color = 'red'
-    plt.plot(circuits, mean_y, color=ma_color,
-             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
-
+            plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
+                     ha='center', va='bottom', font='Fira Sans', fontsize=8)
     legend_lines = []
     unique_colors = []
     unique_drivers = []
@@ -354,22 +372,20 @@ def race_pace_teammates(team, rounds):
             legend_lines.append(legend_p)
         i += 1
 
-    unique_drivers.append('Moving Average (4 last races)')
-    unique_colors.append(ma_color)
-
     plt.legend(legend_lines, unique_drivers,
-               loc='upper left', fontsize='x-large')
+               loc='lower right', fontsize='large')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'RACE PACE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=26)
+    plt.title(f'RACE PACE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=15)
     plt.xticks(ticks=range(len(circuits)), labels=circuits,
-               rotation=90, fontsize=12, fontname='Fira Sans')
-    plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
-    plt.ylabel('Time diff (percentage)',font='Fira Sans', fontsize=16)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=16, color='white', alpha=0.6)
+               rotation=90, fontsize=11, fontname='Fira Sans')
+    plt.yticks(fontsize=11)
+    plt.xlabel('Circuit',font='Fira Sans', fontsize=14)
+    plt.ylabel('Time diff (percentage)',font='Fira Sans', fontsize=12)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=12, color='white', alpha=0.6)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/RACE DIFF BETWEEN {team} TEAMMATES.png', dpi=450)
+    plt.savefig(f'../PNGs/RACE DIFF BETWEEN {team} TEAMMATES.png', dpi=150)
     plt.show()
     print(context)
 
