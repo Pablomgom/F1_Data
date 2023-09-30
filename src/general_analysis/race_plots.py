@@ -1,5 +1,7 @@
 import re
+import statistics
 
+from src.race_pace_exceptions import race_exceptions
 import fastf1
 import pandas as pd
 from fastf1.ergast import Ergast
@@ -18,6 +20,8 @@ from datetime import timedelta
 import math
 
 from matplotlib.ticker import FuncFormatter
+
+from src.utils.utils import call_function_from_module
 
 
 def lighten_color(hex_color, factor=0.2):
@@ -214,7 +218,6 @@ def race_pace_teammates(team, rounds):
     differences = []
     context = ''
     for i in range(rounds):
-
         race = fastf1.get_session(2023, i + 1, 'R')
         race.load()
         drivers = list(np.unique(race.laps.pick_team(team)['Driver'].values))
@@ -235,8 +238,12 @@ def race_pace_teammates(team, rounds):
 
             max_laps = min(len(team_1_laps), len(team_2_laps))
 
-            team_1_laps = team_1_laps[:max_laps].pick_quicklaps().pick_wo_box()
-            team_2_laps = team_2_laps[:max_laps].pick_quicklaps().pick_wo_box()
+            min_laps, max_laps = call_function_from_module(race_exceptions,
+                                                           f"{team.replace(' ', '_')}_{2023}",
+                                                           i + 1, max_laps)
+
+            team_1_laps = team_1_laps[min_laps:max_laps].pick_quicklaps().pick_wo_box()
+            team_2_laps = team_2_laps[min_laps:max_laps].pick_quicklaps().pick_wo_box()
 
             mean_t1 = team_1_laps['LapTime'].mean().total_seconds()
             mean_t2 = team_2_laps['LapTime'].mean().total_seconds()
@@ -248,13 +255,16 @@ def race_pace_teammates(team, rounds):
                 avg_life_tyre_t2 = 11
             print(drivers[0], avg_life_tyre_t1)
             print(drivers[1], avg_life_tyre_t2)
-
+            if race.event.Country == 'Azerbaijan' or race.event.Location == 'Jeddah':
+                tyre_factor = 0.01
+            else:
+                tyre_factor = 0.05
             if avg_life_tyre_t1 > avg_life_tyre_t2:
                 tyre_diff = avg_life_tyre_t1 - avg_life_tyre_t2
-                mean_t2 += (tyre_diff * 0.05)
+                mean_t2 += (tyre_diff * tyre_factor)
             else:
                 tyre_diff = avg_life_tyre_t2 - avg_life_tyre_t1
-                mean_t1 += (tyre_diff * 0.05)
+                mean_t1 += (tyre_diff * tyre_factor)
 
             if mean_t1 > mean_t2:
                 legend.append(f'{drivers[1]} faster')
@@ -326,6 +336,7 @@ def race_pace_teammates(team, rounds):
 
     mean_diff = [i for i in differences if i != 0]
     print(f'MEAN DIFF: {np.mean(mean_diff)}')
+    print(f'MEDIAN DIFF: {statistics.median(mean_diff)}')
 
     bars = plt.bar(circuits, differences, color=color)
     for bar in bars:
@@ -344,19 +355,11 @@ def race_pace_teammates(team, rounds):
 
     for i in range(len(differences)):
         if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.09, str(differences[i]) + '%',
-                     ha='center', va='top', font='Fira Sans', fontsize=9)
+            plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
+                     ha='center', va='top', font='Fira Sans', fontsize=8)
         elif differences[i] < 0:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.09, str(differences[i]) + '%',
-                     ha='center', va='bottom', font='Fira Sans', fontsize=9)
-
-    # Convert your list to a Pandas Series
-    delta_laps = pd.Series(differences)
-    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
-    ma_color = 'red'
-    plt.plot(circuits, mean_y, color=ma_color,
-             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
-
+            plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
+                     ha='center', va='bottom', font='Fira Sans', fontsize=8)
     legend_lines = []
     unique_colors = []
     unique_drivers = []
@@ -369,11 +372,8 @@ def race_pace_teammates(team, rounds):
             legend_lines.append(legend_p)
         i += 1
 
-    unique_drivers.append('Moving Average (4 last races)')
-    unique_colors.append(ma_color)
-
     plt.legend(legend_lines, unique_drivers,
-               loc='upper right', fontsize='x-large')
+               loc='lower right', fontsize='large')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')

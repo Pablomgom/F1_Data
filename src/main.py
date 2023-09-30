@@ -1,6 +1,6 @@
 from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
-
+from src.race_pace_exceptions import race_exceptions
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
 from src.general_analysis.race_plots import *
@@ -24,8 +24,8 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Silverstone', 'R')
-    # session.load()
+    session = fastf1.get_session(2023, 'Jeddah', 'R')
+    #session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -33,9 +33,9 @@ if __name__ == '__main__':
 
     # team_performance_vs_qualy_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
 
-    # qualy_diff_teammates('Aston Martin', 16)
+    # qualy_diff_teammates('Ferrari', 16)
 
-    race_pace_teammates('Aston Martin', 16)
+    # race_pace_teammates('Ferrari', 16)
 
     # driver_race_times_per_tyre(session, 'LEC')
 
@@ -120,7 +120,10 @@ if __name__ == '__main__':
 
     # avg_driver_position('perez', 'red_bull', 2023, session='Q')
 
-    full_compare_drivers_season(2012, 'vettel', 'alonso', 'red_bull',
-                                d1_team='red_bull', d2_team='ferrari')
+    # full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', mode='team', split=8)
+
+    # simulate_season_different_psystem(2008, ['hamilton', 'massa'])
+
+    get_DNFs_team('mercedes', 2014, 2024)
 
 

@@ -4,6 +4,7 @@ import fastf1
 import numpy as np
 import pandas as pd
 import re
+import statistics
 
 from adjustText import adjust_text
 from fastf1 import plotting
@@ -25,8 +26,50 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-from src.variables.variables import team_colors_2023, driver_colors_2023
+from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010
 
+
+
+def get_DNFs_team(team, start, end):
+    ergast = Ergast()
+    mechanical = 0
+    accident = 0
+    finished = 0
+    for year in range(start, end):
+        race_index = 0
+        team_data = ergast.get_race_results(season=year, constructor=team, limit=1000)
+        for race in team_data.content:
+            finish_status = race['status'].values
+            for status in finish_status:
+                if re.search(r'(Spun off|Accident|Collision|Puncture)', status):
+                    accident += 1
+                elif re.search(r'(Finished|\+)', status):
+                    finished += 1
+                else:
+                    mechanical += 1
+                print(f'{year} - {team_data.description["circuitId"][race_index]} - {status}')
+            race_index += 1
+    print(f"""
+        MECHANICAL: {mechanical}
+        ACCIDENT: {accident}
+        FINISHED: {finished}
+    """)
+
+
+def simulate_season_different_psystem(year, drivers):
+
+    ergast = Ergast()
+    for driver in drivers:
+        points = 0
+        races = ergast.get_race_results(season=year, driver=driver, limit=1000).content
+        for race in races:
+            pos = race['position'].values[0]
+            if pos in list(point_system_2010.keys()):
+                points += point_system_2010[pos]
+            if 'fastestLapRank' in race.columns:
+                if race['fastestLapRank'].values[0] == 1 and pos <= 10:
+                    points += 1
+        print(f'{driver} - {points}')
 
 
 def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_team=None, d2_team=None):
@@ -91,16 +134,15 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
 
     else:
         if d1_team is not None:
-            d1_avg_pos = avg_driver_position(d1, d1_team, year)
+            d1_avg_pos, median_d1_pos = avg_driver_position(d1, d1_team, year)
         else:
-            d1_avg_pos = avg_driver_position(d1, team, year)
+            d1_avg_pos, median_d1_pos = avg_driver_position(d1, team, year)
         if d2_team is not None:
-            d2_avg_pos = avg_driver_position(d2, d2_team, year)
+            d2_avg_pos, median_d2_pos = avg_driver_position(d2, d2_team, year)
         else:
-            d2_avg_pos = avg_driver_position(d2, team, year)
+            d2_avg_pos, median_d2_pos = avg_driver_position(d2, team, year)
         d1_race_results = ergast.get_race_results(season=year, driver=d1, limit=1000).content
         d1_code = d1_race_results[0]['driverCode'].values[0]
-        d1_mean_race_pos = np.mean([i['position'].values[0] for i in d1_race_results])
         d1_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d1_race_results
                                         if re.search(r'(Finished|\+)', i['status'].max())])
 
@@ -112,7 +154,6 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
 
         d2_race_results = ergast.get_race_results(season=year, driver=d2, limit=1000).content
         d2_code = d2_race_results[0]['driverCode'].values[0]
-        d2_mean_race_pos = np.mean([i['position'].values[0] for i in d2_race_results])
         d2_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d2_race_results
                                         if re.search(r'(Finished|\+)', i['status'].max())])
 
@@ -153,8 +194,8 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
             d2_percentage_ahead = round((d2_laps_ahead / (d1_laps_ahead + d2_laps_ahead)) * 100, 2)
 
         print(f"""
-            AVG GRID POS: {d1} - {d1_avg_pos} --- {d2} - {d2_avg_pos}
-            AVG RACE POS: {d1} - {d1_mean_race_pos} --- {d2} - {d2_mean_race_pos}
+            AVG QUALY  POS: {d1} - {d1_avg_pos} --- {d2} - {d2_avg_pos}
+            MEDIAN QUALY: {d1} - {median_d1_pos} --- {d2} - {median_d2_pos}
             AVG RACE POS NO DNF: {d1} - {d1_mean_race_pos_no_dnf} --- {d2} - {d2_mean_race_pos_no_dnf}
             VICTORIES: {d1} - {d1_victories} --- {d2} - {d2_victories}
             PODIUMS: {d1} - {d1_podiums} --- {d2} - {d2_podiums}
@@ -162,6 +203,7 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
             POINTS: {d1} - {d1_points} {d1_percentage}% --- {d2} - {d2_points} {d2_percentage}%
             LAPS IN FRONT: {d1} - {d1_laps_ahead} {d1_percentage_ahead}% --- {d2} - {d2_laps_ahead} {d2_percentage_ahead}%
         """)
+
 def compare_qualy_results(team, threshold, end=None, exclude=None):
     if end is None:
         end = 1950
@@ -221,7 +263,7 @@ def compare_amount_points(team, threshold, end=None, exclude=None):
                 exit(0)
 
 
-def race_qualy_avg_metrics(year, session='Q', predict=False):
+def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     ergast = Ergast()
     data = ergast.get_race_results(season=year, limit=1000)
     teams = set(data.content[0]['constructorName'])
@@ -1516,7 +1558,7 @@ def avg_driver_position(driver, team, year, session='Q'):
                 print(f'{driver} not in {team}')
 
     print(np.round(np.mean(position), 2))
-    return np.round(np.mean(position), 2)
+    return np.round(np.mean(position), 2), statistics.median(position)
 
 
 def lucky_drivers(start=None, end=None):
