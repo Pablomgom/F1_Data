@@ -11,7 +11,7 @@ from src.onetime_analysis.onetime_analysis import *
 
 if __name__ == '__main__':
 
-    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    #fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
@@ -24,8 +24,8 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Jeddah', 'R')
-    #session.load()
+    session = fastf1.get_session(2023, 8, 'R')
+    # session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     # qualy_diff_teammates('Ferrari', 16)
 
-    # race_pace_teammates('Ferrari', 16)
+    # race_pace_teammates('Mercedes', 16)
 
     # driver_race_times_per_tyre(session, 'LEC')
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     # overlying_laps(session, 'VER', 'NOR')
 
-    # race_distance(session, 'LEC', 'SAI')
+    # race_distance(session, 'HAM', 'RUS')
 
     # long_runs_FP2(session, 'RUS')
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     ergast = Ergast()
     drivers = ergast.get_driver_info(season=1959, limit=1000)
-    races = ergast.get_race_results(season=1963, limit=1000)
+    races = ergast.get_race_results(season=2006, round=16, limit=1000)
     qualy = ergast.get_qualifying_results(season=1963, round=16, limit=1000)
     sprints = ergast.get_sprint_results(season=1963, limit=1000)
     schedule = ergast.get_race_schedule(season=1963, limit=1000)
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     # get_circuitos()
 
-    # get_retirements_per_driver('Schumacher', 1991, 2012)
+    # get_retirements_per_driver('Verstappen', 2015, 2024)
 
     # team_wdc_history('McLaren')
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     # get_retirements()
 
-    # wdc_comparation('Daniel Ricciardo', 2011, 2024)
+    # wdc_comparation('Max Verstappen', 2015, 2024)
 
     # get_topspeed(16)
 
@@ -124,6 +124,8 @@ if __name__ == '__main__':
 
     # simulate_season_different_psystem(2008, ['hamilton', 'massa'])
 
-    get_DNFs_team('mercedes', 2014, 2024)
+    # get_DNFs_team('mercedes', 2014, 2024)
+
+    # simulate_qualy_championship(2007)
 
 
