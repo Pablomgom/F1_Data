@@ -1,5 +1,7 @@
 from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
+
+from src.elo.elo import elo_execution
 from src.race_pace_exceptions import race_exceptions
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
@@ -14,6 +16,8 @@ if __name__ == '__main__':
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
+
+    elo_execution(2023, 2024)
 
     # plot_upgrades('Circuit Specific')
 
