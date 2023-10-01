@@ -11,7 +11,7 @@ from src.onetime_analysis.onetime_analysis import *
 
 if __name__ == '__main__':
 
-    #fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     # race_pace_top_10(session)
 
-    # qualy_diff('Aston Martin', 'McLaren', 16)
+    # qualy_diff('Aston Martin', 'McLaren', 14)
 
     # race_diff('Aston Martin', 'Mercedes', 2023)
 

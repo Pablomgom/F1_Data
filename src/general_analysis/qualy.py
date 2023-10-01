@@ -12,7 +12,7 @@ from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
 import matplotlib.patches as mpatches
 
-from src.general_analysis.race_plots import rounded_top_rect
+from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
 
 
 def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
@@ -149,26 +149,8 @@ def qualy_diff_last_year(round_id, circuit=None):
     fig, ax = plt.subplots(figsize=(12, 8))
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
-    for bar in bars:
-        bar.set_visible(False)
-    i = 0
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i])
-        rounded_box.set_facecolor(colors[i])
-        ax.add_patch(rounded_box)
-        i += 1
-
-    for i in range(len(delta_times)):
-        if delta_times[i] > 0:  # If the bar is above y=0
-            plt.text(teams_to_plot[i], delta_times[i] + 0.05, '+'+str(delta_times[i])+'s',
-                     ha='center', va='top', fontsize=12)
-        else:  # If the bar is below y=0
-            plt.text(teams_to_plot[i], delta_times[i] - 0.05, str(delta_times[i])+'s',
-                     ha='center', va='bottom', fontsize=12)
+    round_bars(bars, ax, colors, y_offset_rounded=0)
+    annotate_bars(bars, ax, 0.05, 12, '+{height}s', ceil_values=False)
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
@@ -537,7 +519,7 @@ def qualy_diff(team_1, team_2, session):
     session_names = []
 
     for i in range(session):
-        session = fastf1.get_session(2020, i + 1, 'Q')
+        session = fastf1.get_session(2023, i + 1, 'Q')
         session.load(telemetry=True)
         qualys.append(session)
         session_names.append(session.event['Location'].split('-')[0])
@@ -552,7 +534,7 @@ def qualy_diff(team_1, team_2, session):
         if qualy.event.Country == 'Canada':
             delta_laps.append(0)
         else:
-            delta_laps.append(percentage_diff)
+            delta_laps.append(round(percentage_diff, 2))
 
     fig, ax1 = plt.subplots(figsize=(14, 8))
     colors = []
@@ -565,64 +547,14 @@ def qualy_diff(team_1, team_2, session):
 
     bars = plt.bar(session_names, delta_laps, color=colors, label=labels)
 
-    for bar in bars:
-        bar.set_visible(False)
-
-        # Overlay rounded rectangle patches on top of the original bars
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        if height > 0:
-            color = plotting.team_color(team_1)
-        else:
-            color = plotting.team_color(team_2)
-
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color)
-        rounded_box.set_facecolor(color)
-        ax1.add_patch(rounded_box)
-
-    if min(delta_laps) < 0:
-        plt.axhline(0, color='black', linewidth=2)
-
-    # Add exact numbers above or below every bar based on whether it's a maximum or minimum
-    for i in range(len(session_names)):
-        if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.09, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='top', font='Fira Sans', fontsize=13)
-        else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.09, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='bottom', font='Fira Sans', fontsize=13)
-    step = 0.2
-
-    if min(delta_laps) < 0:
-        start = np.floor(min(delta_laps) / step) * step
-    else:
-        start = np.ceil(min(delta_laps) / step) * step
-    end = np.ceil(max(delta_laps) / step) * step
-
-    delta_laps = pd.Series(delta_laps)
-    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
-    if team_1 == 'Ferrari' or team_2 == 'Ferrari':
-        ma_color = 'white'
-    else:
-        ma_color = 'red'
-    plt.plot(session_names, mean_y, color=ma_color,
-             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
+    round_bars(bars, ax1, colors, color_1=plotting.team_color(team_1), color_2=plotting.team_color(team_2))
+    annotate_bars(bars, ax1, 0.01, 13, text_annotate='{height}%', ceil_values=False)
 
     if min(delta_laps) < 0:
         plt.axhline(0, color='white', linewidth=2)
 
-    # Generate a list of ticks from minimum to maximum y values considering 0.0 value and step=0.2
-    yticks = list(np.arange(start, end + step, step))
-    yticks = sorted(yticks)
-
-    plt.yticks(yticks, [f'{tick:.2f} %' for tick in yticks])
-
     legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
-                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4),
-                    Line2D([0], [0], color=ma_color, lw=4)]
+                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
                loc='lower left', fontsize='x-large')
