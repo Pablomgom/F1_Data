@@ -18,7 +18,7 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from statsmodels.tsa.arima.model import ARIMA
 
-from src.general_analysis.race_plots import rounded_top_rect
+from src.plots.plots import rounded_top_rect, annotate_bars
 from src.general_analysis.table import render_mpl_table
 
 from sklearn.decomposition import PCA
@@ -26,6 +26,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
+from src.plots.plots import round_bars
 from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009
 
 
@@ -688,28 +689,8 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
         bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
                        edgecolor='white')
 
-    for bar in bars:
-        bar.set_visible(False)
-
-    # Overlay rounded rectangle patches on top of the original bars
-    i = 0
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i], y_offset=y_offset_rounded)
-        rounded_box.set_facecolor(colors[i])
-        ax1.add_patch(rounded_box)
-        i += 1
-
-    for bar in bars:
-        height = bar.get_height()
-        if points:
-            height = math.ceil(height)
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + y_offset_annotate, f'{height}', ha='center', va='bottom',
-                 font='Fira Sans', fontsize=annotate_fontsize)
+    round_bars(bars, ax1, colors, y_offset_rounded)
+    annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize,  ceil_values=True)
 
     ax1.set_title(title, font='Fira Sans', fontsize=28)
     ax1.set_xlabel(x_label, font='Fira Sans', fontsize=20)
@@ -860,23 +841,8 @@ def get_pit_stops_ergast(year):
     ax1.yaxis.grid(False)
     ax1.xaxis.grid(False)
 
-    for bar in bars:
-        bar.set_visible(False)
-
-    # Overlay rounded rectangle patches on top of the original bars
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.3, '#AED6F1')
-        rounded_box.set_facecolor('#AED6F1')
-        ax1.add_patch(rounded_box)
-
-    for bar in bars:
-        height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.5, f'{height}', ha='center', va='bottom', fontsize=14)
+    round_bars(bars, ax1, '#AED6F1', color_1=None, color_2=None, y_offset_rounded=0, corner_radius=0.3)
+    annotate_bars(bars, ax1, 0.5, 14, text_annotate='default', ceil_values=False)
 
     ax2 = ax1.twinx()
     mean_pits = [round(i / 20, 2) for i in n_pit_stops]
@@ -1163,18 +1129,9 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
 
     bars = ax1.bar(list(circuit_speed.keys()), list(circuit_speed.values()), color=colors,
                    edgecolor='white')
-    for bar in bars:
-        bar.set_visible(False)
-    i = 0
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i])
-        rounded_box.set_facecolor(colors[i])
-        ax1.add_patch(rounded_box)
-        i += 1
+
+    round_bars(bars, ax1, colors, y_offset_rounded=0)
+    annotate_bars(bars, ax1, y_fix, 14, text_annotate='default', ceil_values=False)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}',
                   font='Fira Sans', fontsize=28)
@@ -1191,10 +1148,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
 
     # Adjust the y-axis limits
     ax1.set_ylim(min(circuit_speed.values()) - x_fix, max_value + x_fix)
-
-    for bar in bars:
-        height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + y_fix, f'{height}', ha='center', va='bottom', fontsize=14)
 
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 

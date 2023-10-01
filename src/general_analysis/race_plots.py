@@ -1,6 +1,7 @@
 import re
 import statistics
 
+from src.plots.plots import round_bars, annotate_bars
 from src.race_pace_exceptions import race_exceptions
 import fastf1
 import pandas as pd
@@ -22,98 +23,6 @@ import math
 from matplotlib.ticker import FuncFormatter
 
 from src.utils.utils import call_function_from_module
-
-
-def lighten_color(hex_color, factor=0.2):
-    """
-    Lighten a given hex color code.
-
-    Args:
-        hex_color (str): Hex color code, e.g., "#RRGGBB"
-        factor (float): Factor by which to lighten the color, where 0 <= factor <= 1.
-                        0 means no change, 1 means white.
-
-    Returns:
-        str: Lightened hex color code.
-    """
-    # Ensure the hex code starts with "#"
-    hex_color = hex_color.strip('#')
-
-    # Convert hex to RGB
-    r = int(hex_color[:2], 16)
-    g = int(hex_color[2:4], 16)
-    b = int(hex_color[4:6], 16)
-
-    # Lighten each RGB component
-    r = int(r + (255 - r) * factor)
-    g = int(g + (255 - g) * factor)
-    b = int(b + (255 - b) * factor)
-
-    # Convert RGB back to hex
-    return "#{:02X}{:02X}{:02X}".format(r, g, b)
-
-def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0):
-    """Create a rectangle path with rounded top."""
-    if height >= 0:
-        base_y = max(0, y)  # Ensure the starting y value is non-negative
-        verts = [
-            (x, base_y),  # Bottom left
-            (x, max(base_y, base_y + height - corner_radius) + y_offset),  # Start of top-left curve
-
-            # Bezier curves for the top left corner
-            (x, max(base_y, base_y + height - corner_radius) + y_offset),
-            (x, base_y + height),
-            (x + corner_radius, base_y + height),
-
-            # Top straight line
-            (x + width - corner_radius, base_y + height),
-
-            # Bezier curves for the top right corner
-            (x + width - corner_radius, base_y + height),
-            (x + width, base_y + height),
-            (x + width, max(base_y, base_y + height - corner_radius) + y_offset),
-
-            # Right straight line and close the polygon
-            (x + width, base_y),
-            (x, base_y)
-        ]
-    else:
-        y += height
-        height = abs(height)
-        verts = [
-            (x, y + height),  # Top left
-            (x, min(0, y + corner_radius)),  # Start of bottom-left curve
-            # Bezier curves for the bottom left corner
-            (x, min(0, y + corner_radius)),
-            (x, y),
-            (x + corner_radius, y),
-            # Bottom straight line
-            (x + width - corner_radius, y),
-            # Bezier curves for the bottom right corner
-            (x + width - corner_radius, y),
-            (x + width, y),
-            (x + width, min(0, y + corner_radius)),
-            # Right straight line and close the polygon
-            (x + width, y + height),
-            (x, y + height)
-        ]
-
-    codes = [
-        patches.Path.MOVETO,
-        patches.Path.LINETO,
-        patches.Path.CURVE4,
-        patches.Path.CURVE4,
-        patches.Path.CURVE4,
-        patches.Path.LINETO,
-        patches.Path.CURVE4,
-        patches.Path.CURVE4,
-        patches.Path.CURVE4,
-        patches.Path.LINETO,
-        patches.Path.CLOSEPOLY,
-    ]
-    path = patches.Path(verts, codes)
-    lighter_color = lighten_color(edgecolor, factor=0.3)
-    return patches.PathPatch(path, edgecolor=lighter_color)
 
 
 def qualy_diff_teammates(team, rounds):
@@ -151,20 +60,9 @@ def qualy_diff_teammates(team, rounds):
     fig, ax1 = plt.subplots(figsize=(12, 9))
 
     bars = plt.bar(circuits, differences, color=color)
-    for bar in bars:
-        bar.set_visible(False)
 
-    i = 0
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color[i])
-        rounded_box.set_facecolor(color[i])
-        ax1.add_patch(rounded_box)
-        i += 1
-# Convert your list to a Pandas Series
+    round_bars(bars, ax1, color)
+
     delta_laps = pd.Series(differences)
     mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
     ma_color = 'red'
@@ -183,13 +81,7 @@ def qualy_diff_teammates(team, rounds):
             legend_lines.append(legend_p)
         i += 1
 
-    for i in range(len(differences)):
-        if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.06, str(differences[i]) + '%',
-                     ha='center', va='top', font='Fira Sans', fontsize=11.5)
-        elif differences[i] < 0:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.07, str(differences[i]) + '%',
-                     ha='center', va='bottom', font='Fira Sans', fontsize=11.5)
+    annotate_bars(bars, ax1, 0.01, 11.5, text_annotate='{height}%', ceil_values=False)
 
     legend_lines.append(Line2D([0], [0], color='red', lw=4))
     unique_drivers.append('Moving Average (4 last qualys)')
@@ -339,27 +231,10 @@ def race_pace_teammates(team, rounds):
     print(f'MEDIAN DIFF: {statistics.median(mean_diff)}')
 
     bars = plt.bar(circuits, differences, color=color)
-    for bar in bars:
-        bar.set_visible(False)
 
-    i = 0
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color[i])
-        rounded_box.set_facecolor(color[i])
-        ax1.add_patch(rounded_box)
-        i += 1
+    round_bars(bars, ax1, color, y_offset_rounded=0)
+    annotate_bars(bars, ax1, 0.01, 8, text_annotate='{height}%', ceil_values=False)
 
-    for i in range(len(differences)):
-        if differences[i] > 0:  # If the bar is above y=0
-            plt.text(circuits[i], differences[i] + 0.03, str(differences[i]) + '%',
-                     ha='center', va='top', font='Fira Sans', fontsize=8)
-        elif differences[i] < 0:  # If the bar is below y=0
-            plt.text(circuits[i], differences[i] - 0.03, str(differences[i]) + '%',
-                     ha='center', va='bottom', font='Fira Sans', fontsize=8)
     legend_lines = []
     unique_colors = []
     unique_drivers = []
@@ -767,7 +642,7 @@ def race_diff(team_1, team_2, year):
             delta_laps.append(0)
         else:
             delta = ((mean_time_team_2 - mean_time_team_1) / mean_time_team_2) * laps
-            delta_laps.append(delta)
+            delta_laps.append(round(delta, 2))
 
     fig, ax1 = plt.subplots(figsize=(10, 8))
     plt.rcParams["font.family"] = "Fira Sans"
@@ -782,65 +657,18 @@ def race_diff(team_1, team_2, year):
         labels.append(label)
 
     bars = plt.bar(session_names, delta_laps, color=colors, label=labels)
-
-    for bar in bars:
-        bar.set_visible(False)
-
-    # Overlay rounded rectangle patches on top of the original bars
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        if height > 0:
-            color = plotting.team_color(team_1)
-        else:
-            color = plotting.team_color(team_2)
-
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color)
-        rounded_box.set_facecolor(color)
-        ax1.add_patch(rounded_box)
-
-    # Add exact numbers above or below every bar based on whether it's a maximum or minimum
-    for i in range(len(session_names)):
-        if delta_laps[i] > 0:  # If the bar is above y=0
-            plt.text(session_names[i], delta_laps[i] + 0.03, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='top', font='Fira Sans', fontsize=12)
-        else:  # If the bar is below y=0
-            plt.text(session_names[i], delta_laps[i] - 0.04, "{:.2f} %".format(delta_laps[i]),
-                     ha='center', va='bottom', font='Fira Sans', fontsize=12)
-
-    step = 0.3
-
-    if min(delta_laps) < 0:
-        start = np.floor(min(delta_laps) / step) * step
-    else:
-        start = np.ceil(min(delta_laps) / step) * step
-    end = np.ceil(max(delta_laps) / step) * step
+    round_bars(bars, ax1, colors, color_1=plotting.team_color(team_1), color_2=plotting.team_color(team_2))
+    annotate_bars(bars, ax1, 0.01, 12, text_annotate='{height}%', ceil_values=False)
 
     delta_laps = pd.Series(delta_laps)
-    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
-    if team_1 == 'Ferrari' or team_2 == 'Ferrari':
-        ma_color = 'white'
-    else:
-        ma_color = 'red'
-    plt.plot(session_names, mean_y, color=ma_color,
-             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
 
     if min(delta_laps) < 0:
         plt.axhline(0, color='white', linewidth=2)
 
-    # Generate a list of ticks from minimum to maximum y values considering 0.0 value and step=0.2
-    yticks = list(np.arange(start, end + step, step))
-    yticks = sorted(yticks)
-
-    plt.yticks(yticks, [f'{tick:.2f} %' for tick in yticks])
-
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
-                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4),
-                    Line2D([0], [0], color=ma_color, lw=4)]
+                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
                loc='lower left', fontsize='large')
