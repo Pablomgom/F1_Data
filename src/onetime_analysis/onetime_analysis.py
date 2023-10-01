@@ -26,8 +26,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
-from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010
-
+from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009
 
 
 def get_DNFs_team(team, start, end):
@@ -70,6 +69,28 @@ def simulate_season_different_psystem(year, drivers):
                 if race['fastestLapRank'].values[0] == 1 and pos <= 10:
                     points += 1
         print(f'{driver} - {points}')
+
+def simulate_qualy_championship(year):
+
+    qualy_data = Ergast().get_qualifying_results(season=year, limit=1000)
+    drivers = set([code for df in qualy_data.content for code in df['driverCode'].values])
+    driver_points = {}
+    for driver in drivers:
+        driver_points[driver] = 0
+    for qualy in qualy_data.content:
+        for driver in drivers:
+            driver_data = qualy[qualy['driverCode'] == driver]
+            if len(driver_data) > 0:
+                pos = qualy[qualy['driverCode'] == driver]['position'].values[0]
+                if pos in list(point_system_2009.keys()):
+                    driver_points[driver] += point_system_2009[pos]
+
+    driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
+    total_p = 0
+    for d, p in driver_points.items():
+        print(f'{d} - {p}')
+        total_p += p
+    print(total_p)
 
 
 def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_team=None, d2_team=None):
@@ -733,12 +754,11 @@ def get_retirements_per_driver(driver, start=None, end=None):
         print(i)
 
     positions = positions.value_counts()
-    N = 12
+    N = 8
     top_N = positions.nlargest(N)
     top_N['Other'] = positions.iloc[N:].sum()
 
-    figsize = (10, 10)
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.subplots(figsize=(7.2, 6.5), dpi=150)
 
     fig.patch.set_facecolor('black')
     ax.set_facecolor('black')
@@ -754,14 +774,16 @@ def get_retirements_per_driver(driver, start=None, end=None):
         return "{:.1f}%\n({:d})".format(pct, absolute)
 
     top_N.plot.pie(ax=ax, autopct=lambda pct: func(pct, top_N), labels=['' for _ in top_N.index], legend=False,
-                   wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors)  # Set line color to black
+                   wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors,
+                   textprops={"color": "black"})  # Set line color to black
 
     ax.legend(title="Finish legend", loc="center left", labels=top_N.index, bbox_to_anchor=(0.8, 0.1))
 
-    plt.title(f'{driver} finish history (Total races: {positions.sum()})', fontsize=16, color='white')
+    plt.title(f'{driver} finish history (Total races: {positions.sum()})',
+              font='Fira Sans', fontsize=16, color='white')
     plt.ylabel('')
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver} finish history', dpi=400)
+    plt.savefig(f'../PNGs/{driver} finish history', dpi=150)
     plt.show()
     print(positions)
 

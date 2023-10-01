@@ -78,7 +78,6 @@ def get_position_changes(race):
     #finish['grid'].replace(20, 'Pit Lane', inplace=True)
     finish['Team'] = finish['constructorName']
 
-
     race_diff_times = []
     for race_content in race.content:
         for i in range(len(race_content['totalRaceTime'])):

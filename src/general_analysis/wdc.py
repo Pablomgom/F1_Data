@@ -203,9 +203,9 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         formatted_string = ' - '.join(formatted_elements)
         fixed_names.append(formatted_string)
 
-    fig, ax1 = plt.subplots(figsize=(22, 10))
+    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
     # Bar width
-    barWidth = 0.45
+    barWidth = 0.4
 
     # Set position of bars on x axis
     r1 = np.arange(len(points_per_year))
@@ -300,7 +300,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
     def add_labels(x_positions, values, offset=0.5):
         for x, value in zip(x_positions, values):
             plt.text(x, value + offset, '{:.1f}'.format(value), ha='center', va='bottom', zorder=5,
-                     font='Fira Sans', fontsize=14)
+                     font='Fira Sans', fontsize=8)
     add_labels(r1, points_per_year)
     add_labels(r2, team_mates_points_per_year)
 
@@ -318,25 +318,24 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
             colors_added.append(color)
 
     plt.legend(legend_lines, names_legend,
-               loc='upper left', fontsize='x-large')
+               loc='upper left', fontsize='medium')
     # Add some details
 
-    plt.xlabel('Year', font='Fira Sans', fontsize=20)
-    plt.ylabel('Points', font='Fira Sans', fontsize=20)
+    plt.xlabel('Year', font='Fira Sans', fontsize=11)
+    plt.ylabel('Points', font='Fira Sans', fontsize=11)
     plt.xticks([(x1 + x2) / 2 for x1, x2 in zip(r1, r2)], years)
 
     plt.title(f'{driver} points comparison per year with his teammates {"- excluding mechanical DNFs" if DNFs else ""}',
-              font='Fira Sans', fontsize=25,
+              font='Fira Sans', fontsize=14,
               )
     plt.gca().yaxis.grid(True, linestyle='dashed')
     plt.gca().xaxis.grid(False)
     plt.tick_params(axis='x', which='both', pad=15)
-    plt.xticks(font='Fira Sans', fontsize=20)  # for x-axis
-    plt.yticks(font='Fira Sans', fontsize=20)  # for y-axis
+    plt.xticks(font='Fira Sans', fontsize=9.5)  # for x-axis
+    plt.yticks(font='Fira Sans', fontsize=9.5)  # for y-axis
     plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
-
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver} POINTS COMPARISON WDC {"DNFs" if DNFs is True else ""}.png', dpi=300)
+    plt.savefig(f'../PNGs/{driver} POINTS COMPARISON WDC {"DNFs" if DNFs is True else ""}.png', dpi=150)
 
     plt.show()
 

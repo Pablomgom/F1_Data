@@ -255,7 +255,7 @@ def race_pace_teammates(team, rounds):
                 avg_life_tyre_t2 = 11
             print(drivers[0], avg_life_tyre_t1)
             print(drivers[1], avg_life_tyre_t2)
-            if race.event.Country == 'Azerbaijan' or race.event.Location == 'Jeddah':
+            if race.event.Country == 'Azerbaijan' or race.event.Location == 'Jeddah' or race.event.Location == 'Monaco':
                 tyre_factor = 0.01
             else:
                 tyre_factor = 0.05
@@ -373,7 +373,7 @@ def race_pace_teammates(team, rounds):
         i += 1
 
     plt.legend(legend_lines, unique_drivers,
-               loc='lower right', fontsize='large')
+               loc='upper left', fontsize='large')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
@@ -884,8 +884,9 @@ def race_distance(session, driver_1, driver_2):
     laps_diff = []
     laps = []
     for i in range(len(laps_driver_1)):
-        laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
-        laps.append(i+1)
+        if i < 23:
+            laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
+            laps.append(i+1)
 
     laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
     progressive_sum = laps_diff
