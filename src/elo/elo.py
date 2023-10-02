@@ -7,12 +7,12 @@ from fastf1.ergast import Ergast
 
 
 class Driver:
-    def __init__(self, name, total_races, initial_rating=1500):
+    def __init__(self, name, initial_rating=1500):
         self.name = name
         self.previous_rating = initial_rating
         self.rating = initial_rating
         self.elo_changes = 0
-        self.historical_elo = [0 for i in range(total_races)]
+        self.historical_elo = {}
         self.num_races = 0
         self.races_factor = 0
 
@@ -100,36 +100,60 @@ def race_influence_factor(num_races):
     return a / (num_races + b)
 
 
-def min_max_scale_factors(factors, scale_min=1, scale_max=2):
+def min_max_scale_factors(factors, year, scale_min=1, scale_max=2):
     min_val = min(factors)
     max_val = max(factors)
 
     if min_val == max_val:
         return [scale_min for _ in factors]
 
+    if year < 1960:
+        scale_max = 15
+    elif year < 1970:
+        scale_max = 14.5
+    elif year < 1980:
+        scale_max = 13
+    elif year < 1990:
+        scale_max = 10.5
+    elif year < 2000:
+        scale_max = 7.5
+    elif year < 2010:
+        scale_max = 3
     return [scale_min + (f - min_val) * (scale_max - scale_min) / (max_val - min_val) for f in factors]
 
 
 def normalize_factors(factors):
+    total_drivers = len(factors)
     factor_sum = sum(factors)
-    return [f / factor_sum for f in factors]
+    return [f * total_drivers / factor_sum for f in factors]
 
 
+def get_valid_drivers(drivers, results):
+    valid_drivers = []
+    for d in drivers:
+        name = d.name.split('//')
+        if get_finish_status(name[0], name[1], results):
+            valid_drivers.append(d)
+    return valid_drivers
 
-def update_ratings(drivers, race_results, race_index):
-    pos_weight = [0.15 * (0.85 ** i) for i in range(len(race_results))]
-    team_weight = [0.5 + (1 - 0.5) * (i / (5 - 1)) for i in range(5)]
-    factors = [race_influence_factor(d.num_races) for d in drivers]
-    scaled_factors = min_max_scale_factors(factors)
+
+def update_ratings(drivers, race_results, race_index, race_name):
+    pos_weight = [0.125 * (0.85 ** i) for i in range(len(race_results))]
+    team_weight = [0.8 + (1.5 - 0.8) * (i / (5 - 1)) for i in range(5)]
+    drivers_available = get_valid_drivers(drivers, race_results)
+
+    factors = [race_influence_factor(d.num_races) for d in drivers_available]
+    scaled_factors = min_max_scale_factors(factors, int(race_name.split(' ')[0]))
     normalized_factors = normalize_factors(scaled_factors)
-    for i, d_a in enumerate(drivers):
+
+    for i, d_a in enumerate(drivers_available):
         d_a.races_factor = normalized_factors[i]
 
-    for d_a in drivers:
+    for d_a in drivers_available:
         d_a_parts_name = d_a.name.split('//')
         if get_finish_status(d_a_parts_name[0], d_a_parts_name[1], race_results):
             d_a_pos = get_pos(d_a_parts_name[0], d_a_parts_name[1], race_results)
-            for d_b in drivers:
+            for d_b in drivers_available:
                 if d_a.name != d_b.name:
                     d_b_parts_name = d_b.name.split('//')
                     if get_finish_status(d_b_parts_name[0], d_b_parts_name[1], race_results):
@@ -146,7 +170,7 @@ def update_ratings(drivers, race_results, race_index):
                                 s_a = 0.5
 
                             d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
-                                                                   d_b.previous_rating, s_a, weight, 5), 2)
+                                                                   d_b.previous_rating, s_a, weight, 5) * d_a.races_factor, 2)
 
             avg_team_pos = get_avg_teammate_pos(d_a_parts_name[0], d_a_parts_name[1], race_results, drivers, d_a_pos)
             if avg_team_pos[0] != -1:
@@ -163,7 +187,7 @@ def update_ratings(drivers, race_results, race_index):
                     weight = weight / num_d
                     if (pos_dif - int(pos_dif)) != 0:
                         if (pos_dif + 1) >= len(team_weight):
-                            next_pos = 1.2
+                            next_pos = 1.8
                         else:
                             next_pos = team_weight[math.ceil(pos_dif)]
                         weight += (next_pos - 1) * (pos_dif - int(pos_dif))
@@ -172,29 +196,55 @@ def update_ratings(drivers, race_results, race_index):
                 else:
                     weight = team_weight[0]
                     num_d = len(race_results[race_results['position'] == d_a_pos])
-                    weight = weight/num_d
+                    weight = weight / num_d
                     if num_d > 1:
                         s_a = 0
 
                 d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
-                                                       avg_team_pos[1], s_a, weight, 35), 2)
+                                                       avg_team_pos[1], s_a, weight, 35) * d_a.races_factor, 2)
 
+
+    gain_elo = []
+    lose_elo = []
 
     for driver in drivers:
+        elo_change = driver.elo_changes
+        if elo_change < 0:
+            lose_elo.append(elo_change)
+        elif elo_change > 0:
+            gain_elo.append(elo_change)
+
+    diff_elo = sum(gain_elo) - abs(sum(lose_elo))
+    reverse = True
+    if diff_elo > 0:
+        reverse = False
+    drivers = sorted(drivers, key=lambda driver: driver.elo_changes, reverse=reverse)
+    count = 0
+    for driver in drivers:
+        if count == 0:
+            driver.elo_changes += -diff_elo
         driver.rating += driver.elo_changes
-        driver.historical_elo[race_index] = driver.rating
+        driver.historical_elo[race_name] = driver.rating
         driver.elo_changes = 0
         driver.previous_rating = driver.rating
+        count += 1
 
 
 def elo_execution(start, end):
     ergast = Ergast()
     races = []
+    races_name = []
     for year in range(start, end):
-        year_data = ergast.get_race_results(season=year, limit=1000).content
-        races += [race for race in year_data]
+        year_data = ergast.get_race_results(season=year, limit=1000)
+        races += [race for race in year_data.content]
+        for i in range(len(year_data.description)):
+            race_names = year_data.description['raceName'].values[i]
+            races_name.append(f'{year} - {race_names}')
     driver_names = set([code for race in races for code in race['givenName'] + '//' + race['familyName']])
-    drivers = [Driver(name, len(races)) for name in driver_names]
+    drivers = [Driver(name) for name in driver_names]
+    for d in drivers:
+        for unique_race in races_name:
+            d.historical_elo[unique_race] = 0
     driver_names = [d.name for d in drivers]
     race_index = 0
     for race in races:
@@ -203,31 +253,54 @@ def elo_execution(start, end):
         drivers_in_race = [d for d in drivers if d.name in intersection]
         for d in drivers_in_race:
             d.num_races += 1
-        update_ratings(drivers_in_race, race, race_index)
+        update_ratings(drivers_in_race, race, race_index, races_name[race_index])
         print(f'{race_index}/{len(races)}')
-        drivers = sorted(drivers, key=lambda driver: max(driver.historical_elo), reverse=True)
-        '''
-        count = 0
-        for driver in drivers:
-            max_rating = round(driver.rating, 2)
-            count += max_rating
-
-        print(count)
-        print(count / len(drivers))
-        '''
         race_index += 1
 
-    drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
-    count = 0
+    total_elo = 0
     for driver in drivers:
-        driver.rating = round(driver.rating, 2)
-        count += driver.rating
-        print(f'{driver.name} - {driver.rating}')
-    print(count)
-    print(count / len(drivers))
+        total_elo += driver.rating
+        driver.ma_elo = {}
+        for key, value in driver.historical_elo.items():
+            year = key.split(" ")[0]
+            if year not in driver.ma_elo:
+                driver.ma_elo[year] = []
+            driver.ma_elo[year].append(value)
+        for year, values in driver.ma_elo.items():
+            driver.ma_elo[year] = sum(values) / len(values)
+        years_sorted = sorted(driver.ma_elo.keys())
+        driver.ma_elo_3ma = {}
+        for i, year in enumerate(years_sorted):
+            if i >= 2:  # Ensure there are at least 3 years including the current year
+                three_years = [years_sorted[i - j] for j in range(3)]
+                avg = sum([driver.ma_elo[y] for y in three_years]) / 3
+                driver.ma_elo_3ma[year] = avg
+    print(total_elo/len(drivers))
+
     print('----------------------------------------------------------------------')
-    drivers = sorted(drivers, key=lambda driver: max(driver.historical_elo), reverse=True)
-    for driver in drivers:
-        max_rating = round(max(driver.historical_elo), 2)
-        count += max_rating
-        print(f'{driver.name} - {max_rating}')
+
+    drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
+    count = 1
+    for driver in drivers[:25]:
+        driver.rating = round(driver.rating, 2)
+        print(f'{count} - {driver.name} - {driver.rating}')
+        count += 1
+
+    print('----------------------------------------------------------------------')
+    drivers = sorted(drivers, key=lambda driver: max(driver.historical_elo.values()), reverse=True)
+    count = 1
+    for driver in drivers[:25]:
+        max_key = max(driver.historical_elo, key=driver.historical_elo.get)
+        max_rating = round(driver.historical_elo[max_key], 2)
+        print(f'{count} - {driver.name} - {max_rating} (from race: {max_key})')
+        count += 1
+
+    print('----------------------------------------------------------------------')
+    drivers = sorted(drivers, key=lambda driver: max(driver.ma_elo_3ma.values()), reverse=True)
+    count = 1
+    for driver in drivers[:25]:
+        max_key = max(driver.ma_elo_3ma, key=driver.ma_elo_3ma.get)
+        max_rating = round(driver.ma_elo_3ma[max_key], 2)
+        print(f'{count} - {driver.name} - {max_rating} (from year: {max_key})')
+        count += 1
+
