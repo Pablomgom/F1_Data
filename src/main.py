@@ -17,7 +17,7 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    elo_execution(2023, 2024)
+    elo_execution(2010, 2011)
 
     # plot_upgrades('Circuit Specific')
 
