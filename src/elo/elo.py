@@ -141,7 +141,7 @@ def get_valid_drivers(drivers, results):
 def update_ratings(drivers, race_results, race_index, race_name):
 
     if '500' not in race_name:
-        pos_weight = [0.25 * (0.85 ** i) for i in range(len(race_results))]
+        pos_weight = [0.2 * (0.85 ** i) for i in range(len(race_results))]
         team_weight = [0.5 + (1.5 - 0.5) * (i / (5 - 1)) for i in range(5)]
         drivers_available = get_valid_drivers(drivers, race_results)
 
@@ -152,8 +152,8 @@ def update_ratings(drivers, race_results, race_index, race_name):
 
         years = np.array(list(range(1950, 2024)))
         n_drivers = np.array(list(range(1, len(drivers))))
-        values_k_pos = np.linspace(22, 5, len(years))
-        values_k_team = np.linspace(82, 35, len(years))
+        values_k_pos = np.linspace(20, 5, len(years))
+        values_k_team = np.linspace(82.5, 35, len(years))
         values_extra_weight_team = np.linspace(1.5, 0.5, len(drivers_available))
 
         k_pos = {year: value for year, value in zip(years, values_k_pos)}
@@ -277,6 +277,8 @@ def elo_execution(start, end):
 
     total_elo = 0
     for driver in drivers:
+        if driver.name == 'Alberto//Ascari':
+            a = 1
         total_elo += driver.rating
         driver.ma_elo = {}
         for key, value in driver.historical_elo.items():
@@ -330,6 +332,4 @@ def elo_execution(start, end):
         max_rating = round(driver.ma_elo_3ma[max_key], 2)
         print(f'{count} - {driver.name} - {max_rating} (from year: {max_key})')
         count += 1
-        if driver.name == 'Alberto//Ascari':
-            a = 1
 

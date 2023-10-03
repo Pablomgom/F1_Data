@@ -17,7 +17,7 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    elo_execution(1950, 2024)
+    elo_execution(1950, 1957)
 
     # plot_upgrades('Circuit Specific')
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     # get_retirements()
 
-    # wdc_comparation('Max Verstappen', 2015, 2024)
+    # wdc_comparation('Jim Clark', 1960, 1969)
 
     # get_topspeed(16)
 
