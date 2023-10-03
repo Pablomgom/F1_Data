@@ -100,7 +100,7 @@ def race_influence_factor(num_races):
     return a / (num_races + b)
 
 
-def min_max_scale_factors(factors, year, scale_min=1, scale_max=2):
+def min_max_scale_factors(factors, year, scale_min=1, scale_max=2.5):
     min_val = min(factors)
     max_val = max(factors)
 
@@ -108,17 +108,18 @@ def min_max_scale_factors(factors, year, scale_min=1, scale_max=2):
         return [scale_min for _ in factors]
 
     if year < 1960:
-        scale_max = 15
+        scale_max = 5
     elif year < 1970:
-        scale_max = 14.5
+        scale_max = 4.5
     elif year < 1980:
-        scale_max = 13
+        scale_max = 4.5
     elif year < 1990:
-        scale_max = 10.5
+        scale_max = 4.5
     elif year < 2000:
-        scale_max = 7.5
+        scale_max = 4
     elif year < 2010:
-        scale_max = 3
+        scale_max = 3.5
+
     return [scale_min + (f - min_val) * (scale_max - scale_min) / (max_val - min_val) for f in factors]
 
 
@@ -138,13 +139,24 @@ def get_valid_drivers(drivers, results):
 
 
 def update_ratings(drivers, race_results, race_index, race_name):
-    pos_weight = [0.125 * (0.85 ** i) for i in range(len(race_results))]
-    team_weight = [0.8 + (1.5 - 0.8) * (i / (5 - 1)) for i in range(5)]
+    pos_weight = [0.25 * (0.85 ** i) for i in range(len(race_results))]
+    team_weight = [0.5 + (1.5 - 0.5) * (i / (5 - 1)) for i in range(5)]
     drivers_available = get_valid_drivers(drivers, race_results)
 
+    current_year = int(race_name.split(' ')[0])
     factors = [race_influence_factor(d.num_races) for d in drivers_available]
-    scaled_factors = min_max_scale_factors(factors, int(race_name.split(' ')[0]))
+    scaled_factors = min_max_scale_factors(factors, current_year)
     normalized_factors = normalize_factors(scaled_factors)
+
+    years = np.array(list(range(1950, 2024)))
+    n_drivers = np.array(list(range(1, len(drivers))))
+    values_k_pos = np.linspace(22, 5, len(years))
+    values_k_team = np.linspace(82, 35, len(years))
+    values_extra_weight_team = np.linspace(1.5, 0.5, len(drivers_available))
+
+    k_pos = {year: value for year, value in zip(years, values_k_pos)}
+    k_team = {year: value for year, value in zip(years, values_k_team)}
+    k_extra_weight = {year: value for year, value in zip(n_drivers, values_extra_weight_team)}
 
     for i, d_a in enumerate(drivers_available):
         d_a.races_factor = normalized_factors[i]
@@ -168,9 +180,9 @@ def update_ratings(drivers, race_results, race_index, race_name):
                                 s_a = 0
                             else:
                                 s_a = 0.5
-
                             d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
-                                                                   d_b.previous_rating, s_a, weight, 5) * d_a.races_factor, 2)
+                                                                   d_b.previous_rating, s_a, weight,
+                                                                   k_pos[current_year]) * d_a.races_factor, 2)
 
             avg_team_pos = get_avg_teammate_pos(d_a_parts_name[0], d_a_parts_name[1], race_results, drivers, d_a_pos)
             if avg_team_pos[0] != -1:
@@ -199,10 +211,14 @@ def update_ratings(drivers, race_results, race_index, race_name):
                     weight = weight / num_d
                     if num_d > 1:
                         s_a = 0
-
+                if round(avg_team_pos[0], 0) - 1 in list(k_extra_weight.keys()):
+                    weight = weight * k_extra_weight[round(avg_team_pos[0], 0) - 1]
+                else:
+                    weight = weight * k_extra_weight[len(k_extra_weight)]
+                    print(f'{d_a.name} - {round(avg_team_pos[0], 0)} - {max(list(k_extra_weight.keys()))}')
                 d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
-                                                       avg_team_pos[1], s_a, weight, 35) * d_a.races_factor, 2)
-
+                                                       avg_team_pos[1], s_a, weight,
+                                                       k_team[current_year]) * d_a.races_factor, 2)
 
     gain_elo = []
     lose_elo = []
@@ -251,6 +267,9 @@ def elo_execution(start, end):
         drivers_in_race = [code for code in race['givenName'] + '//' + race['familyName']]
         intersection = [value for value in driver_names if value in drivers_in_race]
         drivers_in_race = [d for d in drivers if d.name in intersection]
+        drivers_not_in_race = [d for d in drivers if d.name not in intersection]
+        for d in drivers_not_in_race:
+            d.historical_elo[races_name[race_index]] = d.rating
         for d in drivers_in_race:
             d.num_races += 1
         update_ratings(drivers_in_race, race, race_index, races_name[race_index])
