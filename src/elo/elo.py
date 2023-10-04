@@ -277,8 +277,6 @@ def elo_execution(start, end):
 
     total_elo = 0
     for driver in drivers:
-        if driver.name == 'Alberto//Ascari':
-            a = 1
         total_elo += driver.rating
         driver.ma_elo = {}
         for key, value in driver.historical_elo.items():
@@ -309,8 +307,7 @@ def elo_execution(start, end):
         driver.rating = round(driver.rating, 2)
         print(f'{count} - {driver.name} - {driver.rating}')
         count += 1
-        if driver.name == 'Juan//Fangio':
-            a = 1
+
     print('----------------------------------------------------------------------')
     top_drivers = sorted(drivers, key=lambda driver: (
         max(driver.historical_elo.values()),  # Maximize the Elo rating
@@ -323,13 +320,31 @@ def elo_execution(start, end):
         )
         max_rating = round(max_rating, 2)
         print(f'{count} - {driver.name} - {max_rating} (from race: {max_key})')
+    try:
+        print('----------------------------------------------------------------------')
+        drivers = sorted(drivers, key=lambda driver: max(driver.ma_elo_3ma.values()), reverse=True)
+        count = 1
+        for driver in drivers[:25]:
+            max_key = max(driver.ma_elo_3ma, key=driver.ma_elo_3ma.get)
+            max_rating = round(driver.ma_elo_3ma[max_key], 2)
+            print(f'{count} - {driver.name} - {max_rating} (from year: {max_key})')
+            count += 1
+    except:
+        print('Not enough data for the MA')
 
     print('----------------------------------------------------------------------')
-    drivers = sorted(drivers, key=lambda driver: max(driver.ma_elo_3ma.values()), reverse=True)
+    current_season = ergast.get_race_results(season=2023, limit=1000)
+    season_races = []
+    season_races += [race for race in current_season.content]
+    current_drivers_names = set([code for race in season_races for code in race['givenName'] + '//' + race['familyName']])
+
+    current_drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
     count = 1
-    for driver in drivers[:25]:
-        max_key = max(driver.ma_elo_3ma, key=driver.ma_elo_3ma.get)
-        max_rating = round(driver.ma_elo_3ma[max_key], 2)
-        print(f'{count} - {driver.name} - {max_rating} (from year: {max_key})')
-        count += 1
+    for driver in current_drivers:
+        if driver.name in current_drivers_names:
+            driver.rating = round(driver.rating, 2)
+            print(f'{count} - {driver.name} - {driver.rating}')
+            count += 1
+
+
 
