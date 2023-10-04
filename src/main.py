@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     # compare_qualy_results('alphatauri', 19, end=2010)
 
-    avg_driver_position(None, 'red_bull', 2021, session='Q')
+    avg_driver_position(None, 'red_bull', 2023, session='Q')
 
     # full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', mode='team', split=8)
 

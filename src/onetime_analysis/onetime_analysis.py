@@ -1475,7 +1475,8 @@ def avg_driver_position(driver, team, year, session='Q'):
         drivers = []
         for gp in data.content:
             for d in gp['driverCode']:
-                drivers.append(d)
+                if d not in ['RIC', 'DEV']:
+                    drivers.append(d)
         drivers_array = set(drivers)
         drivers = {d: [] for d in drivers_array}
         for gp in data.content:
@@ -1492,38 +1493,24 @@ def avg_driver_position(driver, team, year, session='Q'):
         drivers = list(avg_grid.keys())
         avg_pos = list(avg_grid.values())
         colors = [driver_colors_2023[key] for key in drivers]
-        fig, ax = plt.subplots(figsize=(12, 6))  # Set the figure size (optional)
+        fig, ax = plt.subplots(figsize=(9, 7.2), dpi=150)  # Set the figure size (optional)
         bars = plt.bar(drivers, avg_pos, color=colors)  # Plot the bar chart with specific colors (optional)
 
-        for bar in bars:
-            bar.set_visible(False)
+        round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=-0.1, corner_radius=0.1)
+        annotate_bars(bars, ax, 0.2, 10.5, text_annotate='default', ceil_values=False)
 
-        i = 0
-        for bar in bars:
-            height = bar.get_height()
-            x, y = bar.get_xy()
-            width = bar.get_width()
 
-            # Create a fancy bbox with rounded corners and add it to the axes
-            rounded_box = rounded_top_rect(x, y, width, height, 0.1, colors[i], -0.1)
-            rounded_box.set_facecolor(colors[i])
-            ax.add_patch(rounded_box)
-            i += 1
-
-        for bar in bars:
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, height + 0.2, f'{height}', ha='center',
-                     va='bottom',
-                     font='Fira Sans', fontsize=11)
         plt.xlabel('Drivers', font='Fira Sans', fontsize=14)  # x-axis label (optional)
         plt.ylabel('Avg Grid Position', font='Fira Sans', fontsize=14)  # y-axis label (optional)
-        plt.title('Average Grid Position Per Driver', font='Fira Sans', fontsize=20)  # Title (optional)
-        plt.xticks(rotation=90, fontsize=13)
-        plt.yticks(fontsize=13)
+        plt.title('Average Qualy Position Per Driver', font='Fira Sans', fontsize=20)  # Title (optional)
+        plt.xticks(rotation=90, fontsize=11)
+        plt.yticks(fontsize=11)
         ax.yaxis.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
-        plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=400)
+        plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=150)
         plt.show()
+        for i in range(len(drivers)):
+            print(f'{i+1}: {drivers[i]} - {avg_pos[i]}')
     else:
         for gp in data.content:
             session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]
@@ -1532,8 +1519,8 @@ def avg_driver_position(driver, team, year, session='Q'):
             else:
                 print(f'{driver} not in {team}')
 
-    print(np.round(np.mean(position), 2))
-    return np.round(np.mean(position), 2), statistics.median(position)
+        print(np.round(np.mean(position), 2))
+        return np.round(np.mean(position), 2), statistics.median(position)
 
 
 def lucky_drivers(start=None, end=None):
