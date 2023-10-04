@@ -1,5 +1,7 @@
 from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
+
+from src.elo.elo import elo_execution
 from src.race_pace_exceptions import race_exceptions
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
@@ -15,7 +17,9 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    # plot_upgrades('Circuit Specific')
+    # elo_execution(1950, 2024)
+
+    # plot_upgrades('Performance')
 
     # dhl_pitstops(2023, points=True)
 
@@ -104,7 +108,7 @@ if __name__ == '__main__':
 
     # get_retirements()
 
-    # wdc_comparation('Max Verstappen', 2015, 2024)
+    # wdc_comparation('Jim Clark', 1960, 1969)
 
     # get_topspeed(16)
 
@@ -118,7 +122,7 @@ if __name__ == '__main__':
 
     # compare_qualy_results('alphatauri', 19, end=2010)
 
-    # avg_driver_position('perez', 'red_bull', 2023, session='Q')
+    avg_driver_position(None, 'red_bull', 2021, session='Q')
 
     # full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', mode='team', split=8)
 
@@ -126,6 +130,6 @@ if __name__ == '__main__':
 
     # get_DNFs_team('mercedes', 2014, 2024)
 
-    # simulate_qualy_championship(2007)
+    # simulate_qualy_championship(2022)
 
 
