@@ -36,7 +36,7 @@ def qualy_diff_teammates(team, rounds):
         qualy = fastf1.get_session(2023, i + 1, 'Q')
         qualy.load()
         circuits.append(qualy.event.Location.split('-')[0])
-        drivers = np.unique(qualy.laps.pick_team(team)['Driver'].values)
+        drivers = list(np.unique(qualy.laps.pick_team(team)['Driver'].values))
         q1, q2, q3 = qualy.laps.split_qualifying_sessions()
         if drivers[0] in q3['Driver'].unique() and drivers[1] in q3['Driver'].unique():
             session = q3
@@ -55,7 +55,7 @@ def qualy_diff_teammates(team, rounds):
             color.append('#FFA500')
 
         delta_diff = ((d0_time - d1_time) / d1_time) * 100
-        differences.append(round(delta_diff, 2))
+        differences.append(round(-delta_diff, 2))
 
     fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
     bars = plt.bar(circuits, differences, color=color)
@@ -64,7 +64,7 @@ def qualy_diff_teammates(team, rounds):
     print(f'MEDIAN: {statistics.median(differences)}')
 
     round_bars(bars, ax1, color)
-    annotate_bars(bars, ax1, 0.01, 9, text_annotate='{height}%', ceil_values=False)
+    annotate_bars(bars, ax1, 0.01, 8, text_annotate='{height}%', ceil_values=False)
 
     legend_lines = []
     unique_colors = []
@@ -79,22 +79,22 @@ def qualy_diff_teammates(team, rounds):
         i += 1
 
     plt.legend(legend_lines, unique_drivers,
-               loc='upper left', fontsize='large')
+               loc='lower left', fontsize='large')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
     plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=14)
     plt.xticks(ticks=range(len(circuits)), labels=circuits,
                rotation=90, fontsize=12, fontname='Fira Sans')
-    plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
-    plt.ylabel('Time diff (percentage)',font='Fira Sans', fontsize=16)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
+    plt.ylabel('Time diff (percentage)', font='Fira Sans', fontsize=16)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=450)
+    plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=150)
     plt.show()
 
-def race_pace_teammates(team, rounds):
 
+def race_pace_teammates(team, rounds):
     circuits = []
     legend = []
     color = []
@@ -247,9 +247,9 @@ def race_pace_teammates(team, rounds):
     plt.xticks(ticks=range(len(circuits)), labels=circuits,
                rotation=90, fontsize=11, fontname='Fira Sans')
     plt.yticks(fontsize=11)
-    plt.xlabel('Circuit',font='Fira Sans', fontsize=14)
-    plt.ylabel('Time diff (percentage)',font='Fira Sans', fontsize=12)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master',font='Fira Sans', fontsize=12, color='white', alpha=0.6)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=14)
+    plt.ylabel('Time diff (percentage)', font='Fira Sans', fontsize=12)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=12, color='white', alpha=0.6)
     plt.tight_layout()
     plt.savefig(f'../PNGs/RACE DIFF BETWEEN {team} TEAMMATES.png', dpi=150)
     plt.show()
@@ -385,7 +385,6 @@ def long_runs_FP2(race, driver):
     # Turn on major grid lines
     sns.despine(left=True, bottom=True)
 
-
     plt.tight_layout()
     plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=400)
     plt.show()
@@ -424,14 +423,12 @@ def driver_race_times_per_tyre(race, driver):
     plt.savefig(f"../PNGs/RACE LAPS {driver} {race.event.OfficialEventName}.png", dpi=400)
     plt.show()
 
+
 def tyre_strategies(session):
     laps = session.laps
     drivers = session.drivers
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
-    drivers = ['VER', 'NOR', 'PIA', 'LEC', 'HAM', 'SAI', 'RUS', 'ALO', 'OCO', 'GAS',
-               'LAW', 'TSU', 'ZHO', 'HUL', 'MAG', 'ALB', 'SAR', 'STR', 'PER', 'BOT']
-
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
 
     past_stint = 1
@@ -525,7 +522,6 @@ def tyre_strategies(session):
 
 
 def race_pace_top_10(race):
-
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
@@ -573,7 +569,6 @@ def race_pace_top_10(race):
 
 
 def race_diff(team_1, team_2, year):
-
     races = []
     session_names = []
     context = ''
@@ -584,7 +579,7 @@ def race_diff(team_1, team_2, year):
     team_2_total_laps = []
     n_races = Ergast().get_race_results(season=year, limit=1000)
     for i in range(len(n_races.content)):
-        race = fastf1.get_session(year,  i + 1, 'R')
+        race = fastf1.get_session(year, i + 1, 'R')
         race.load(telemetry=True)
         races.append(race)
         session_names.append(race.event['Location'].split('-')[0])
@@ -705,7 +700,7 @@ def race_distance(session, driver_1, driver_2):
     for i in range(len(laps_driver_1)):
         if i < 23:
             laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
-            laps.append(i+1)
+            laps.append(i + 1)
 
     laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
     progressive_sum = laps_diff
@@ -728,7 +723,7 @@ def race_distance(session, driver_1, driver_2):
             (bar.get_x() + bar.get_width() / 2, yval + offset),  # Adjusted the y-coordinate here
             ha='center',  # horizontal alignment
             va='center',  # vertical alignment
-            fontsize=8 # font size
+            fontsize=8  # font size
         )
     # Create custom legend
 
@@ -781,15 +776,15 @@ def race_distance(session, driver_1, driver_2):
     plt.xlabel('Laps', fontsize=20)
     plt.ylabel('Progressive Time Difference (seconds)', fontsize=20)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
-    plt.title(f'Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}', fontsize=20)
+    plt.title(
+        f'Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}',
+        fontsize=20)
     plt.grid(True, axis='y')
     ax.set_yticks([20, 15, 10, 5, 0, -5, -10, -15, -20])
 
     # Display the plot
     plt.tight_layout()  # Adjusts plot parameters for a better layout
-    plt.savefig(f'../PNGs/Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}', dpi=400)
+    plt.savefig(
+        f'../PNGs/Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}',
+        dpi=400)
     plt.show()
-
-
-
-
