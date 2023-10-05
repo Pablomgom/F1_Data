@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 8, 'R')
+    session = fastf1.get_session(2021, 'Qatar', 'Q')
     # session.load()
 
     # lucky_drivers(1950,2024)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # team_performance_vs_qualy_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
 
-    # qualy_diff_teammates('Ferrari', 16)
+    qualy_diff_teammates('Ferrari', 16)
 
     # race_pace_teammates('Mercedes', 16)
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     # compare_qualy_results('alphatauri', 19, end=2010)
 
-    avg_driver_position(None, 'red_bull', 2023, session='Q')
+    # avg_driver_position(None, 'red_bull', 2023, session='Q')
 
     # full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', mode='team', split=8)
 

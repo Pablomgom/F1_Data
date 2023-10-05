@@ -57,17 +57,14 @@ def qualy_diff_teammates(team, rounds):
         delta_diff = ((d0_time - d1_time) / d1_time) * 100
         differences.append(round(delta_diff, 2))
 
-    fig, ax1 = plt.subplots(figsize=(12, 9))
-
+    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
     bars = plt.bar(circuits, differences, color=color)
 
-    round_bars(bars, ax1, color)
+    print(f'MEAN: {statistics.mean(differences)}')
+    print(f'MEDIAN: {statistics.median(differences)}')
 
-    delta_laps = pd.Series(differences)
-    mean_y = list(delta_laps.rolling(window=4, min_periods=1).mean())
-    ma_color = 'red'
-    plt.plot(circuits, mean_y, color=ma_color,
-             marker='o', markersize=4, linewidth=2, label='Moving Average (4 last races)')
+    round_bars(bars, ax1, color)
+    annotate_bars(bars, ax1, 0.01, 9, text_annotate='{height}%', ceil_values=False)
 
     legend_lines = []
     unique_colors = []
@@ -81,18 +78,12 @@ def qualy_diff_teammates(team, rounds):
             legend_lines.append(legend_p)
         i += 1
 
-    annotate_bars(bars, ax1, 0.01, 11.5, text_annotate='{height}%', ceil_values=False)
-
-    legend_lines.append(Line2D([0], [0], color='red', lw=4))
-    unique_drivers.append('Moving Average (4 last qualys)')
-
-
     plt.legend(legend_lines, unique_drivers,
-               loc='upper left', fontsize='x-large')
+               loc='upper left', fontsize='large')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=24)
+    plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=14)
     plt.xticks(ticks=range(len(circuits)), labels=circuits,
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.xlabel('Circuit',font='Fira Sans', fontsize=16)
