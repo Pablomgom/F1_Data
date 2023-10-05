@@ -109,3 +109,8 @@ point_system_2010 = {
     9: 2,
     10: 1
 }
+
+point_systems = {
+    2009: point_system_2009,
+    2010: point_system_2009
+}

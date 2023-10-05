@@ -27,7 +27,8 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 from src.plots.plots import round_bars
-from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009
+from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009, \
+    point_systems
 
 
 def get_DNFs_team(team, start, end):
@@ -56,46 +57,46 @@ def get_DNFs_team(team, start, end):
     """)
 
 
-def simulate_season_different_psystem(year, drivers):
-
-    ergast = Ergast()
-    for driver in drivers:
-        points = 0
-        races = ergast.get_race_results(season=year, driver=driver, limit=1000).content
-        for race in races:
-            pos = race['position'].values[0]
-            if pos in list(point_system_2010.keys()):
-                points += point_system_2010[pos]
-            if 'fastestLapRank' in race.columns:
-                if race['fastestLapRank'].values[0] == 1 and pos <= 10:
-                    points += 1
-        print(f'{driver} - {points}')
-
-def simulate_qualy_championship(year):
-
-    qualy_data = Ergast().get_qualifying_results(season=year, limit=1000)
-    drivers = set([code for df in qualy_data.content for code in df['driverCode'].values])
-    driver_points = {}
-    for driver in drivers:
-        driver_points[driver] = 0
-    for qualy in qualy_data.content:
+def proccess_season_data(data, drivers, driver_points, system):
+    for session in data:
         for driver in drivers:
-            driver_data = qualy[qualy['driverCode'] == driver]
+            driver_data = session[session['driverCode'] == driver]
             if len(driver_data) > 0:
-                pos = qualy[qualy['driverCode'] == driver]['position'].values[0]
-                if pos in list(point_system_2009.keys()):
-                    driver_points[driver] += point_system_2009[pos]
-
+                pos = session[session['driverCode'] == driver]['position'].values[0]
+                if pos in list(system.keys()):
+                    driver_points[driver] += system[pos]
     driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
     total_p = 0
+    pos = 1
     for d, p in driver_points.items():
-        print(f'{d} - {p}')
+        print(f'{pos}: {d} - {p}')
         total_p += p
+        pos += 1
     print(total_p)
 
 
-def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_team=None, d2_team=None):
+def simulate_season_different_psystem(year, system):
+    ergast = Ergast()
+    race_data = ergast.get_race_results(season=year, limit=1000).content
+    drivers = set([code for df in race_data for code in df['driverCode'].values])
+    driver_points = {}
+    for driver in drivers:
+        driver_points[driver] = 0
+    system = point_systems[system]
+    proccess_season_data(race_data, drivers, driver_points, system)
 
+
+def simulate_qualy_championship(year, system):
+    qualy_data = Ergast().get_qualifying_results(season=year, limit=1000).content
+    drivers = set([code for df in qualy_data for code in df['driverCode'].values])
+    driver_points = {}
+    for driver in drivers:
+        driver_points[driver] = 0
+    system = point_systems[system]
+    proccess_season_data(qualy_data, drivers, driver_points, system)
+
+
+def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_team=None, d2_team=None):
     ergast = Ergast()
     if mode == 'team':
         race_results = ergast.get_race_results(season=year, constructor=team, limit=1000).content
@@ -105,7 +106,8 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
         qualy_part_1 = [qualy_results[i] for i in range(split)]
         qualy_part_2 = [qualy_results[i] for i in range(split, len(qualy_results))]
         constructor_data_p1 = ergast.get_constructor_standings(season=year, constructor=team, round=split, limit=1000)
-        constructor_data_p2 = ergast.get_constructor_standings(season=year, constructor=team, round=len(race_results), limit=1000)
+        constructor_data_p2 = ergast.get_constructor_standings(season=year, constructor=team, round=len(race_results),
+                                                               limit=1000)
 
         avg_grid_p1 = np.round(np.mean([pos for i in qualy_part_1 for pos in i['position'].values]), 2)
         avg_grid_p2 = np.round(np.mean([pos for i in qualy_part_2 for pos in i['position'].values]), 2)
@@ -166,10 +168,10 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
         d1_race_results = ergast.get_race_results(season=year, driver=d1, limit=1000).content
         d1_code = d1_race_results[0]['driverCode'].values[0]
         d1_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d1_race_results
-                                        if re.search(r'(Finished|\+)', i['status'].max())])
+                                           if re.search(r'(Finished|\+)', i['status'].max())])
 
         d1_dnf_count = len([i['position'].values[0] for i in d1_race_results
-                                        if not re.search(r'(Finished|\+)', i['status'].max())])
+                            if not re.search(r'(Finished|\+)', i['status'].max())])
 
         d1_victories = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] == 1])
         d1_podiums = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] <= 3])
@@ -177,10 +179,10 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
         d2_race_results = ergast.get_race_results(season=year, driver=d2, limit=1000).content
         d2_code = d2_race_results[0]['driverCode'].values[0]
         d2_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d2_race_results
-                                        if re.search(r'(Finished|\+)', i['status'].max())])
+                                           if re.search(r'(Finished|\+)', i['status'].max())])
 
         d2_dnf_count = len([i['position'].values[0] for i in d2_race_results
-                        if not re.search(r'(Finished|\+)', i['status'].max())])
+                            if not re.search(r'(Finished|\+)', i['status'].max())])
 
         d2_victories = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] == 1])
         d2_podiums = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] <= 3])
@@ -225,6 +227,7 @@ def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_te
             POINTS: {d1} - {d1_points} {d1_percentage}% --- {d2} - {d2_points} {d2_percentage}%
             LAPS IN FRONT: {d1} - {d1_laps_ahead} {d1_percentage_ahead}% --- {d2} - {d2_laps_ahead} {d2_percentage_ahead}%
         """)
+
 
 def compare_qualy_results(team, threshold, end=None, exclude=None):
     if end is None:
@@ -678,7 +681,7 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
                        edgecolor='white')
 
     round_bars(bars, ax1, colors, y_offset_rounded)
-    annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize,  ceil_values=True)
+    annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize, ceil_values=True)
 
     ax1.set_title(title, font='Fira Sans', fontsize=28)
     ax1.set_xlabel(x_label, font='Fira Sans', fontsize=20)
@@ -1487,7 +1490,6 @@ def avg_driver_position(driver, team, year, session='Q'):
         round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=-0.1, corner_radius=0.1)
         annotate_bars(bars, ax, 0.2, 10.5, text_annotate='default', ceil_values=False)
 
-
         plt.xlabel('Drivers', font='Fira Sans', fontsize=14)  # x-axis label (optional)
         plt.ylabel('Avg Grid Position', font='Fira Sans', fontsize=14)  # y-axis label (optional)
         plt.title('Average Qualy Position Per Driver', font='Fira Sans', fontsize=20)  # Title (optional)
@@ -1498,7 +1500,7 @@ def avg_driver_position(driver, team, year, session='Q'):
         plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=150)
         plt.show()
         for i in range(len(drivers)):
-            print(f'{i+1}: {drivers[i]} - {avg_pos[i]}')
+            print(f'{i + 1}: {drivers[i]} - {avg_pos[i]}')
     else:
         for gp in data.content:
             session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]

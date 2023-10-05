@@ -17,7 +17,7 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    elo_execution(1950, 2024)
+    # elo_execution(1950, 2024)
 
     # plot_upgrades('Circuit Specific')
 
@@ -126,10 +126,10 @@ if __name__ == '__main__':
 
     # full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', mode='team', split=8)
 
-    # simulate_season_different_psystem(2008, ['hamilton', 'massa'])
+    # simulate_season_different_psystem(2021, 2009)
 
     # get_DNFs_team('mercedes', 2014, 2024)
 
-    # simulate_qualy_championship(2022)
+    simulate_qualy_championship(2021, 2009)
 
 
