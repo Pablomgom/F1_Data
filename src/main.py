@@ -17,9 +17,9 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    # elo_execution(1950, 2024)
+    elo_execution(1950, 2024)
 
-    # plot_upgrades('Performance')
+    # plot_upgrades('Circuit Specific')
 
     # dhl_pitstops(2023, points=True)
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Canada', 'Q')
+    session = fastf1.get_session(2021, 'Catar', 'Q')
     session.load()
 
     # lucky_drivers(1950,2024)
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     # plot_circuit_with_data(session, 'Speed')
 
-    tyre_strategies(session)
+    #tyre_strategies(session)
 
     # qualy_results(session)
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # get_driver_results_circuit('max_verstappen', 'suzuka', 2015)
 
-    # race_qualy_avg_metrics(2023, session='R', predict=True)
+    # race_qualy_avg_metrics(2023, session='R', predict=True, mode=1)
 
     # qualy_margin('suzuka', start=1950, end=2024)
 

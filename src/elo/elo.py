@@ -82,16 +82,20 @@ def get_finish_status(given_name='', family_name='', results=None, status=None):
         driver_result = results[(results['givenName'] == given_name) & (results['familyName'] == family_name)]
         driver_result = driver_result.sort_values(by='position', ascending=False)
         status = driver_result['status'].values[0]
-    '''
-    if status not in ['Accident', 'Collision', 'Spun off', 'Injured', 'Injury',
-                      'Fatal accident', 'Collision damaga', 'Damage', 'Physical']:
-        if not re.search(r'(Finished|\+)', status):
-            return False
-    return True
-    '''
     if not re.search(r'(Finished|\+)', status):
         return False
     return True
+
+
+def is_accident(given_name='', family_name='', results=None, status=None):
+    if status is None:
+        driver_result = results[(results['givenName'] == given_name) & (results['familyName'] == family_name)]
+        driver_result = driver_result.sort_values(by='position', ascending=False)
+        status = driver_result['status'].values[0]
+    if status in ['Accident', 'Collision', 'Spun off', 'Injured', 'Injury',
+                  'Fatal accident', 'Collision damage', 'Damage', 'Physical']:
+        return True
+    return False
 
 
 def race_influence_factor(num_races):
@@ -129,23 +133,39 @@ def normalize_factors(factors):
     return [f * total_drivers / factor_sum for f in factors]
 
 
-def get_valid_drivers(drivers, results):
+def get_valid_drivers(drivers, results, year):
     valid_drivers = []
     for d in drivers:
         name = d.name.split('//')
         if get_finish_status(name[0], name[1], results):
             valid_drivers.append(d)
+        else:
+            if is_accident(name[0], name[1], results) and year >= 2000:
+                team = results[(results['givenName'] == name[0])
+                               & (results['familyName'] == name[1])]['constructorId'].values[0]
+                team_results = results[results['constructorId'] == team]
+                teammate_data = team_results[(team_results['givenName'] != name[0])
+                                             & (team_results['familyName'] != name[1])]
+                if len(teammate_data) == 1:
+                    teamamte_name = teammate_data['givenName'].values[0] + '//' + teammate_data['familyName'].values[0]
+                    teammate_status = teammate_data['status'].values[0]
+                    if get_finish_status(status=teammate_status) or not is_accident(status=teammate_status):
+                        d.elo_changes -= 7.5
+                        for d_t in drivers:
+                            if d_t.name == teamamte_name:
+                                d_t.elo_changes += 7.5
+                                print(f'{d.name} -5 ---- {d_t.name} +5')
+                                break
     return valid_drivers
 
 
 def update_ratings(drivers, race_results, race_index, race_name):
-
     if '500' not in race_name:
         pos_weight = [0.2 * (0.85 ** i) for i in range(len(race_results))]
         team_weight = [0.5 + (1.5 - 0.5) * (i / (5 - 1)) for i in range(5)]
-        drivers_available = get_valid_drivers(drivers, race_results)
-
         current_year = int(race_name.split(' ')[0])
+        drivers_available = get_valid_drivers(drivers, race_results, current_year)
+
         factors = [race_influence_factor(d.num_races) for d in drivers_available]
         scaled_factors = min_max_scale_factors(factors, current_year)
         normalized_factors = normalize_factors(scaled_factors)
@@ -165,62 +185,60 @@ def update_ratings(drivers, race_results, race_index, race_name):
 
         for d_a in drivers_available:
             d_a_parts_name = d_a.name.split('//')
-            if get_finish_status(d_a_parts_name[0], d_a_parts_name[1], race_results):
-                d_a_pos = get_pos(d_a_parts_name[0], d_a_parts_name[1], race_results)
-                for d_b in drivers_available:
-                    if d_a.name != d_b.name:
-                        d_b_parts_name = d_b.name.split('//')
-                        if get_finish_status(d_b_parts_name[0], d_b_parts_name[1], race_results):
-                            d_b_pos = get_pos(d_b_parts_name[0], d_b_parts_name[1], race_results)
-                            if d_a_pos != 0 and d_b_pos != 0:
-                                w_pos_a = pos_weight[d_a_pos - 1]
-                                w_pos_b = pos_weight[d_b_pos - 1]
-                                weight = abs(w_pos_a - w_pos_b)
-                                if w_pos_a > w_pos_b:
-                                    s_a = 1
-                                elif w_pos_b > w_pos_a:
-                                    s_a = 0
-                                else:
-                                    s_a = 0.5
-                                d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
-                                                                       d_b.previous_rating, s_a, weight,
-                                                                       k_pos[current_year]) * d_a.races_factor, 2)
-
-                avg_team_pos = get_avg_teammate_pos(d_a_parts_name[0], d_a_parts_name[1], race_results, drivers, d_a_pos)
-                if avg_team_pos[0] != -1:
-                    if d_a_pos < avg_team_pos[0]:
-                        s_a = 1
-                    elif d_a_pos > avg_team_pos[0]:
-                        s_a = 0
-                    else:
-                        s_a = 0.5
-                    pos_dif = abs(d_a_pos - avg_team_pos[0])
-                    if pos_dif < len(team_weight) and pos_dif != 0:
-                        weight = team_weight[int(math.ceil(pos_dif)) - 1]
-                        num_d = len(race_results[race_results['position'] == d_a_pos])
-                        weight = weight / num_d
-                        if (pos_dif - int(pos_dif)) != 0:
-                            if (pos_dif + 1) >= len(team_weight):
-                                next_pos = 1.8
-                            else:
-                                next_pos = team_weight[math.ceil(pos_dif)]
-                            weight += (next_pos - 1) * (pos_dif - int(pos_dif))
-                    elif pos_dif > len(team_weight):
-                        weight = team_weight[len(team_weight) - 1]
-                    else:
-                        weight = team_weight[0]
-                        num_d = len(race_results[race_results['position'] == d_a_pos])
-                        weight = weight / num_d
-                        if num_d > 1:
+            d_a_pos = get_pos(d_a_parts_name[0], d_a_parts_name[1], race_results)
+            for d_b in drivers_available:
+                if d_a.name != d_b.name:
+                    d_b_parts_name = d_b.name.split('//')
+                    d_b_pos = get_pos(d_b_parts_name[0], d_b_parts_name[1], race_results)
+                    if d_a_pos != 0 and d_b_pos != 0:
+                        w_pos_a = pos_weight[d_a_pos - 1]
+                        w_pos_b = pos_weight[d_b_pos - 1]
+                        weight = abs(w_pos_a - w_pos_b)
+                        if w_pos_a > w_pos_b:
+                            s_a = 1
+                        elif w_pos_b > w_pos_a:
                             s_a = 0
-                    if round(avg_team_pos[0], 0) - 1 in list(k_extra_weight.keys()):
-                        weight = weight * k_extra_weight[round(avg_team_pos[0], 0) - 1]
-                    else:
-                        weight = weight * k_extra_weight[len(k_extra_weight)]
-                        print(f'{d_a.name} - {round(avg_team_pos[0], 0)} - {max(list(k_extra_weight.keys()))}')
-                    d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
-                                                           avg_team_pos[1], s_a, weight,
-                                                           k_team[current_year]) * d_a.races_factor, 2)
+                        else:
+                            s_a = 0.5
+                        d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
+                                                               d_b.previous_rating, s_a, weight,
+                                                               k_pos[current_year]) * d_a.races_factor, 2)
+
+            avg_team_pos = get_avg_teammate_pos(d_a_parts_name[0], d_a_parts_name[1], race_results, drivers, d_a_pos)
+            if avg_team_pos[0] != -1:
+                if d_a_pos < avg_team_pos[0]:
+                    s_a = 1
+                elif d_a_pos > avg_team_pos[0]:
+                    s_a = 0
+                else:
+                    s_a = 0.5
+                pos_dif = abs(d_a_pos - avg_team_pos[0])
+                if pos_dif < len(team_weight) and pos_dif != 0:
+                    weight = team_weight[int(math.ceil(pos_dif)) - 1]
+                    num_d = len(race_results[race_results['position'] == d_a_pos])
+                    weight = weight / num_d
+                    if (pos_dif - int(pos_dif)) != 0:
+                        if (pos_dif + 1) >= len(team_weight):
+                            next_pos = 1.8
+                        else:
+                            next_pos = team_weight[math.ceil(pos_dif)]
+                        weight += (next_pos - 1) * (pos_dif - int(pos_dif))
+                elif pos_dif > len(team_weight):
+                    weight = team_weight[len(team_weight) - 1]
+                else:
+                    weight = team_weight[0]
+                    num_d = len(race_results[race_results['position'] == d_a_pos])
+                    weight = weight / num_d
+                    if num_d > 1:
+                        s_a = 0
+                if round(avg_team_pos[0], 0) - 1 in list(k_extra_weight.keys()):
+                    weight = weight * k_extra_weight[round(avg_team_pos[0], 0) - 1]
+                else:
+                    weight = weight * k_extra_weight[len(k_extra_weight)]
+                    print(f'{d_a.name} - {round(avg_team_pos[0], 0)} - {max(list(k_extra_weight.keys()))}')
+                d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
+                                                       avg_team_pos[1], s_a, weight,
+                                                       k_team[current_year]) * d_a.races_factor, 2)
 
         gain_elo = []
         lose_elo = []
@@ -297,7 +315,7 @@ def elo_execution(start, end):
                 three_years = [years_sorted[i - j] for j in range(3)]
                 avg = sum([driver.ma_elo[y] for y in three_years]) / 3
                 driver.ma_elo_3ma[year] = avg
-    print(total_elo/len(drivers))
+    print(total_elo / len(drivers))
 
     print('----------------------------------------------------------------------')
 
@@ -336,15 +354,15 @@ def elo_execution(start, end):
     current_season = ergast.get_race_results(season=2023, limit=1000)
     season_races = []
     season_races += [race for race in current_season.content]
-    current_drivers_names = set([code for race in season_races for code in race['givenName'] + '//' + race['familyName']])
+    current_drivers_names = set(
+        [code for race in season_races for code in race['givenName'] + '//' + race['familyName']])
 
     current_drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
     count = 1
     for driver in current_drivers:
         if driver.name in current_drivers_names:
             driver.rating = round(driver.rating, 2)
-            print(f'{count} - {driver.name} - {driver.rating}')
+            prev_rating = round(driver.historical_elo[races_name[-2]], 2)
+            diff = round(driver.rating - prev_rating, 2)
+            print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff})')
             count += 1
-
-
-

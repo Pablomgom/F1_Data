@@ -354,6 +354,7 @@ def plot_circuit_with_data(session, col='nGear'):
         lc_comp = LineCollection(segments, norm=plt.Normalize(min_speed, max_speed), cmap=cmap)
         lc_comp.set_array(data)
 
+    fig, ax = plt.subplots(figsize=(7.2,7.2))
     lc_comp.set_array(data)
     lc_comp.set_linewidth(4)
 
@@ -363,14 +364,20 @@ def plot_circuit_with_data(session, col='nGear'):
 
     plt.suptitle(
         f"Fastest Lap {text} Visualization\n"
-        f"{lap['Driver']} - {session.event['EventName']} {session.event.year}", fontsize=15
+        f"{lap['Driver']} - {session.event['EventName']} {session.event.year}", font='Fira Sans', fontsize=20
     )
     if col == 'nGear':
         cbar = plt.colorbar(mappable=lc_comp, label="Gear", boundaries=np.arange(1, 10))
-        cbar.set_ticks(np.arange(1.5, 9.5))
-        cbar.set_ticklabels(np.arange(1, 9))
+        cbar.set_ticks(np.arange(1.5, 9.5), fontsize=14, fontname='Fira Sans')
+        cbar.set_ticklabels(np.arange(1, 9), fontsize=14, fontname='Fira Sans')
     else:
-        plt.colorbar(mappable=lc_comp, label="Speed")
+        cbar = plt.colorbar(mappable=lc_comp)
+        cbar.set_label("Speed", fontsize=16, fontname='Fira Sans', x=0.8)
+    for label in cbar.ax.get_yticklabels():
+        label.set_size(14)
+        label.set_family('Fira Sans')
+    plt.xticks(fontsize=14, fontname='Fira Sans')
+    plt.yticks(fontsize=14, fontname='Fira Sans')
     plt.savefig(f"../PNGs/GEAR CHANGES {session.event.OfficialEventName}", dpi=400)
     plt.show()
 

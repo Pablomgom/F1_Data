@@ -305,23 +305,16 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
 
     def append_duplicate_number(arr):
 
-        # Dictionary to keep track of counts of appearances
         counts = {}
-
-        # List to store processed items
         result = []
 
         for item in arr:
-            # Check if item is duplicate
             if arr.count(item) > 1:
-                # Increment the count for this item, or set to 1 if not seen before
                 counts[item] = counts.get(item, 0) + 1
-                # Append the count to the item and add to result
                 result.append(f"{item} {counts[item]}")
             else:
                 result.append(item)
 
-        # Convert the result list back to ndarray
         result_arr = np.array(result)
 
         return result_arr
@@ -329,8 +322,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     circuits = append_duplicate_number(circuits)
     for i in range(len(data.content)):
         for team in teams:
-            if circuits[i] == 'Red Bull Ring':
-                a = 1
             if session == 'Q':
                 points = data.content[i][data.content[i]['constructorName'] == team]['position'].mean()
             else:
@@ -382,10 +373,21 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     plt.xlabel("Races", font='Fira Sans', fontsize=18)
     plt.ylabel("Total Points", font='Fira Sans', fontsize=18)
     predict_patch = mpatches.Patch(color='green', alpha=0.5, label='Predictions')
+    last_values = transposed.iloc[-1].values
     handles, labels = ax.get_legend_handles_labels()
+    colors = [line.get_color() for line in ax.lines]
+    info = list(zip(handles, labels, colors, last_values))
+    info.sort(key=lambda item: item[3], reverse=False)
+    handles, labels, colors, last_values = zip(*info)
+    labels = [f"{label} ({last_value:.2f})" for label, last_value in zip(labels, last_values)]
+
     if predict:
+        handles = list(handles)
         handles.append(predict_patch)
-    plt.legend(handles=handles, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
+        labels.append("Predictions")
+
+    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
+
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
     if mode is not None:
@@ -399,12 +401,11 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
-    if predict:
-        pd.options.display.max_colwidth = 50
-        pd.options.display.width = 1000
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        print(transposed)
+    pd.options.display.max_colwidth = 50
+    pd.options.display.width = 1000
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    print(transposed)
 
 
 def plot_upgrades(scope=None):
@@ -418,39 +419,26 @@ def plot_upgrades(scope=None):
     cumulative_sum = ct.cumsum(axis=1)
     ordered_colors = [team_colors_2023[team] for team in cumulative_sum.index]
     transposed = cumulative_sum.transpose()
-    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors)
+    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
 
     if scope is None:
         scope = ''
     else:
         scope += ' '
-    plt.title(f"Cumulative {scope}Upgrades for Each Team", font='Fira Sans', fontsize=28)
+    plt.title(f"Cumulative {scope}Upgrades for Each Team", font='Fira Sans', fontsize=28, x=0.58)
     plt.xlabel("Races", font='Fira Sans', fontsize=18)
     plt.ylabel("Number of Upgrades", font='Fira Sans', fontsize=18)
     races = cumulative_sum.columns
     plt.xticks(ticks=range(len(races)), labels=races, rotation=90)
-
-    # Initialize the previous y-value
-    prev_y = None
-    offset = 1
-    # Annotate the last value of each line
-    for team, color in zip(transposed.columns, ordered_colors):
-        y_value = transposed[team].iloc[-1]
-        if prev_y is not None and abs(prev_y - y_value) < offset:
-            y_value += offset
-        ax.annotate(f"{y_value:.0f}",
-                    xy=(len(races) - 1, y_value),
-                    xytext=(10, 0),  # 5 points horizontal offset
-                    textcoords="offset points",
-                    va="center",
-                    ha="left",
-                    font='Fira Sans',
-                    fontsize=13,
-                    color=color)
-        prev_y = y_value
-
     font = FontProperties(family='Fira Sans', size=12)
-    plt.legend(prop=font, loc="upper left")
+    last_values = transposed.iloc[-1].values
+    handles, labels = ax.get_legend_handles_labels()
+    colors = [line.get_color() for line in ax.lines]
+    info = list(zip(handles, labels, colors, last_values))
+    info.sort(key=lambda item: item[3], reverse=True)
+    handles, labels, colors, last_values = zip(*info)
+    labels = [f"{label} ({last_value:.0f})" for label, last_value in zip(labels, last_values)]
+    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.yticks(fontsize=12, fontname='Fira Sans')
