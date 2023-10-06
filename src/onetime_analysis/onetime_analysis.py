@@ -9,7 +9,7 @@ import statistics
 from adjustText import adjust_text
 from fastf1 import plotting
 from fastf1.ergast import Ergast
-from matplotlib import pyplot as plt, cm
+from matplotlib import pyplot as plt, cm, ticker
 from collections import Counter
 import matplotlib.patches as mpatches
 from matplotlib.font_manager import FontProperties
@@ -447,6 +447,7 @@ def plot_upgrades(scope=None):
     plt.yticks(fontsize=12, fontname='Fira Sans')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.tight_layout()  # Adjusts the plot layout for better visibility
     plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
     plt.show()
