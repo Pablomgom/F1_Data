@@ -1,8 +1,10 @@
 import re
 import statistics
 
+from matplotlib.font_manager import FontProperties
+
 from src.plots.plots import round_bars, annotate_bars
-from src.race_pace_exceptions import race_exceptions
+from src.exceptions import race_exceptions, qualy_exceptions
 import fastf1
 import pandas as pd
 from fastf1.ergast import Ergast
@@ -44,24 +46,30 @@ def qualy_diff_teammates(team, rounds):
             session = q2
         else:
             session = q1
-        d0_time = session.pick_driver(drivers[0]).pick_fastest()['LapTime'].total_seconds()
-        d1_time = session.pick_driver(drivers[1]).pick_fastest()['LapTime'].total_seconds()
+        try:
+            call_function_from_module(qualy_exceptions, f"{team.replace(' ', '_')}_{2023}", i + 1)
+            d0_time = session.pick_driver(drivers[0]).pick_fastest()['LapTime'].total_seconds()
+            d1_time = session.pick_driver(drivers[1]).pick_fastest()['LapTime'].total_seconds()
 
-        if d0_time > d1_time:
-            legend.append(f'{drivers[1]} faster')
+            if d0_time > d1_time:
+                legend.append(f'{drivers[1]} faster')
+                color.append('#0000FF')
+            else:
+                legend.append(f'{drivers[0]} faster')
+                color.append('#FFA500')
+
+            delta_diff = ((d0_time - d1_time) / d1_time) * 100
+            differences.append(round(-delta_diff, 2))
+        except AttributeError:
+            print('No hay vuelta disponible')
+            differences.append(np.nan)
             color.append('#0000FF')
-        else:
-            legend.append(f'{drivers[0]} faster')
-            color.append('#FFA500')
-
-        delta_diff = ((d0_time - d1_time) / d1_time) * 100
-        differences.append(round(-delta_diff, 2))
 
     fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
     bars = plt.bar(circuits, differences, color=color)
 
-    print(f'MEAN: {statistics.mean(differences)}')
-    print(f'MEDIAN: {statistics.median(differences)}')
+    print(f'MEAN: {statistics.mean([i for i in differences if not np.isnan(i)])}')
+    print(f'MEDIAN: {statistics.median([i for i in differences if not np.isnan(i)])}')
 
     round_bars(bars, ax1, color)
     annotate_bars(bars, ax1, 0.01, 8, text_annotate='{height}%', ceil_values=False)
@@ -83,7 +91,7 @@ def qualy_diff_teammates(team, rounds):
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=14)
+    plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=2)
     plt.xticks(ticks=range(len(circuits)), labels=circuits,
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
@@ -259,43 +267,42 @@ def race_pace_teammates(team, rounds):
 def position_changes(session):
     plotting.setup_mpl(misc_mpl_mods=False)
 
-    fig, ax = plt.subplots(figsize=(8.0, 4.9))
+    fig, ax = plt.subplots(figsize=(8.0, 5.12))
     for drv in session.drivers:
-        drv_laps = session.laps.pick_driver(drv)
-        abb = drv_laps['Driver'].iloc[0]
+        if drv != '55':
+            drv_laps = session.laps.pick_driver(drv)
+            abb = drv_laps['Driver'].iloc[0]
+            if abb == 'MSC':
+                color = '#cacaca'
+            elif abb == 'VET':
+                color = '#006f62'
+            elif abb == 'LAT':
+                color = '#012564'
+            elif abb == 'LAW':
+                color = '#2b4562'
+            else:
+                color = plotting.driver_color(abb)
 
-        if abb == 'MSC':
-            color = '#cacaca'
-        elif abb == 'VET':
-            color = '#006f62'
-        elif abb == 'LAT':
-            color = '#012564'
-        elif abb == 'LAW':
-            color = '#2b4562'
-        else:
-            color = plotting.driver_color(abb)
+            starting_grid = session.results.GridPosition.to_frame().reset_index(drop=False).rename(
+                columns={'index': 'driver'})
+            dict_drivers = session.results.Abbreviation.to_dict()
 
-        starting_grid = session.results.GridPosition.to_frame().reset_index(drop=False).rename(
-            columns={'index': 'driver'})
-        dict_drivers = session.results.Abbreviation.to_dict()
+            starting_grid = starting_grid.replace({'driver': dict_drivers}).replace({'GridPosition': {0: 20}})
 
-        starting_grid = starting_grid.replace({'driver': dict_drivers}).replace({'GridPosition': {0: 20}})
+            vueltas = drv_laps['LapNumber'].reset_index(drop=True)
+            position = drv_laps['Position'].reset_index(drop=True)
+            position.at[0] = starting_grid[starting_grid['driver'] == abb]['GridPosition']
 
-        vueltas = drv_laps['LapNumber'].reset_index(drop=True)
-        position = drv_laps['Position'].reset_index(drop=True)
-        position.at[0] = starting_grid[starting_grid['driver'] == abb]['GridPosition']
-
-        ax.plot(vueltas, position,
-                label=abb, color=color)
-
+            ax.plot(vueltas, position,
+                    label=abb, color=color)
+    ax.set_xlim([1, session.total_laps])
     ax.set_ylim([20.5, 0.5])
     ax.set_yticks([1, 5, 10, 15, 20])
     ax.set_xlabel('Lap')
     ax.set_ylabel('Position')
-
     ax.legend(bbox_to_anchor=(1.0, 1.02))
 
-    plt.title(session.event.OfficialEventName, fontsize=14, loc='center')
+    plt.title(session.event.OfficialEventName + ' ' + session.name.upper(), font='Fira Sans', fontsize=18, loc='center')
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f"../PNGs/POSITION CHANGES {session.event.OfficialEventName}.png", dpi=400)
@@ -314,7 +321,7 @@ def long_runs_FP2(race, driver):
 
     # Calculate Q1 and Q3
     Q1 = series.quantile(0.25)
-    Q3 = series.quantile(0.75)
+    Q3 = series.quantile(0.55)
     IQR = Q3 - Q1
 
     filtered_series = series[~((series < (Q1 - 1 * IQR)) | (series > Q3))]
@@ -339,12 +346,9 @@ def long_runs_FP2(race, driver):
                     linewidth=0,
                     legend='auto')
 
-    ax.set_xlabel("Lap Number")
-    ax.set_ylabel("Lap Time")
+    ax.set_xlabel("Lap Number", font='Fira Sans', fontsize=16)
+    ax.set_ylabel("Lap Time", font='Fira Sans', fontsize=16)
     plt.grid(color='w', which='major', axis='both', linestyle='--')
-    # The y-axis increases from bottom to top by default
-    # Since we are plotting time, it makes sense to invert the axis
-    text = 'Laptimes in Long Stints'
 
     def format_func(value, tick_number):
         minutes = np.floor(value / 60)
@@ -367,7 +371,7 @@ def long_runs_FP2(race, driver):
                     zorder=-5)
 
     # Annotate the moving average values:
-    bbox_props = dict(boxstyle="square,pad=0.3", fc="white", ec="none", lw=0)
+    bbox_props = dict(boxstyle="square,pad=0.4", fc="white", ec="none", lw=0)
 
     for lap, time in zip(driver_laps_filter['LapNumber'], driver_laps_filter['LapTime_seconds']):
         if not np.isnan(time):
@@ -376,17 +380,20 @@ def long_runs_FP2(race, driver):
                         textcoords="offset points",
                         xytext=(0, 10),
                         ha='center',
-                        fontsize=8,
+                        font='Fira Sans',
+                        fontsize=11,
                         color='red',
                         bbox=bbox_props)  # Adding the white box here
-    plt.title(f"{driver} LONG RUNS", font='Fira Sans', fontsize=24)
+    # Create a font properties object with the desired font family and size
+    font_properties = FontProperties(family='Fira Sans', size='x-large')
+    plt.title(f'{driver} SPRINT PACE', font='Fira Sans', fontsize=26)
+    # Set the font properties for the legend
+    ax.legend(prop=font_properties)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
-    ax.legend()
-    # Turn on major grid lines
     sns.despine(left=True, bottom=True)
 
     plt.tight_layout()
-    plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=400)
+    plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=150)
     plt.show()
 
 
@@ -407,13 +414,13 @@ def driver_race_times_per_tyre(race, driver):
                     linewidth=0,
                     legend='auto')
 
-    ax.set_xlabel("Lap Number")
-    ax.set_ylabel("Lap Time")
+    ax.set_xlabel("Lap Number", font='Fira Sans', fontsize=16)
+    ax.set_ylabel("Lap Time", font='Fira Sans', fontsize=16)
 
     # The y-axis increases from bottom to top by default
     # Since we are plotting time, it makes sense to invert the axis
     ax.invert_yaxis()
-    plt.suptitle(f"{driver} Laptimes in {race.event.OfficialEventName}")
+    plt.suptitle(f"{driver} Laptimes in {race.event.OfficialEventName}", font='Fira Sans', fontsize=16)
 
     # Turn on major grid lines
     plt.grid(color='w', which='major', axis='both')
@@ -429,6 +436,8 @@ def tyre_strategies(session):
     drivers = session.drivers
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
+    drivers = ['VER', 'PIA', 'NOR', 'RUS', 'LEC', 'ALO', 'OCO', 'BOT', 'ZHO', 'PER',
+               'STR', 'GAS', 'ALB', 'MAG', 'TSU', 'HUL', 'LAW', 'SAR', 'HAM', 'SAI']
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
 
     past_stint = 1
@@ -525,7 +534,7 @@ def race_pace_top_10(race):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
-    point_finishers = ['1', '4', '81', '16', '44', '55', '63', '14', '31', '10']
+    point_finishers = ['1', '81', '4', '63', '16', '14', '31', '77', '24', '11']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
@@ -533,7 +542,7 @@ def race_pace_top_10(race):
     driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
                      abv, driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(8, 6))
     driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
 
     sns.violinplot(data=driver_laps,
@@ -558,10 +567,14 @@ def race_pace_top_10(race):
 
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
              max(driver_laps['LapTime']).total_seconds() + 2)  # change these numbers as per your needs
-    ax.set_xlabel("Driver")
-    ax.set_ylabel("Lap Time (s)")
-    plt.suptitle(f"{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions")
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    ax.set_xlabel("Driver", font='Fira Sans', fontsize=17)
+    ax.set_ylabel("Lap Time (s)", font='Fira Sans', fontsize=17)
+    plt.suptitle(f"{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions",
+                 font='Fira Sans', fontsize=20)
     sns.despine(left=False, bottom=False)
+    plt.legend(title='Tyre Compound', loc='lower right', fontsize='medium')
 
     plt.savefig(f"../PNGs/{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions.png", dpi=400)
     plt.tight_layout()

@@ -58,21 +58,27 @@ def get_DNFs_team(team, start, end):
 
 
 def proccess_season_data(data, drivers, driver_points, system):
-    for session in data:
+    def print_wdc(driver_points):
+        driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
+        total_p = 0
+        pos = 1
+        for d, p in driver_points.items():
+            print(f'{pos}: {d} - {p}')
+            total_p += p
+            pos += 1
+        print(total_p)
+
+    for i in range(len(data)):
         for driver in drivers:
-            driver_data = session[session['driverCode'] == driver]
+            driver_data = data[i][data[i]['driverCode'] == driver]
             if len(driver_data) > 0:
-                pos = session[session['driverCode'] == driver]['position'].values[0]
+                pos = data[i][data[i]['driverCode'] == driver]['position'].values[0]
                 if pos in list(system.keys()):
                     driver_points[driver] += system[pos]
-    driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
-    total_p = 0
-    pos = 1
-    for d, p in driver_points.items():
-        print(f'{pos}: {d} - {p}')
-        total_p += p
-        pos += 1
-    print(total_p)
+        if i == len(data) - 2:
+            print_wdc(driver_points)
+
+    print_wdc(driver_points)
 
 
 def simulate_season_different_psystem(year, system):
@@ -361,7 +367,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         transposed = pd.concat([transposed, forecasted_df])
         transposed = transposed.where(transposed >= 0, 0)
 
-    ax = transposed.plot(figsize=(12, 12), marker='o', color=ordered_colors)
+    ax = transposed.plot(figsize=(12, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
 
     if predict:
         start_x = len(transposed) - len(forecasted_df)  # Start of forecast
@@ -380,7 +386,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     handles, labels = ax.get_legend_handles_labels()
     colors = [line.get_color() for line in ax.lines]
     info = list(zip(handles, labels, colors, last_values))
-    info.sort(key=lambda item: item[3], reverse=False)
+    info.sort(key=lambda item: item[3], reverse=True)
     handles, labels, colors, last_values = zip(*info)
     labels = [f"{label} ({last_value:.2f})" for label, last_value in zip(labels, last_values)]
 
@@ -565,7 +571,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     for cluster_id in np.unique(y_kmeans):
         cluster_means[cluster_id] = data[y_kmeans == cluster_id].mean(axis=0)
 
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=150)
 
     texts = []
     colors = ['red', 'blue', 'green']  # Assuming 3 clusters; extend this list if there are more clusters
@@ -577,17 +583,16 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
     # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
-        '''
+
         match i:
             case 0:
-                type = 'Medium speed tracks'
-            case 1:
                 type = 'Low speed tracks'
-            case 2:
+            case 1:
                 type = 'High speed tracks'
+            case 2:
+                type = 'Medium speed tracks'
             case _:
                 type = 'WTF IS A KILOMETER'
-        '''
 
         texts.append(ax.text(center[0], center[1], type, font='Fira Sans',
                              fontsize=16, ha='right'))
@@ -600,7 +605,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
                     Line2D([0], [0], color='red', lw=4),
                     Line2D([0], [0], color='green', lw=4)]
 
-    plt.legend(legend_lines, ['Low speed tracks', 'Medium speed tracks', 'High speed tracks'],
+    plt.legend(legend_lines, ['High speed tracks', 'Low speed tracks', 'Medium speed tracks'],
                loc='upper right', bbox_to_anchor=(1, 0.85), fontsize='x-large')
 
     ax.axis('off')
@@ -608,11 +613,11 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     plt.title('SIMILARITY BETWEEN CIRCUITS', font='Fira Sans', fontsize=28)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig('../PNGs/Track clusters.png', dpi=400)
+    plt.savefig('../PNGs/Track clusters.png', dpi=150)
     plt.show()
 
 
-def dhl_pitstops(year, round=None, exclude=None, points=False):
+def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
@@ -621,7 +626,7 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
         if points:
             pitstops = pitstops.groupby('Team')['Points'].sum()
         else:
-            pitstops = pitstops.groupby('Driver')['Time'].mean()
+            pitstops = pitstops.groupby(groupBy)['Time'].median()
     else:
         pitstops = pitstops[pitstops['Race_ID'] == round]
     pitstops = pitstops.reset_index()
@@ -640,14 +645,19 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
     else:
         pitstops = pitstops.sort_values(by='Time', ascending=True)
         pitstops['Time'] = pitstops['Time'].round(2)
-        drivers = [i for i in pitstops['Driver']]
-        plot_size = (17, 10)
+        drivers = [i for i in pitstops[groupBy]]
+        if groupBy == 'Driver':
+            plot_size = (17, 10)
+            x_label = 'Driver'
+        else:
+            plot_size = (12, 10)
+            x_label = 'Team'
         annotate_fontsize = 12
         y_offset_rounded = 0
         y_offset_annotate = 0.05
-        title = 'PIT STOP TIMES'
+        title = 'MEDIAN PIT STOP TIMES'
         y_label = 'Time (s)'
-        x_label = 'Driver'
+
 
         for driver in drivers:
             for key, value in fastf1.plotting.DRIVER_COLORS.items():
@@ -668,8 +678,8 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
             else:
                 name_count[name] = 1
             return f"{name} {name_count[name]}"
-
-        pitstops['Driver'] = pitstops['Driver'].apply(update_name)
+        if groupBy == 'Driver':
+            pitstops['Driver'] = pitstops['Driver'].apply(update_name)
 
     if exclude is not None:
         pitstops = pitstops[~pitstops['Driver'].isin(exclude)]
@@ -678,11 +688,17 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
         bars = ax1.bar(pitstops['Team'], pitstops['Points'], color=colors,
                        edgecolor='white')
     else:
-        bars = ax1.bar(pitstops['Driver'], pitstops['Time'], color=colors,
+        bars = ax1.bar(pitstops[groupBy], pitstops['Time'], color=colors,
                        edgecolor='white')
 
-    round_bars(bars, ax1, colors, y_offset_rounded)
-    annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize, ceil_values=True)
+    if groupBy == 'Team':
+        colors = [team_colors_2023[i] for i in pitstops['Team'].values]
+        annotate_fontsize = 20
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+
+    round_bars(bars, ax1, colors, y_offset_rounded=y_offset_rounded)
+    annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize)
 
     ax1.set_title(title, font='Fira Sans', fontsize=28)
     ax1.set_xlabel(x_label, font='Fira Sans', fontsize=20)
@@ -702,6 +718,7 @@ def dhl_pitstops(year, round=None, exclude=None, points=False):
     plt.xticks(rotation=90)
     ymin, ymax = ax1.get_ylim()
     ax1.set_ylim([1.6, ymax])
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f'../PNGs/PIT STOP AVG TIME {year}', dpi=400)
     plt.show()
@@ -1031,14 +1048,13 @@ def get_topspeed(gp):
 
 def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
+
+    drivers = drivers.reset_index(name='Count')['Driver'].to_list()
     circuit_speed = {}
     colors_dict = {}
 
     if fastest_lap is not None:
-        drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
-
-        drivers = list(drivers.reset_index(name='Count')['Driver'].values)
-
         for driver in drivers:
             lap = session.laps.pick_driver(driver).pick_fastest()
             if lap.Team is not np.nan:
@@ -1063,7 +1079,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
             print(circuit_speed)
     else:
         laps = session.laps.pick_quicklaps()
-
         for lap in laps.iterrows():
             try:
                 if column == 'Speed':
@@ -1082,7 +1097,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
                 team = 'red bull'
             elif team == 'haas f1 team':
                 team = 'haas'
-            if driver_speed is not None:
+            if driver in circuit_speed:
                 if top_speed > driver_speed and column == 'Speed':
                     circuit_speed[driver] = top_speed
                     colors_dict[driver] = team
@@ -1094,6 +1109,8 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
                 colors_dict[driver] = team
 
             print(circuit_speed)
+
+
 
     if column == 'Speed':
         order = True
@@ -1113,7 +1130,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
 
     circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=order)}
 
-    fig, ax1 = plt.subplots(figsize=(20, 8))
+    fig, ax1 = plt.subplots(figsize=(8.25, 6.5), dpi=175)
 
     colors = []
     for i in range(len(circuit_speed)):
@@ -1122,11 +1139,11 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
     bars = ax1.bar(list(circuit_speed.keys()), list(circuit_speed.values()), color=colors,
                    edgecolor='white')
 
-    round_bars(bars, ax1, colors, y_offset_rounded=0)
-    annotate_bars(bars, ax1, y_fix, 14, text_annotate='default', ceil_values=False)
+    round_bars(bars, ax1, colors, y_offset_rounded=0.05)
+    annotate_bars(bars, ax1, y_fix, 8, text_annotate='default', ceil_values=False)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}',
-                  font='Fira Sans', fontsize=28)
+                  font='Fira Sans', fontsize=14)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
         y_label = 'Max speed'
@@ -1147,11 +1164,11 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
         return '{:.0f}'.format(val)
 
     plt.gca().yaxis.set_major_formatter(FuncFormatter(format_ticks))
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
+    plt.xticks(fontsize=10)
+    plt.yticks(fontsize=10)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{column} IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
-                dpi=400)
+                dpi=175)
     plt.show()
 
 
@@ -1471,17 +1488,28 @@ def avg_driver_position(driver, team, year, session='Q'):
                     drivers.append(d)
         drivers_array = set(drivers)
         drivers = {d: [] for d in drivers_array}
+        prev_points = {d: [] for d in drivers_array}
+        race_count = 0
         for gp in data.content:
             for d in drivers_array:
-                data = gp[gp['driverCode'] == d]
-                if len(data) > 0:
-                    pos = data['position'].values[0]
+                gp_data = gp[gp['driverCode'] == d]
+                if len(gp_data) > 0:
+                    pos = gp_data['position'].values[0]
                     drivers[d].append(pos)
+                    if race_count < len(data.content) - 1:
+                        prev_points[d].append(pos)
+            race_count += 1
         avg_grid = {}
+        avg_grid_pre = {}
         for key, pos_array in drivers.items():
             mean_pos = round(np.mean(pos_array), 2)
             avg_grid[key] = mean_pos
-        avg_grid = dict(sorted(avg_grid.items(), key=lambda item: item[1]))
+        for key, pos_array in prev_points.items():
+            mean_pos = round(np.mean(pos_array), 2)
+            avg_grid_pre[key] = mean_pos
+        difference = {key: avg_grid[key] - avg_grid_pre[key] for key in avg_grid}
+        avg_grid= dict(sorted(avg_grid.items(), key=lambda item: item[1]))
+        avg_grid_pre = dict(sorted(avg_grid_pre.items(), key=lambda item: item[1]))
         drivers = list(avg_grid.keys())
         avg_pos = list(avg_grid.values())
         colors = [driver_colors_2023[key] for key in drivers]
@@ -1500,8 +1528,15 @@ def avg_driver_position(driver, team, year, session='Q'):
         plt.tight_layout()
         plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=150)
         plt.show()
+        pre_positions = list(avg_grid_pre.keys())
         for i in range(len(drivers)):
-            print(f'{i + 1}: {drivers[i]} - {avg_pos[i]}')
+            driver = drivers[i]
+            pre_pos = pre_positions.index(driver) + 1
+            diff = round(difference[driver], 2)
+            if diff > 0:
+                diff = f'+{diff}'
+
+            print(f'{i + 1}: {driver} - {avg_pos[i]} ({diff}) from {pre_pos}')
     else:
         for gp in data.content:
             session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]

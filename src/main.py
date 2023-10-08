@@ -2,7 +2,7 @@ from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
 
 from src.elo.elo import elo_execution
-from src.race_pace_exceptions import race_exceptions
+from src.exceptions import race_exceptions
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
 from src.general_analysis.race_plots import *
@@ -17,31 +17,31 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    # elo_execution(1950, 2024)
+    elo_execution(1950, 2024)
 
-    plot_upgrades('Performance')
+    # plot_upgrades('Performance')
 
-    # dhl_pitstops(2023, points=True)
+    # dhl_pitstops(2023, round=17, groupBy='Team')
 
     # plot_circuit()
 
-    # cluster_circuits(2023, 16, 2021, 'Qatar',  clusters=3)
+    # cluster_circuits(2023, 17,   clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2021, 'Catar', 'Q')
-    # session.load()
+    session = fastf1.get_session(2023, 17, 'R')
+    session.load()
 
     # lucky_drivers(1950,2024)
 
-    # qualy_diff_last_year(16, 'suzuka')
+    # qualy_diff_last_year(17, 2021, 'losail')
 
     # team_performance_vs_qualy_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
 
-    # qualy_diff_teammates('Ferrari', 16)
+    # qualy_diff_teammates('Red Bull Racing', 16)
 
-    # race_pace_teammates('Mercedes', 16)
+    # race_pace_teammates('McLaren', 17)
 
-    # driver_race_times_per_tyre(session, 'LEC')
+    # driver_race_times_per_tyre(session, 'RUS')
 
     # get_fastest_data(session, 'Sector3Time')
 
@@ -55,19 +55,19 @@ if __name__ == '__main__':
 
     # position_changes(session)
 
-    # overlying_laps(session, 'VER', 'NOR')
+    # overlying_laps(session, 'ALO', 'STR')
 
     # race_distance(session, 'HAM', 'RUS')
 
-    # long_runs_FP2(session, 'RUS')
+    # long_runs_FP2(session, 'HAM')
 
-    # fastest_by_point(session, 'PIA', 'NOR', scope='D')
+    # fastest_by_point(session, 'SAI', 'LEC', scope='D')
 
-    # track_dominance(session, 'Red Bull Racing', 'Ferrari')
+    # track_dominance(session, 'Red Bull Racing', 'Mercedes')
 
     # plot_circuit_with_data(session, 'Speed')
 
-    #tyre_strategies(session)
+    # tyre_strategies(session)
 
     # qualy_results(session)
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # get_driver_results_circuit('max_verstappen', 'suzuka', 2015)
 
-    # race_qualy_avg_metrics(2023, session='R', predict=True, mode=1)
+    # race_qualy_avg_metrics(2023, session='R')
 
     # qualy_margin('suzuka', start=1950, end=2024)
 
@@ -130,6 +130,6 @@ if __name__ == '__main__':
 
     # get_DNFs_team('mercedes', 2014, 2024)
 
-    simulate_qualy_championship(2021, 2009)
+    # simulate_qualy_championship(2023, 2010)
 
 

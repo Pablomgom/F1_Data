@@ -20,3 +20,7 @@ def Ferrari_2023(round, max_laps):
 def Mercedes_2023(round, max_laps):
 
     return 0, max_laps
+
+def McLaren_2023(round, max_laps):
+
+    return 0, max_laps

@@ -154,7 +154,7 @@ def get_valid_drivers(drivers, results, year):
                         for d_t in drivers:
                             if d_t.name == teamamte_name:
                                 d_t.elo_changes += 7.5
-                                print(f'{d.name} -5 ---- {d_t.name} +5')
+                                print(f'{d.name} -7.5 ---- {d_t.name} +7.5')
                                 break
     return valid_drivers
 
@@ -172,7 +172,7 @@ def update_ratings(drivers, race_results, race_index, race_name):
 
         years = np.array(list(range(1950, 2024)))
         n_drivers = np.array(list(range(1, len(drivers))))
-        values_k_pos = np.linspace(20, 5, len(years))
+        values_k_pos = np.linspace(25, 7.5, len(years))
         values_k_team = np.linspace(82.5, 35, len(years))
         values_extra_weight_team = np.linspace(1.5, 0.5, len(drivers_available))
 
@@ -358,11 +358,15 @@ def elo_execution(start, end):
         [code for race in season_races for code in race['givenName'] + '//' + race['familyName']])
 
     current_drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
+    prev_drivers = sorted(drivers, key=lambda driver: driver.historical_elo[races_name[-2]], reverse=True)
+    prev_drivers_names = [d.name for d in prev_drivers]
     count = 1
     for driver in current_drivers:
         if driver.name in current_drivers_names:
+            prev_rank = prev_drivers_names.index(driver.name) + 1
             driver.rating = round(driver.rating, 2)
             prev_rating = round(driver.historical_elo[races_name[-2]], 2)
-            diff = round(driver.rating - prev_rating, 2)
-            print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff})')
-            count += 1
+            if prev_rating != 0:
+                diff = round(driver.rating - prev_rating, 2)
+                print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff}) - Prev: {prev_rank}')
+                count += 1
