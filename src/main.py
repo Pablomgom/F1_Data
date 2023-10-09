@@ -17,7 +17,7 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    elo_execution(1950, 2024)
+    # elo_execution(1950, 2024)
 
     # plot_upgrades('Performance')
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     fastf1.Cache.enable_cache('../cache')
     session = fastf1.get_session(2023, 17, 'R')
-    session.load()
+    # session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -39,11 +39,11 @@ if __name__ == '__main__':
 
     # qualy_diff_teammates('Red Bull Racing', 16)
 
-    # race_pace_teammates('McLaren', 17)
+    # race_pace_teammates('Red Bull Racing', 17)
 
     # driver_race_times_per_tyre(session, 'RUS')
 
-    # get_fastest_data(session, 'Sector3Time')
+    get_fastest_data(session, 'Speed')
 
     # win_wdc(2023)
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
     # simulate_season_different_psystem(2021, 2009)
 
-    # get_DNFs_team('mercedes', 2014, 2024)
+    # get_DNFs_team('ferrari', 2014, 2024)
 
     # simulate_qualy_championship(2023, 2010)
 
