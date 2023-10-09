@@ -1,35 +1,24 @@
 import math
-
-from matplotlib import pyplot as plt, patches
+import time
+from matplotlib import patches
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
+from matplotlib.font_manager import FontProperties
+import os
+
 
 def lighten_color(hex_color, factor=0.2):
-    """
-    Lighten a given hex color code.
 
-    Args:
-        hex_color (str): Hex color code, e.g., "#RRGGBB"
-        factor (float): Factor by which to lighten the color, where 0 <= factor <= 1.
-                        0 means no change, 1 means white.
-
-    Returns:
-        str: Lightened hex color code.
-    """
-    # Ensure the hex code starts with "#"
     hex_color = hex_color.strip('#')
 
-    # Convert hex to RGB
     r = int(hex_color[:2], 16)
     g = int(hex_color[2:4], 16)
     b = int(hex_color[4:6], 16)
 
-    # Lighten each RGB component
     r = int(r + (255 - r) * factor)
     g = int(g + (255 - g) * factor)
     b = int(b + (255 - b) * factor)
 
-    # Convert RGB back to hex
     return "#{:02X}{:02X}{:02X}".format(r, g, b)
 
 
@@ -197,3 +186,17 @@ def text_annotate_bars(height, original_text):
         if height < 0:
             original_text = original_text.replace('+', '')
         return original_text.replace('{height}', str(height))
+
+
+def get_handels_labels(ax):
+    return ax.get_legend_handles_labels()
+
+
+def get_font_properties(family, size):
+    return FontProperties(family=family, size=size)
+
+
+def title_and_labels(plt, title, title_fontsize, x_label, x_fontsize, y_label, y_fontsize, title_offset=0):
+    plt.title(title, font='Fira Sans', fontsize=title_fontsize, x=title_offset)
+    plt.xlabel(x_label, font='Fira Sans', fontsize=x_fontsize)
+    plt.ylabel(y_label, font='Fira Sans', fontsize=y_fontsize)

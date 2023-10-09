@@ -17,19 +17,19 @@ if __name__ == '__main__':
     fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
     plt.rcParams["font.family"] = "Fira Sans"
 
-    elo_execution(1950, 2024)
+    # elo_execution(1950, 2024)
 
     # plot_upgrades('Performance')
 
-    # dhl_pitstops(2023, round=17, groupBy='Team')
+    dhl_pitstops(2023, points=True)
 
     # plot_circuit()
 
-    # cluster_circuits(2023, 17,   clusters=3)
+    # cluster_circuits(2023, 17, 2022, 'austin',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 17, 'R')
-    session.load()
+    session = fastf1.get_session(2022, 'austin', 'R')
+    # session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # team_performance_vs_qualy_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
 
-    # qualy_diff_teammates('Red Bull Racing', 16)
+    # qualy_diff_teammates('Red Bull Racing', 17)
 
     # race_pace_teammates('McLaren', 17)
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     qualy = ergast.get_qualifying_results(season=1963, round=16, limit=1000)
     sprints = ergast.get_sprint_results(season=1963, limit=1000)
     schedule = ergast.get_race_schedule(season=1963, limit=1000)
-    circuitos = ergast.get_circuits(season=2023, round=16, limit=1000)
+    circuitos = ergast.get_circuits(season=2022, round=18, limit=1000)
     circuito = circuitos.circuitId.min()
 
     # get_fastest_punctuable_lap('marina_bay', start=2008, all_drivers=False)

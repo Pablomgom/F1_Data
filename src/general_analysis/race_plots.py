@@ -12,7 +12,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from fastf1 import plotting
 
-from matplotlib import pyplot as plt, patches
+from matplotlib import pyplot as plt, patches, image as mpimg
 import seaborn as sns
 import numpy as np
 
@@ -65,11 +65,11 @@ def qualy_diff_teammates(team, rounds):
             differences.append(np.nan)
             color.append('#0000FF')
 
-    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
-    bars = plt.bar(circuits, differences, color=color)
-
     print(f'MEAN: {statistics.mean([i for i in differences if not np.isnan(i)])}')
     print(f'MEDIAN: {statistics.median([i for i in differences if not np.isnan(i)])}')
+
+    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
+    bars = plt.bar(circuits, differences, color=color)
 
     round_bars(bars, ax1, color)
     annotate_bars(bars, ax1, 0.01, 8, text_annotate='{height}%', ceil_values=False)
@@ -96,9 +96,9 @@ def qualy_diff_teammates(team, rounds):
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (percentage)', font='Fira Sans', fontsize=16)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
+    # plt.figtext(0.1, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=150)
+    plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=500)
     plt.show()
 
 
@@ -223,11 +223,11 @@ def race_pace_teammates(team, rounds):
             legend.append(f'{drivers[1]} faster')
             color.append('#0000FF')
 
-    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
-
     mean_diff = [i for i in differences if i != 0]
     print(f'MEAN DIFF: {np.mean(mean_diff)}')
     print(f'MEDIAN DIFF: {statistics.median(mean_diff)}')
+
+    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
 
     bars = plt.bar(circuits, differences, color=color)
 

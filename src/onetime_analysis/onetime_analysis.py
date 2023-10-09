@@ -18,7 +18,7 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from statsmodels.tsa.arima.model import ARIMA
 
-from src.plots.plots import rounded_top_rect, annotate_bars
+from src.plots.plots import rounded_top_rect, annotate_bars, title_and_labels, get_handels_labels, get_font_properties
 from src.general_analysis.table import render_mpl_table
 
 from sklearn.decomposition import PCA
@@ -27,6 +27,7 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 from src.plots.plots import round_bars
+from src.utils.utils import append_duplicate_number, update_name
 from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009, \
     point_systems
 
@@ -312,22 +313,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         else:
             title = 'Average points in the last 4 races'
 
-    def append_duplicate_number(arr):
-
-        counts = {}
-        result = []
-
-        for item in arr:
-            if arr.count(item) > 1:
-                counts[item] = counts.get(item, 0) + 1
-                result.append(f"{item} {counts[item]}")
-            else:
-                result.append(item)
-
-        result_arr = np.array(result)
-
-        return result_arr
-
     circuits = append_duplicate_number(circuits)
     for i in range(len(data.content)):
         for team in teams:
@@ -428,25 +413,26 @@ def plot_upgrades(scope=None):
     cumulative_sum = ct.cumsum(axis=1)
     ordered_colors = [team_colors_2023[team] for team in cumulative_sum.index]
     transposed = cumulative_sum.transpose()
-    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
+    last_values = transposed.iloc[-1].values
+    font = get_font_properties('Fira Sans', 12)
 
     if scope is None:
         scope = ''
     else:
         scope += ' '
-    plt.title(f"Cumulative {scope}Upgrades for Each Team", font='Fira Sans', fontsize=28, x=0.58)
-    plt.xlabel("Races", font='Fira Sans', fontsize=18)
-    plt.ylabel("Number of Upgrades", font='Fira Sans', fontsize=18)
-    races = cumulative_sum.columns
-    plt.xticks(ticks=range(len(races)), labels=races, rotation=90)
-    font = FontProperties(family='Fira Sans', size=12)
-    last_values = transposed.iloc[-1].values
-    handles, labels = ax.get_legend_handles_labels()
+
+    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
+
+    title_and_labels(plt,f'Cumulative {scope}Upgrades for Each Team', 28,
+                     'Races', 18, 'Number of Upgrades', 18, 0.58)
+
+    handles, labels = get_handels_labels(ax)
     colors = [line.get_color() for line in ax.lines]
     info = list(zip(handles, labels, colors, last_values))
     info.sort(key=lambda item: item[3], reverse=True)
     handles, labels, colors, last_values = zip(*info)
     labels = [f"{label} ({last_value:.0f})" for label, last_value in zip(labels, last_values)]
+
     plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
@@ -454,8 +440,8 @@ def plot_upgrades(scope=None):
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-    plt.tight_layout()  # Adjusts the plot layout for better visibility
     plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
+    plt.tight_layout()
     plt.show()
     pd.set_option('display.max_columns', None)
     print(transposed)
@@ -533,12 +519,6 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
         full_gas = len(full_gas) / len(telemetry)
         lifting = telemetry[(telemetry['Throttle'] >= 1) & (telemetry['Throttle'] <= 99)]
         lifting = len(lifting) / len(telemetry)
-        no_gas = telemetry[telemetry['Throttle'] == 0]
-        no_gas = len(no_gas) / len(telemetry)
-        brakes = telemetry[telemetry['Brake'] == 100]
-        brakes = len(brakes) / len(telemetry)
-        no_brakes = telemetry[telemetry['Brake'] == 0]
-        no_brakes = len(no_brakes) / len(telemetry)
         data.append([corners_per_meter, max_speed, q1, median, q3, avg, full_gas, lifting])
 
         circuits.append(session.event.Location)
@@ -583,30 +563,16 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
     # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
-
-        match i:
-            case 0:
-                type = 'Low speed tracks'
-            case 1:
-                type = 'High speed tracks'
-            case 2:
-                type = 'Medium speed tracks'
-            case _:
-                type = 'WTF IS A KILOMETER'
-
-        texts.append(ax.text(center[0], center[1], type, font='Fira Sans',
-                             fontsize=16, ha='right'))
         ax.scatter(center[0], center[1], s=300, c='#FF8C00')
 
-    # Automatically adjust the positions to minimize overlaps
     adjust_text(texts, autoalign='xy', ha='right', va='bottom', only_move={'points': 'y', 'text': 'xy'})
 
     legend_lines = [Line2D([0], [0], color='blue', lw=4),
                     Line2D([0], [0], color='red', lw=4),
                     Line2D([0], [0], color='green', lw=4)]
 
-    plt.legend(legend_lines, ['High speed tracks', 'Low speed tracks', 'Medium speed tracks'],
-               loc='upper right', bbox_to_anchor=(1, 0.85), fontsize='x-large')
+    plt.legend(legend_lines, ['Low speed tracks', 'Medium speed tracks', 'High speed tracks'],
+               loc='lower center', fontsize='large')
 
     ax.axis('off')
     ax.grid(False)
@@ -624,6 +590,8 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     colors = []
     if round is None:
         if points:
+            max_round = pitstops['Race_ID'].max()
+            print(pitstops[pitstops['Race_ID'] == max_round].groupby('Team')['Points'].sum().sort_values(ascending=False))
             pitstops = pitstops.groupby('Team')['Points'].sum()
         else:
             pitstops = pitstops.groupby(groupBy)['Time'].median()
@@ -656,6 +624,8 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         y_offset_rounded = 0
         y_offset_annotate = 0.05
         title = 'MEDIAN PIT STOP TIMES'
+        if round is not None:
+            title = 'PIT STOPS TIME'
         y_label = 'Time (s)'
 
 
@@ -669,17 +639,8 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
 
     fig, ax1 = plt.subplots(figsize=plot_size)
 
-    if round is not None:
-        name_count = {}
-
-        def update_name(name):
-            if name in name_count:
-                name_count[name] += 1
-            else:
-                name_count[name] = 1
-            return f"{name} {name_count[name]}"
-        if groupBy == 'Driver':
-            pitstops['Driver'] = pitstops['Driver'].apply(update_name)
+    if round is not None and groupBy == 'Driver':
+        pitstops['Driver'] = pitstops['Driver'].apply(update_name)
 
     if exclude is not None:
         pitstops = pitstops[~pitstops['Driver'].isin(exclude)]
@@ -697,6 +658,7 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
 
+
     round_bars(bars, ax1, colors, y_offset_rounded=y_offset_rounded)
     annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize)
 
@@ -707,18 +669,16 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     plt.yticks(fontsize=18)
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)
-    font_properties = {'family': 'Fira Sans', 'size': 14}
+    font_properties = get_font_properties('Fira Sans', 14)
 
-    # Set x-ticks and y-ticks font
     for label in ax1.get_xticklabels():
         label.set_fontproperties(font_properties)
-
     for label in ax1.get_yticklabels():
         label.set_fontproperties(font_properties)
+
     plt.xticks(rotation=90)
     ymin, ymax = ax1.get_ylim()
     ax1.set_ylim([1.6, ymax])
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f'../PNGs/PIT STOP AVG TIME {year}', dpi=400)
     plt.show()
