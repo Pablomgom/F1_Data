@@ -1006,7 +1006,7 @@ def get_topspeed(gp):
     print(top_speed_array)
 
 
-def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
+def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
 
@@ -1014,63 +1014,29 @@ def get_fastest_data(session, column='Speed', fastest_lap=None, DRS=True):
     circuit_speed = {}
     colors_dict = {}
 
-    if fastest_lap is not None:
-        for driver in drivers:
-            lap = session.laps.pick_driver(driver).pick_fastest()
-            if lap.Team is not np.nan:
-                top_speed = max(lap.telemetry[column])
-                driver_speed = circuit_speed.get(driver)
-                team = lap.Team.lower()
-                if team == 'red bull racing':
-                    team = 'red bull'
-                elif team == 'haas f1 team':
-                    team = 'haas'
-                if driver_speed is not None:
-                    if top_speed > driver_speed and column == 'Speed':
-                        circuit_speed[driver] = top_speed
-                        colors_dict[driver] = team
-                    elif top_speed < driver_speed and column != 'Speed':
-                        circuit_speed[driver] = top_speed
-                        colors_dict[driver] = team
-                else:
-                    circuit_speed[driver] = top_speed
-                    colors_dict[driver] = team
-
-            print(circuit_speed)
-    else:
-        laps = session.laps.pick_quicklaps()
-        for lap in laps.iterrows():
-            try:
-                if column == 'Speed':
-                    if lap[1].telemetry['DRS'].max() >= 10 and not DRS:
-                        top_speed = 0
-                    elif column == 'Speed':
-                        top_speed = max(lap[1].telemetry[column])
-                else:
-                    top_speed = round(lap[1][column].total_seconds(), 3)
-            except ValueError as e:
-                continue
-            driver = lap[1]['Driver']
-            driver_speed = circuit_speed.get(driver)
-            team = lap[1].Team.lower()
+    for driver in drivers:
+        d_laps = session.laps.pick_driver(driver).pick_quicklaps()
+        if fastest_lap:
+            d_laps = session.laps.pick_driver(driver).pick_fastest()
+        if len(d_laps) > 0:
+            if column == 'Speed':
+                if not DRS:
+                    d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
+                top_speed = max(d_laps.telemetry['Speed'])
+            else:
+                top_speed = round(min(d_laps[column]).total_seconds(), 3)
+            if fastest_lap:
+                team = d_laps['Team'].lower()
+            else:
+                team = d_laps['Team'].values[0].lower()
             if team == 'red bull racing':
                 team = 'red bull'
             elif team == 'haas f1 team':
                 team = 'haas'
-            if driver in circuit_speed:
-                if top_speed > driver_speed and column == 'Speed':
-                    circuit_speed[driver] = top_speed
-                    colors_dict[driver] = team
-                elif top_speed < driver_speed and column != 'Speed':
-                    circuit_speed[driver] = top_speed
-                    colors_dict[driver] = team
-            else:
-                circuit_speed[driver] = top_speed
-                colors_dict[driver] = team
+            circuit_speed[driver] = top_speed
+            colors_dict[driver] = team
 
-            print(circuit_speed)
-
-
+        print(circuit_speed)
 
     if column == 'Speed':
         order = True

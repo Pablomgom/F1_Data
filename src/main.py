@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     # plot_upgrades('Performance')
 
-    dhl_pitstops(2023, points=True)
+    # dhl_pitstops(2023, round=17, groupBy='Team')
 
     # plot_circuit()
 
@@ -39,11 +39,11 @@ if __name__ == '__main__':
 
     # qualy_diff_teammates('Red Bull Racing', 17)
 
-    # race_pace_teammates('McLaren', 17)
+    # race_pace_teammates('Red Bull Racing', 17)
 
     # driver_race_times_per_tyre(session, 'RUS')
 
-    # get_fastest_data(session, 'Sector3Time')
+    get_fastest_data(session, 'Speed')
 
     # win_wdc(2023)
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
     # simulate_season_different_psystem(2021, 2009)
 
-    # get_DNFs_team('mercedes', 2014, 2024)
+    # get_DNFs_team('ferrari', 2014, 2024)
 
     # simulate_qualy_championship(2023, 2010)
 
