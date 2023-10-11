@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 17, 2022, 'austin',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 17, 'R')
+    session = fastf1.get_session(2019, 'Canada', 'R')
     session.load()
 
     # lucky_drivers(1950,2024)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     # position_changes(session)
 
-    telemetry_lap(session, 'LEC', 33)
+    # telemetry_lap(session, 'HAM', 49)
 
     # overlying_laps(session, 'LEC', 'ALO', lap=33)
 
