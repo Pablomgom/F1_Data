@@ -171,12 +171,15 @@ def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate=
         if ceil_values:
             height = math.ceil(height)
         if height < 0:
-            y_offset = -y_offset_annotate - 0.05
+            y_offset = -y_offset_annotate - 0.01
         else:
             y_offset = y_offset_annotate
-        plot_text = text_annotate_bars(height, text_annotate)
-        ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center', va='bottom',
-                font='Fira Sans', fontsize=annotate_fontsize)
+        if height != 0:
+            plot_text = text_annotate_bars(height, text_annotate)
+            ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center', va='bottom',
+                    font='Fira Sans', fontsize=annotate_fontsize)
+        else:
+            bar.set_visible(False)
 
 
 def text_annotate_bars(height, original_text):

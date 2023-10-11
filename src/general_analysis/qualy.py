@@ -16,9 +16,8 @@ from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
 
 
 def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
-
     ergast = Ergast()
-    prev_year = ergast.get_qualifying_results(season=year-1, limit=1000)
+    prev_year = ergast.get_qualifying_results(season=year - 1, limit=1000)
     current_year = ergast.get_qualifying_results(season=year, limit=1000)
 
     prev_cir = prev_year.description['raceName'].values
@@ -44,7 +43,7 @@ def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
     result = [track.replace('_', ' ').title() for track in result]
     result = [track.split(' ')[0] for track in result]
     for i in range(len(race_index_current)):
-        prev_year = fastf1.get_session(year-1, race_index_prev[i], 'Q')
+        prev_year = fastf1.get_session(year - 1, race_index_prev[i], 'Q')
         prev_year.load()
         current_year = fastf1.get_session(year, race_index_current[i], 'Q')
         current_year.load()
@@ -80,10 +79,10 @@ def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
 
     for i in range(len(delta)):
         if delta[i] > 0:  # If the bar is above y=0
-            plt.text(result[i], delta[i] + 0.4, '+'+str(delta[i])+'s',
+            plt.text(result[i], delta[i] + 0.4, '+' + str(delta[i]) + 's',
                      ha='center', va='top', font='Fira Sans', fontsize=12)
         else:  # If the bar is below y=0
-            plt.text(result[i], delta[i] - 0.4, str(delta[i])+'s',
+            plt.text(result[i], delta[i] - 0.4, str(delta[i]) + 's',
                      ha='center', va='bottom', font='Fira Sans', fontsize=12)
 
     plt.axhline(0, color='white', linewidth=0.8)
@@ -104,13 +103,11 @@ def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{team} QUALY COMPARATION {year-1} vs {year}.png', dpi=450)
+    plt.savefig(f'../PNGs/{team} QUALY COMPARATION {year - 1} vs {year}.png', dpi=450)
     plt.show()
 
 
-
 def qualy_diff_last_year(round_id, year, circuit=None):
-
     ergast = Ergast()
     current = ergast.get_qualifying_results(season=2023, round=round_id, limit=1000)
     previous = ergast.get_qualifying_results(season=year, limit=1000)
@@ -165,6 +162,44 @@ def qualy_diff_last_year(round_id, year, circuit=None):
     plt.savefig(f'../PNGs/{current.event.EventName} QUALY COMPARATION {year} vs 2023.png', dpi=450)
     plt.show()
 
+
+def telemetry_lap(session, d1, lap):
+    d1_lap = None
+    for i in session.laps.pick_driver(d1).pick_lap(lap).iterlaps():
+        d1_lap = i[1]
+
+    d1_tel = d1_lap.get_telemetry()
+
+    fig, ax = plt.subplots(nrows=3, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1]}, dpi=150)
+
+    ax[0].plot(d1_tel['Distance'], d1_tel['Speed'],
+               color='#FFA500')
+
+    ax[0].set_xlabel('Distance')
+    ax[0].set_ylabel('Speed')
+
+    ax[1].plot(d1_tel['Distance'], d1_tel['Throttle'],
+               color='#FFA500')
+    ax[1].set_xlabel('Distance')
+    ax[1].set_ylabel('Throttle')
+
+    ax[2].plot(d1_tel['Distance'], d1_tel['Brake'],
+               color='#FFA500')
+    ax[2].set_xlabel('Distance')
+    ax[2].set_ylabel('Brakes')
+
+    ax[2].set_yticks([0, 1])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[2].set_yticklabels(['OFF', 'ON'])
+
+    ax[0].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[0].set_title(f'{d1} LAP {lap} IN {session.event.EventName}', font='Fira Sans', fontsize=18)
+    ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{d1} lap {lap}.png', dpi=500)
+    plt.show()
+
 def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'black'
@@ -182,12 +217,9 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
         for i in session.laps.pick_driver(driver_2).pick_lap(lap).iterlaps():
             d2_lap = i[1]
 
-        d1_lap = session.laps.split_qualifying_sessions()[1].pick_driver(driver_1)
-        d2_lap = session.laps.split_qualifying_sessions()[1].pick_driver(driver_2)
-
     else:
-        #d1_lap = session.laps.split_qualifying_sessions()[0].pick_driver(driver_1).pick_fastest()
-        #d2_lap = session.laps.split_qualifying_sessions()[0].pick_driver(driver_2).pick_fastest()
+        # d1_lap = session.laps.split_qualifying_sessions()[0].pick_driver(driver_1).pick_fastest()
+        # d2_lap = session.laps.split_qualifying_sessions()[0].pick_driver(driver_2).pick_fastest()
         d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
         d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
@@ -211,25 +243,25 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
 
     if lap is None:
         ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
-                color='#0000FF',
-                label=driver_1)
+                   color='#0000FF',
+                   label=driver_1)
         ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
-                color='#FFA500',
-                label=driver_2)
+                   color='#FFA500',
+                   label=driver_2)
 
         colors = ['green' if x > 0 else 'red' for x in delta_time]
         twin = ax[0].twinx()
         for i in range(1, len(delta_time)):
-            twin.plot(ref_tel['Distance'][i-1:i+1], delta_time[i-1:i+1], color=colors[i],
+            twin.plot(ref_tel['Distance'][i - 1:i + 1], delta_time[i - 1:i + 1], color=colors[i],
                       alpha=0.5, label='delta')
 
     else:
         ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
-                color='#0000FF',
-                label=driver_1)
+                   color='#0000FF',
+                   label=driver_1)
         ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
-                color='#FFA500',
-                label=driver_2)
+                   color='#FFA500',
+                   label=driver_2)
 
         colors = ['green' if x > 0 else 'red' for x in delta_time]
         twin = ax[0].twinx()
@@ -242,7 +274,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     ax[0].set_ylabel('Speed')
     ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
                     f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
-                    font='Fira Sans' , fontsize=24, y=1.1)
+                    font='Fira Sans', fontsize=24, y=1.1)
 
     twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     twin.set_ylabel('Time diff (s)')
@@ -289,7 +321,6 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
     ax[2].set_yticks([0, 50, 100])  # Assuming the 'Brakes' data is normalized between 0 and 1
     ax[2].set_yticklabels(['0%', '50%', '100%'])
 
-
     ax[3].plot(ref_tel['Distance'], ref_tel['nGear'],
                color='#0000FF',
                label=driver_1)
@@ -334,7 +365,7 @@ def plot_circuit_with_data(session, col='nGear'):
         lc_comp = LineCollection(segments, norm=plt.Normalize(min_speed, max_speed), cmap=cmap)
         lc_comp.set_array(data)
 
-    fig, ax = plt.subplots(figsize=(7.2,7.2))
+    fig, ax = plt.subplots(figsize=(7.2, 7.2))
     lc_comp.set_array(data)
     lc_comp.set_linewidth(4)
 
@@ -360,9 +391,6 @@ def plot_circuit_with_data(session, col='nGear'):
     plt.yticks(fontsize=14, fontname='Fira Sans')
     plt.savefig(f"../PNGs/GEAR CHANGES {session.event.OfficialEventName}", dpi=400)
     plt.show()
-
-
-
 
 
 def fastest_by_point(session, team_1, team_2, scope='Team'):
@@ -570,8 +598,6 @@ def qualy_diff(team_1, team_2, session):
     plt.show()
 
 
-
-
 def track_dominance(session, team_1, team_2):
     lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
     tel_team_1 = lap_team_1.get_telemetry()
@@ -668,8 +694,8 @@ def track_dominance(session, team_1, team_2):
     plt.savefig(path, dpi=400)
     plt.show()
 
-def qualy_margin(circuit, start=None, end=None):
 
+def qualy_margin(circuit, start=None, end=None):
     ergast = Ergast()
     dict_years = {}
     dict_drivers = {}
