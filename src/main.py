@@ -28,8 +28,8 @@ if __name__ == '__main__':
     # cluster_circuits(2023, 17, 2022, 'austin',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2022, 'austin', 'R')
-    # session.load()
+    session = fastf1.get_session(2023, 17, 'R')
+    session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     # driver_race_times_per_tyre(session, 'RUS')
 
-    get_fastest_data(session, 'Speed')
+    # get_fastest_data(session, 'Speed')
 
     # win_wdc(2023)
 
@@ -55,7 +55,9 @@ if __name__ == '__main__':
 
     # position_changes(session)
 
-    # overlying_laps(session, 'ALO', 'STR')
+    telemetry_lap(session, 'LEC', 33)
+
+    # overlying_laps(session, 'LEC', 'ALO', lap=33)
 
     # race_distance(session, 'HAM', 'RUS')
 
