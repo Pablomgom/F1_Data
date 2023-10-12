@@ -2,7 +2,7 @@ from fastf1.ergast import Ergast
 from matplotlib.font_manager import FontProperties
 
 from src.elo.elo import elo_execution
-from src.exceptions import race_exceptions
+from src.exceptions import race_same_team_exceptions
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
 from src.general_analysis.race_plots import *
@@ -23,13 +23,11 @@ if __name__ == '__main__':
 
     # dhl_pitstops(2023, round=17, groupBy='Team')
 
-    # plot_circuit()
-
     # cluster_circuits(2023, 17, 2022, 'austin',  clusters=3)
 
     fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2019, 'Canada', 'R')
-    session.load()
+    session = fastf1.get_session(2023, 'Zandvoort', 'R')
+    # session.load()
 
     # lucky_drivers(1950,2024)
 
@@ -39,7 +37,7 @@ if __name__ == '__main__':
 
     # qualy_diff_teammates('Red Bull Racing', 17)
 
-    # race_pace_teammates('Red Bull Racing', 17)
+    # race_pace_teammates('McLaren', 17)
 
     # driver_race_times_per_tyre(session, 'RUS')
 
@@ -51,7 +49,7 @@ if __name__ == '__main__':
 
     # qualy_diff('Aston Martin', 'McLaren', 14)
 
-    # race_diff('Aston Martin', 'Mercedes', 2023)
+    # race_diff('Ferrari', 'Mercedes', 2023)
 
     # position_changes(session)
 
@@ -59,7 +57,7 @@ if __name__ == '__main__':
 
     # overlying_laps(session, 'LEC', 'ALO', lap=33)
 
-    # race_distance(session, 'HAM', 'RUS')
+    # race_distance(session, 'ALO', 'NOR')
 
     # long_runs_FP2(session, 'HAM')
 
@@ -104,7 +102,7 @@ if __name__ == '__main__':
 
     # get_retirements_per_driver('Verstappen', 2015, 2024)
 
-    # team_wdc_history('McLaren')
+    # team_wdc_history('McLaren', color='#d47205')
 
     # bar_race(races, sprints, schedule)
 
@@ -124,9 +122,9 @@ if __name__ == '__main__':
 
     # compare_qualy_results('alphatauri', 19, end=2010)
 
-    # avg_driver_position(None, 'red_bull', 2023, session='Q')
+    # avg_driver_position(None, 'red_bull', 2007, session='Q')
 
-    # full_compare_drivers_season(2023, 'norris', 'piastri', 'mclaren', mode='team', split=8)
+    # full_compare_drivers_season(2021, 'hamilton', 'max_verstappen', d1_team='mercedes', d2_team='red_bull')
 
     # simulate_season_different_psystem(2021, 2009)
 

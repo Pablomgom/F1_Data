@@ -171,7 +171,7 @@ def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate=
         if ceil_values:
             height = math.ceil(height)
         if height < 0:
-            y_offset = -y_offset_annotate - 0.01
+            y_offset = -y_offset_annotate - 0.04
         else:
             y_offset = y_offset_annotate
         if height != 0:

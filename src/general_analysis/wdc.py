@@ -283,15 +283,24 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
 
 
 
-def team_wdc_history(team):
+def team_wdc_history(team, color='papaya'):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
     ergast = Ergast()
     years = []
     positions = []
     for i in range(1950, 2024):
+        renamed_team = team
+        if i in [1967] and team == 'McLaren':
+            renamed_team = 'McLaren-BRM'
+        elif i <= 1970 and team == 'McLaren':
+            renamed_team = 'McLaren-Ford'
+        if i == 1969 and team == 'McLaren':
+            renamed_team = 'BRM'
+        if i == 1971:
+            a = 1
         standings = ergast.get_constructor_standings(season=i, limit=1000)
         if len(standings.content) > 0:
-            team_data = standings.content[0][standings.content[0]['constructorName'] == team]
+            team_data = standings.content[0][standings.content[0]['constructorName'] == renamed_team]
             if len(team_data) > 0:
                 position = team_data['position'].min()
                 years.append(i)
@@ -299,11 +308,11 @@ def team_wdc_history(team):
 
         print(years, positions)
 
-    fig, ax = plt.subplots(figsize=(30, 10))
-    plt.plot(years, positions, color='red', marker='o', linewidth=3, zorder=2)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    plt.plot(years, positions, color=color, marker='o', linewidth=3, zorder=2)
 
     plt.yticks(np.arange(1, max(positions)+1, 1))
-    plt.xticks(np.arange(min(years), max(years) + 1, 4))
+    plt.xticks(np.arange(min(years), max(years) + 1, 5), rotation=90)
     plt.gca().invert_yaxis()
 
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
@@ -318,27 +327,19 @@ def team_wdc_history(team):
             end_year = years[i - 1]
             if start_year == end_year:
                 plt.annotate(f'{start_year}', (end_year, 1), textcoords="offset points",
-                             xytext=(0, 10), ha='center', fontsize=14)
+                             xytext=(0, 10), ha='center', fontsize=11)
             else:
                 plt.annotate(f'{start_year}-{end_year}', (start_year + ((end_year-start_year)/2), 1),
-                             textcoords="offset points", xytext=(0, 10), fontsize=14,
+                             textcoords="offset points", xytext=(0, 10), fontsize=11,
                              ha='center')
-            start_year = None  # Reset the start_year
-    # Label axes
+            start_year = None
+
     plt.xlabel('Year', fontsize=20)
     plt.ylabel('Constructors position', fontsize=20)
-    plt.title(f'{team.upper()} CONSTRUCTOR POSITIONS HISTORY', fontsize=30, y=1.05)
 
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
 
-    # Load and display the image
-    image = mpimg.imread('../resources/Ferrari logo.png')
-    imagebox = OffsetImage(image, zoom=0.2)  # You can change the zoom level
-    ab = AnnotationBbox(imagebox, (1990, 7), frameon=False)  # Position to display image
-
-    ax.add_artist(ab)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{team} history.png', dpi=400)
-    # Display the plot
     plt.show()

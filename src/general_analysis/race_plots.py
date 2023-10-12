@@ -4,7 +4,7 @@ import statistics
 from matplotlib.font_manager import FontProperties
 
 from src.plots.plots import round_bars, annotate_bars
-from src.exceptions import race_exceptions, qualy_exceptions
+from src.exceptions import race_same_team_exceptions, qualy_exceptions, race_diff_team_exceptions
 import fastf1
 import pandas as pd
 from fastf1.ergast import Ergast
@@ -110,6 +110,8 @@ def apply_tyre_age_factor(d1, d2, mean_t1, mean_t2, avg_life_t1, avg_life_t2, te
     print(d2, avg_life_t2)
     if country == 'Azerbaijan' or location == 'Jeddah' or location == 'Monaco':
         tyre_factor = 0.01
+    elif location == 'Miami':
+        tyre_factor = 0.02
     else:
         tyre_factor = 0.05
     tyre_diff = abs(avg_life_t1 - avg_life_t2)
@@ -121,15 +123,19 @@ def apply_tyre_age_factor(d1, d2, mean_t1, mean_t2, avg_life_t1, avg_life_t2, te
     return mean_t1, mean_t2
 
 
-def get_driver_race_pace(race, d1, d2, team, round, exceptions=True, return_og=False, team_mode=False):
+def get_driver_race_pace(race, d1, d2, team, round, exceptions=True, return_og=False, team_mode=False, laps_mode='min'):
     team_1_laps = race.laps.pick_driver(d1)
     team_2_laps = race.laps.pick_driver(d2)
     min_laps = 0
     laps_d1 = len(team_1_laps)
     laps_d2 = len(team_2_laps)
     max_laps = min(laps_d1, laps_d2)
+    if laps_mode != 'min':
+        if laps_d1 < 25 or laps_d2 < 25:
+            max_laps = max(laps_d1, laps_d2)
+
     if exceptions:
-        min_laps, max_laps = call_function_from_module(race_exceptions,
+        min_laps, max_laps = call_function_from_module(race_same_team_exceptions,
                                                        f"{team.replace(' ', '_')}_{2023}",
                                                        round, max_laps)
 
@@ -142,7 +148,7 @@ def get_driver_race_pace(race, d1, d2, team, round, exceptions=True, return_og=F
     if team_mode and (laps_d1 >= 25 or laps_d2 >= 25):
         if laps_d1 < 25:
             mean_t1 = 1000000
-        elif laps_d2 < 25:
+        if laps_d2 < 25:
             mean_t2 = 1000000
 
     og_t1 = mean_t1
@@ -567,51 +573,62 @@ def race_diff(team_1, team_2, year):
         race = fastf1.get_session(year, i + 1, 'R')
         race.load(telemetry=True)
         session_names.append(race.event['Location'].split('-')[0])
+        try:
+            call_function_from_module(race_diff_team_exceptions,f"{team_1.replace(' ', '_')}_{2023}", i + 1)
+            call_function_from_module(race_diff_team_exceptions,f"{team_2.replace(' ', '_')}_{2023}", i + 1)
 
-        drivers_team_1 = list(race.laps.pick_team(team_1)['Driver'].unique())
-        drivers_team_2 = list(race.laps.pick_team(team_2)['Driver'].unique())
+            drivers_team_1 = list(race.laps.pick_team(team_1)['Driver'].unique())
+            drivers_team_2 = list(race.laps.pick_team(team_2)['Driver'].unique())
 
-        if 'STR' not in drivers_team_1:
-            drivers_team_1.append('STR')
+            if team_1 == 'Ferrari' and i == 16:
+                drivers_team_1.append('SAI')
 
-        pace_t1_1, pace_t1_2 = get_driver_race_pace(race, drivers_team_1[0], drivers_team_1[1],
-                                                    team_1, i + 1, True, True, True)
-        pace_t2_1, pace_t2_2 = get_driver_race_pace(race, drivers_team_2[0], drivers_team_2[1],
-                                                    team_2, i + 1, True, True, True)
+            if team_1 == 'Aston Martin' and i == 14:
+                drivers_team_1.append('STR')
 
-        def get_driver_pace(d1, d2, pace_d1, pace_d2):
-            if pace_d1 > pace_d2:
-                return d2, pace_d2
+            pace_t1_1, pace_t1_2 = get_driver_race_pace(race, drivers_team_1[0], drivers_team_1[1], team_1, i + 1,
+                                                        True, True, True, 'max')
+            pace_t2_1, pace_t2_2 = get_driver_race_pace(race, drivers_team_2[0], drivers_team_2[1], team_2, i + 1,
+                                                        True, True, True, 'max')
+
+
+            def get_driver_pace(d1, d2, pace_d1, pace_d2):
+                if pace_d1 > pace_d2:
+                    return d2
+                else:
+                    return d1
+            d_t1 = get_driver_pace(*drivers_team_1, pace_t1_1, pace_t1_2)
+            d_t2 = get_driver_pace(*drivers_team_2, pace_t2_1, pace_t2_2)
+
+            pace_t1, pace_t2 = get_driver_race_pace(race, d_t1, d_t2, '', i + 1, exceptions=False)
+
+            if pace_t1 > pace_t2:
+                colors.append('#0000FF')
             else:
-                return d1, pace_d1
+                colors.append('#FFA500')
 
-        d_t1, pace_t1 = get_driver_pace(*drivers_team_1, pace_t1_1, pace_t1_2)
-        d_t2, pace_t2 = get_driver_pace(*drivers_team_2, pace_t2_1, pace_t2_2)
-
-        pace_t1, pace_t2 = get_driver_race_pace(race, d_t1, d_t2, '', i + 1, exceptions=False)
-
-        if pace_t1 > pace_t2:
+            delta_diff = ((pace_t2 - pace_t1) / pace_t1) * 100
+            delta_laps.append(round(delta_diff, 2))
+        except AttributeError:
+            print('Cant compare')
+            delta_laps.append(0)
             colors.append('#0000FF')
-        else:
-            colors.append('#FFA500')
-
-        delta_diff = ((pace_t2 - pace_t1) / pace_t1) * 100
-        delta_laps.append(round(delta_diff, 2))
 
     fig, ax1 = plt.subplots(figsize=(10, 8))
     plt.rcParams["font.family"] = "Fira Sans"
     delta_laps = [x if not math.isnan(x) else 0 for x in delta_laps]
 
+    print(f'MEAN: {statistics.mean(delta_laps)}')
+    print(f'MEDIAN: {statistics.median(delta_laps)}')
+
     bars = plt.bar(session_names, delta_laps, color=colors)
     round_bars(bars, ax1, colors, color_1=plotting.team_color(team_1), color_2=plotting.team_color(team_2))
-    annotate_bars(bars, ax1, 0.01, 12, text_annotate='{height}%', ceil_values=False)
+    annotate_bars(bars, ax1, 0.01, 14, text_annotate='{height}%', ceil_values=False)
 
     delta_laps = pd.Series(delta_laps)
 
     if min(delta_laps) < 0:
         plt.axhline(0, color='white', linewidth=2)
-
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
                     Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
@@ -622,8 +639,6 @@ def race_diff(team_1, team_2, year):
     plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     ax1.yaxis.grid(True, linestyle='--')
-    title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
-    plt.title(f'{team_1} VS {team_2} {year} race pace difference', fontdict=title_font_properties)
 
     font_properties = {'family': 'Fira Sans', 'size': 12}
 
@@ -654,9 +669,8 @@ def race_distance(session, driver_1, driver_2):
     laps_diff = []
     laps = []
     for i in range(len(laps_driver_1)):
-        if i < 23:
-            laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
-            laps.append(i + 1)
+        laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
+        laps.append(i + 1)
 
     laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
     progressive_sum = laps_diff

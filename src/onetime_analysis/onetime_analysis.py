@@ -103,7 +103,7 @@ def simulate_qualy_championship(year, system):
     proccess_season_data(qualy_data, drivers, driver_points, system)
 
 
-def full_compare_drivers_season(year, d1, d2, team, mode=None, split=None, d1_team=None, d2_team=None):
+def full_compare_drivers_season(year, d1, d2, team=None, mode=None, split=None, d1_team=None, d2_team=None):
     ergast = Ergast()
     if mode == 'team':
         race_results = ergast.get_race_results(season=year, constructor=team, limit=1000).content
@@ -1438,7 +1438,7 @@ def avg_driver_position(driver, team, year, session='Q'):
         avg_grid_pre = dict(sorted(avg_grid_pre.items(), key=lambda item: item[1]))
         drivers = list(avg_grid.keys())
         avg_pos = list(avg_grid.values())
-        colors = [driver_colors_2023[key] for key in drivers]
+        colors = [driver_colors_2023.get(key, '#FFFFFF') for key in drivers]
         fig, ax = plt.subplots(figsize=(9, 7.2), dpi=150)  # Set the figure size (optional)
         bars = plt.bar(drivers, avg_pos, color=colors)  # Plot the bar chart with specific colors (optional)
 
