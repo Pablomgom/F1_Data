@@ -199,7 +199,7 @@ def get_font_properties(family, size):
     return FontProperties(family=family, size=size)
 
 
-def title_and_labels(plt, title, title_fontsize, x_label, x_fontsize, y_label, y_fontsize, title_offset=0):
+def title_and_labels(plt, title, title_fontsize, x_label, x_fontsize, y_label, y_fontsize, title_offset=0.5):
     plt.title(title, font='Fira Sans', fontsize=title_fontsize, x=title_offset)
     plt.xlabel(x_label, font='Fira Sans', fontsize=x_fontsize)
     plt.ylabel(y_label, font='Fira Sans', fontsize=y_fontsize)

@@ -13,6 +13,13 @@ from src.plots.plots import rounded_top_rect, stacked_bars
 
 
 def win_wdc(year):
+
+    """
+         Plots who can win the WDC in a year
+
+         Parameters:
+         year (int): Year to plot
+    """
     ergast = Ergast()
     standings = ergast.get_driver_standings(season=year)
     driver_standings = standings.content[0]
@@ -72,7 +79,8 @@ def win_wdc(year):
     plt.show()
 
 
-def process_race_data(content, driver, points, team_mate_points, team_mates_names, DNFs = None):
+def process_race_data(content, driver, points, team_mate_points, team_mates_names, DNFs=None):
+
     append = False
     for race in content:
         race_data = race[(race['familyName'] == driver.split(" ")[1]) & (race['givenName'] == driver.split(" ")[0])]
@@ -102,7 +110,18 @@ def process_race_data(content, driver, points, team_mate_points, team_mates_name
 
     return points, team_mate_points, team_mates_names, append
 
-def wdc_comparation(driver, start=None, end=None, DNFs = None):
+
+def wdc_comparation(driver, start=None, end=None, DNFs=None):
+
+    """
+         Plots the driver given with the points comparison against all his teammates
+
+         Parameters:
+         driver (str): Driver
+         start (int, optional): Year of start. Default: 1950
+         end (int, optional): Year of end. Default: 2024
+         DNFs (int, optional): Count DNFs. Default: None
+    """
 
     ergast = Ergast()
 
@@ -125,10 +144,10 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
 
         (points, team_mate_points,
          team_mates_names, append_races) = process_race_data(
-                                    races.content, driver, points, team_mate_points, team_mates_names, DNFs)
+            races.content, driver, points, team_mate_points, team_mates_names, DNFs)
         (points, team_mate_points,
          team_mates_names, append_sprints) = process_race_data(
-                                    sprints.content, driver, points, team_mate_points, team_mates_names, DNFs)
+            sprints.content, driver, points, team_mate_points, team_mates_names, DNFs)
 
         if append_races or append_sprints:
             points_per_year.append(points)
@@ -163,7 +182,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
 
     # Create bars for Driver 1
     bars = plt.bar(r1, points_per_year, color="#8B0000", width=barWidth,
-            edgecolor='white')
+                   edgecolor='white')
 
     def my_rounded_top_rect(x, y, width, height, color):
         corner_radius = min(5 * width, height / 2)
@@ -171,8 +190,8 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         # Calculate the starting point for the curves based on height
         # Calculate the starting point for the curves based on height
         curve_start_y = y + height * 0.98 - corner_radius
-        curve_end_x_left = x + width/2
-        curve_end_x_right = x + width/2
+        curve_end_x_left = x + width / 2
+        curve_end_x_right = x + width / 2
 
         # Vertices for the rectangle with rounded top
         verts = [
@@ -243,6 +262,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         for x, value in zip(x_positions, values):
             plt.text(x, value + offset, '{:.1f}'.format(value), ha='center', va='bottom', zorder=5,
                      font='Fira Sans', fontsize=8)
+
     add_labels(r1, points_per_year)
     add_labels(r2, team_mates_points_per_year)
 
@@ -253,7 +273,7 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
         color = name_to_color[name]
         if color not in colors_added:
             hex_code = "#{:02X}{:02X}{:02X}".format(round(255 * color[0]),
-                                                              round(255 * color[1]), round(255 * color[2]))
+                                                    round(255 * color[1]), round(255 * color[2]))
             line = Line2D([0], [0], color=hex_code, lw=4)
             legend_lines.append(line)
             names_legend.append(name)
@@ -282,8 +302,16 @@ def wdc_comparation(driver, start=None, end=None, DNFs = None):
     plt.show()
 
 
-
 def team_wdc_history(team, color='papaya'):
+
+    """
+         Plots all the results for a team in the constructors championship
+
+         Parameters:
+         team (str): Team
+         color (str, optional): Color of the line. Default: papaya
+    """
+
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
     ergast = Ergast()
     years = []
@@ -311,7 +339,7 @@ def team_wdc_history(team, color='papaya'):
     fig, ax = plt.subplots(figsize=(10, 8))
     plt.plot(years, positions, color=color, marker='o', linewidth=3, zorder=2)
 
-    plt.yticks(np.arange(1, max(positions)+1, 1))
+    plt.yticks(np.arange(1, max(positions) + 1, 1))
     plt.xticks(np.arange(min(years), max(years) + 1, 5), rotation=90)
     plt.gca().invert_yaxis()
 
@@ -329,7 +357,7 @@ def team_wdc_history(team, color='papaya'):
                 plt.annotate(f'{start_year}', (end_year, 1), textcoords="offset points",
                              xytext=(0, 10), ha='center', fontsize=11)
             else:
-                plt.annotate(f'{start_year}-{end_year}', (start_year + ((end_year-start_year)/2), 1),
+                plt.annotate(f'{start_year}-{end_year}', (start_year + ((end_year - start_year) / 2), 1),
                              textcoords="offset points", xytext=(0, 10), fontsize=11,
                              ha='center')
             start_year = None

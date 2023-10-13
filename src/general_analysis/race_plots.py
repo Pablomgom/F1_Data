@@ -19,15 +19,18 @@ import numpy as np
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 
-from datetime import timedelta
 import math
 
-from matplotlib.ticker import FuncFormatter
-
-from src.utils.utils import call_function_from_module
-
-
 def qualy_diff_teammates(team, rounds):
+    """
+         Prints the qualy diff between teammates
+
+         Parameters:
+         team (str): Team
+         rounds (int): Rounds to be analyzed
+
+    """
+    from src.utils.utils import call_function_from_module
     circuits = []
     legend = []
     color = []
@@ -96,13 +99,20 @@ def qualy_diff_teammates(team, rounds):
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (percentage)', font='Fira Sans', fontsize=16)
-    # plt.figtext(0.1, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=500)
     plt.show()
 
 
 def apply_tyre_age_factor(d1, d2, mean_t1, mean_t2, avg_life_t1, avg_life_t2, team, country, location):
+
+    """
+         Applies to the race_pace a factor based on the tyres age
+
+    """
+
+
+
     if team == 'Ferrari' and country == 'Spain':
         avg_life_t1 = 11
         avg_life_t2 = 11
@@ -124,6 +134,10 @@ def apply_tyre_age_factor(d1, d2, mean_t1, mean_t2, avg_life_t1, avg_life_t2, te
 
 
 def get_driver_race_pace(race, d1, d2, team, round, exceptions=True, return_og=False, team_mode=False, laps_mode='min'):
+    """
+         Get the race pace of a driver
+
+    """
     team_1_laps = race.laps.pick_driver(d1)
     team_2_laps = race.laps.pick_driver(d2)
     min_laps = 0
@@ -135,6 +149,7 @@ def get_driver_race_pace(race, d1, d2, team, round, exceptions=True, return_og=F
             max_laps = max(laps_d1, laps_d2)
 
     if exceptions:
+        from src.utils.utils import call_function_from_module
         min_laps, max_laps = call_function_from_module(race_same_team_exceptions,
                                                        f"{team.replace(' ', '_')}_{2023}",
                                                        round, max_laps)
@@ -166,6 +181,16 @@ def get_driver_race_pace(race, d1, d2, team, round, exceptions=True, return_og=F
 
 
 def race_pace_teammates(team, rounds):
+    """
+         Plots the race diff between teammates
+
+         Parameters:
+         team (str): Team
+         rounds (int): Rounds to be analyzed
+
+    """
+
+
     circuits = []
     legend = []
     color = []
@@ -248,6 +273,14 @@ def race_pace_teammates(team, rounds):
 
 
 def position_changes(session):
+    """
+         Plots the position changes in every lap
+
+         Parameters:
+         session (Session): Session to analyze
+
+    """
+
     plotting.setup_mpl(misc_mpl_mods=False)
 
     fig, ax = plt.subplots(figsize=(8.0, 5.12))
@@ -293,6 +326,15 @@ def position_changes(session):
 
 
 def long_runs_FP2(race, driver):
+    """
+         Plots the long runs in FP2 for a given driver
+
+         Parameters:
+         race (Session): Session to analyze
+         driver (str): Driver
+
+    """
+
     plotting.setup_mpl(misc_mpl_mods=False)
 
     driver_laps = race.laps.pick_driver(driver)
@@ -381,6 +423,16 @@ def long_runs_FP2(race, driver):
 
 
 def driver_race_times_per_tyre(race, driver):
+
+    """
+         Plots all the time laps, with the compound, for a driver
+
+         Parameters:
+         race (Session): Session to analyze
+         driver (str): Driver
+
+    """
+
     # The misc_mpl_mods option enables minor grid lines which clutter the plot
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     driver_laps = race.laps.pick_driver(driver).pick_quicklaps().reset_index()
@@ -415,6 +467,15 @@ def driver_race_times_per_tyre(race, driver):
 
 
 def tyre_strategies(session):
+
+    """
+         Plots the tyre strategy in a race
+
+         Parameters:
+         session (Session): Session to analyze
+
+    """
+
     laps = session.laps
     drivers = session.drivers
 
@@ -461,14 +522,8 @@ def tyre_strategies(session):
 
     for driver in drivers:
         driver_stints = stints.loc[stints["Driver"] == driver]
-        if driver == 'ALB':
-            a = 1
-
         previous_stint_end = 0
         for idx, row in driver_stints.iterrows():
-            # each row contains the compound name and stint length
-            # we can use these information to draw horizontal bars
-
             if row['FreshTyre']:
                 alpha = 1
                 color = plotting.COMPOUND_COLORS[row["Compound"]]
@@ -499,7 +554,6 @@ def tyre_strategies(session):
     fig.suptitle(session.event.OfficialEventName, font='Fira Sans', fontsize=14)
     plt.xlabel("Lap Number")
     plt.grid(False)
-    # invert the y-axis so drivers that finish higher are closer to the top
     ax.invert_yaxis()
 
     ax.spines['top'].set_visible(False)
@@ -507,13 +561,18 @@ def tyre_strategies(session):
     ax.spines['left'].set_visible(False)
 
     plt.tight_layout()
-
     plt.savefig(f"../PNGs/TYRE STRATEGY {session.event.OfficialEventName}.png", dpi=400)
-
     plt.show()
 
 
 def race_pace_top_10(race):
+    """
+    Plots the race pace of the top 10 drivers in a race
+
+    Parameters:
+    race (session): Race to be plotted
+
+    """
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
@@ -565,6 +624,18 @@ def race_pace_top_10(race):
 
 
 def race_diff(team_1, team_2, year):
+
+    """
+         Plots the race time diff between 2 different teams
+
+         Parameters:
+         team_1 (str): Team 1
+         team_2 (str): Team 2
+         year (int): Year to analyze
+
+    """
+
+
     session_names = []
     delta_laps = []
     colors = []
@@ -574,6 +645,7 @@ def race_diff(team_1, team_2, year):
         race.load(telemetry=True)
         session_names.append(race.event['Location'].split('-')[0])
         try:
+            from src.utils.utils import call_function_from_module
             call_function_from_module(race_diff_team_exceptions,f"{team_1.replace(' ', '_')}_{2023}", i + 1)
             call_function_from_module(race_diff_team_exceptions,f"{team_2.replace(' ', '_')}_{2023}", i + 1)
 
@@ -608,7 +680,13 @@ def race_diff(team_1, team_2, year):
                 colors.append('#FFA500')
 
             delta_diff = ((pace_t2 - pace_t1) / pace_t1) * 100
-            delta_laps.append(round(delta_diff, 2))
+            if round(delta_diff, 2) == 0:
+                if pace_t1 > pace_t2:
+                    delta_laps.append(-0.01)
+                else:
+                    delta_laps.append(0.01)
+            else:
+                delta_laps.append(round(delta_diff, 2))
         except AttributeError:
             print('Cant compare')
             delta_laps.append(0)
@@ -639,22 +717,23 @@ def race_diff(team_1, team_2, year):
     plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
     plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
     ax1.yaxis.grid(True, linestyle='--')
-
-    font_properties = {'family': 'Fira Sans', 'size': 12}
-
-    # Set x-ticks and y-ticks font
-    for label in ax1.get_xticklabels():
-        label.set_fontproperties(font_properties)
-
-    for label in ax1.get_yticklabels():
-        label.set_fontproperties(font_properties)
-    plt.xticks(rotation=90)
+    plt.xticks(rotation=90, fontsize=12, fontname='Fira Sans')
+    plt.yticks(fontsize=12, fontname='Fira Sans')
     plt.tight_layout()
     plt.savefig(f"../PNGs/{team_2} VS {team_1} {year} race time difference.png", dpi=400)
     plt.show()
 
 
 def race_distance(session, driver_1, driver_2):
+    """
+         Plots the race time diff between 2 drivers, each lap
+
+         Parameters:
+         session (Session): Session to analyze
+         driver_1 (str): Driver 1
+         driver_2 (str): Driver 2
+    """
+
     laps_driver_1 = session.laps.pick_driver(driver_1).reset_index()
     laps_driver_2 = session.laps.pick_driver(driver_2).reset_index()
 

@@ -16,6 +16,17 @@ from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
 
 
 def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
+    """
+       Plot the performance of a team against last year qualy sessions
+
+       Parameters:
+       team (str): Team to analyze
+       delete_circuits (array, optional): Circuits to exclude from the analysis. Default = []
+       year (int, optional): Year of the analysis. Default = 2023
+
+   """
+
+
     ergast = Ergast()
     prev_year = ergast.get_qualifying_results(season=year - 1, limit=1000)
     current_year = ergast.get_qualifying_results(season=year, limit=1000)
@@ -107,7 +118,19 @@ def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
     plt.show()
 
 
-def qualy_diff_last_year(round_id, year, circuit=None):
+def qualy_diff_last_year(year, round_id, circuit=None):
+    """
+       Plot the performance of all teams against last year qualify in a specific circuit
+
+       Parameters:
+       year (int): Year
+       round_id (int): Round of the GP
+       circuit (str, optional): Only to get the teams in case of error. Default = None
+
+    """
+
+
+
     ergast = Ergast()
     current = ergast.get_qualifying_results(season=2023, round=round_id, limit=1000)
     previous = ergast.get_qualifying_results(season=year, limit=1000)
@@ -164,6 +187,17 @@ def qualy_diff_last_year(round_id, year, circuit=None):
 
 
 def telemetry_lap(session, d1, lap):
+    """
+       Plot the telemetry of a lap
+
+       Parameters:
+       session (Session): Session of the lap
+       d1 (str): Driver
+       lap (int): Number of the lap
+
+    """
+
+
     d1_lap = None
     for i in session.laps.pick_driver(d1).pick_lap(lap).iterlaps():
         d1_lap = i[1]
@@ -200,7 +234,18 @@ def telemetry_lap(session, d1, lap):
     plt.savefig(f'../PNGs/{d1} lap {lap}.png', dpi=500)
     plt.show()
 
-def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
+def overlying_laps(session, driver_1, driver_2, lap=None):
+    """
+       Compare the telemetry of 2 different laps
+
+       Parameters:
+       session (Session): Session of the lap
+       driver_1 (str): Driver 1
+       driver_2 (str): Driver 2
+       lap (int, optional): Number of the lap. Default: None
+
+    """
+
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'black'
 
@@ -345,6 +390,16 @@ def overlying_laps(session, driver_1, driver_2, lap=None, interpolate=True):
 
 
 def plot_circuit_with_data(session, col='nGear'):
+
+    """
+       Plot the circuit with the data desired
+
+       Parameters:
+       session (Session): Session of the lap
+       col (str): Name of the data to plot
+
+    """
+
     lap = session.laps.pick_fastest()
     tel = lap.get_telemetry()
 
@@ -394,6 +449,18 @@ def plot_circuit_with_data(session, col='nGear'):
 
 
 def fastest_by_point(session, team_1, team_2, scope='Team'):
+
+    """
+       Plot the circuit with the time diff between 2 laps at each points
+
+       Parameters:
+       session (Session): Session of the lap
+       team_1 (str): Team 1
+       team_2 (str): Team 2
+       scope (str, optional): Scope of the plot (Team|Driver). Default: Team
+
+    """
+
     if scope == 'Team':
         lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
         tel_team_1 = lap_team_1.get_telemetry()
@@ -478,6 +545,16 @@ def fastest_by_point(session, team_1, team_2, scope='Team'):
 
 
 def qualy_results(session):
+
+    """
+       Plot the results of a qualy with fastF1 API
+
+       Parameters:
+       session (Session): Session of the lap
+
+    """
+
+
     drivers = pd.unique(session.laps['Driver'])
     list_fastest_laps = list()
     for drv in drivers:
@@ -503,14 +580,10 @@ def qualy_results(session):
 
     ax.set_yticks(fastest_laps.index)
     ax.set_yticklabels(fastest_laps['Driver'])
-
-    # show fastest at the top
     ax.invert_yaxis()
 
-    # draw vertical lines behind the bars
     ax.set_axisbelow(True)
     ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000)
-
     lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
 
     plt.suptitle(f"{session.event['EventName']} {session.event.year} Qualifying\n"
@@ -524,19 +597,28 @@ def qualy_results(session):
 
     ax.xaxis.set_major_formatter(FuncFormatter(custom_formatter))
     ax.xaxis.grid(True, color='white', linestyle='--')
-
-    # Adding a watermark at the bottom left of the figure
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
-
     plt.savefig(f"../PNGs/QUALY OVERVIEW {session.event.OfficialEventName}.png", dpi=400)
     plt.show()
 
 
-def qualy_diff(team_1, team_2, session):
+def qualy_diff(team_1, team_2, rounds):
+
+    """
+       Plot the qualy time diff between 2 teams
+
+       Parameters:
+       team_1 (str): Team 1
+       team_2 (str): Team 2
+       rounds(int): Number of rounds to be analyzed
+
+    """
+
+
     qualys = []
     session_names = []
 
-    for i in range(session):
+    for i in range(rounds):
         session = fastf1.get_session(2023, i + 1, 'Q')
         session.load(telemetry=True)
         qualys.append(session)
@@ -582,23 +664,25 @@ def qualy_diff(team_1, team_2, session):
     ax1.yaxis.grid(True, linestyle='--')
     title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
     plt.title(f'{team_1} VS {team_2} qualy time difference', fontdict=title_font_properties)
-    font_properties = {'family': 'Fira Sans', 'size': 12}
-    for label in ax1.get_xticklabels():
-        label.set_fontproperties(font_properties)
-
-    for label in ax1.get_yticklabels():
-        label.set_fontproperties(font_properties)
-    plt.xticks(rotation=90)
+    plt.xticks(rotation=90, fontsize=12, fontname='Fira Sans')
+    plt.yticks(fontsize=12, fontname='Fira Sans')
     plt.tight_layout()
-
-    plt.savefig(f"../PNGs/{team_2} VS {team_1} time difference.png",
-                dpi=400)
-
-    # Show the plot
+    plt.savefig(f"../PNGs/{team_2} VS {team_1} time difference.png", dpi=400)
     plt.show()
 
 
 def track_dominance(session, team_1, team_2):
+    """
+       Plot the track dominance of 2 teams in their fastest laps
+
+       Parameters:
+       session(Session): Session to analyze
+       team_1 (str): Team 1
+       team_2 (str): Team 2
+
+
+    """
+
     lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
     tel_team_1 = lap_team_1.get_telemetry()
 
@@ -696,6 +780,18 @@ def track_dominance(session, team_1, team_2):
 
 
 def qualy_margin(circuit, start=None, end=None):
+
+    """
+       Prints the qualy margins in a given circuits
+
+       Parameters:
+       circuit(str): Circuit to analyze
+       start (int, optional): Year of start. Default: 1950
+       start (int, optional): Year of end. Default: 2024
+
+    """
+
+
     ergast = Ergast()
     dict_years = {}
     dict_drivers = {}

@@ -27,12 +27,22 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 from src.plots.plots import round_bars
-from src.utils.utils import append_duplicate_number, update_name
+from src.utils.utils import append_duplicate_number, update_name, get_quartiles
 from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009, \
     point_systems
 
 
 def get_DNFs_team(team, start, end):
+
+    """
+         Print the DNFs of a team
+
+         Parameters:
+         team (str): Team
+         start (int): Year of start
+         end (int): Year of end
+    """
+
     ergast = Ergast()
     mechanical = 0
     accident = 0
@@ -59,6 +69,16 @@ def get_DNFs_team(team, start, end):
 
 
 def proccess_season_data(data, drivers, driver_points, system):
+    """
+        Print the points for a season
+
+        Parameters:
+        data (DataFrame): Data
+        drivers (int): Drivers to analyze
+        driver_points (dict): Dict with the driver's points
+        system (dict): Point system
+   """
+
     def print_wdc(driver_points):
         driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
         total_p = 0
@@ -83,6 +103,14 @@ def proccess_season_data(data, drivers, driver_points, system):
 
 
 def simulate_season_different_psystem(year, system):
+    """
+       Simulate a season with another point system
+
+        Parameters:
+        year (int): Data
+        system (dict): Point system
+   """
+
     ergast = Ergast()
     race_data = ergast.get_race_results(season=year, limit=1000).content
     drivers = set([code for df in race_data for code in df['driverCode'].values])
@@ -94,6 +122,14 @@ def simulate_season_different_psystem(year, system):
 
 
 def simulate_qualy_championship(year, system):
+    """
+       Simulate a qualy WDC with a point system
+
+        Parameters:
+        year (int): Data
+        system (dict): Point system
+   """
+
     qualy_data = Ergast().get_qualifying_results(season=year, limit=1000).content
     drivers = set([code for df in qualy_data for code in df['driverCode'].values])
     driver_points = {}
@@ -103,7 +139,22 @@ def simulate_qualy_championship(year, system):
     proccess_season_data(qualy_data, drivers, driver_points, system)
 
 
-def full_compare_drivers_season(year, d1, d2, team=None, mode=None, split=None, d1_team=None, d2_team=None):
+def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=None, d1_team=None, d2_team=None):
+    """
+       Compare a season for 2 drivers, with a lot of details
+
+        Parameters:
+        year (int): Data
+        d1 (str): Driver 1
+        d2 (str): Driver 2
+        team (str, optional): Only for analyze a team. Default: None
+        mode (str, optional): Changes between team and driver. Default: driver
+        split (int, optional): To split a season for one team. Default: None
+        d1_team (str, optional): Team of d1
+        d2_team (str, optional): Team of d2
+   """
+
+
     ergast = Ergast()
     if mode == 'team':
         race_results = ergast.get_race_results(season=year, constructor=team, limit=1000).content
@@ -237,6 +288,18 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode=None, split=None, 
 
 
 def compare_qualy_results(team, threshold, end=None, exclude=None):
+    """
+       Compare qualy results for a team given a threshold
+
+        Parameters:
+        team (str, optional): Only for analyze a team. Default: None
+        threshold (int): Threshold to compare the values
+        end (int, optional): 1950 by default
+        exclude (dict, optional): Excludes a circuit in a given year
+
+   """
+
+
     if end is None:
         end = 1950
     ergast = Ergast()
@@ -269,6 +332,17 @@ def compare_qualy_results(team, threshold, end=None, exclude=None):
 
 
 def compare_amount_points(team, threshold, end=None, exclude=None):
+    """
+       Compare points for a team given a threshold
+
+        Parameters:
+        team (str, optional): Only for analyze a team. Default: None
+        threshold (int): Threshold to compare the values
+        end (int, optional): 1950 by default
+        exclude (dict, optional): Excludes a circuit in a given year
+
+   """
+
     if end is None:
         end = 1950
     ergast = Ergast()
@@ -296,6 +370,19 @@ def compare_amount_points(team, threshold, end=None, exclude=None):
 
 
 def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
+    """
+       Compare points for a team given a threshold
+
+        Parameters:
+        year (int): Year to plot
+        session (str, optional): Qualy or Race. Default. Q
+        predict (bool, optional): Predicts outcome of the season. Default: False
+        predict (bool, optional): Predicts outcome of the season. Default: False
+        mode (bool, optional): Total sum or 4 MA. Default: None(4 MA)
+
+   """
+
+
     ergast = Ergast()
     data = ergast.get_race_results(season=year, limit=1000)
     teams = set(data.content[0]['constructorName'])
@@ -403,6 +490,14 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
 
 
 def plot_upgrades(scope=None):
+    """
+       Plot the upgrades for a season
+
+        Parameters:
+        scope (str, optional): (Performance|Circuit Specific)
+
+   """
+
     upgrades = pd.read_csv('../resources/upgrades.csv', sep='|')
     if scope is not None:
         upgrades = upgrades[upgrades['Reason'] == scope]
@@ -424,7 +519,7 @@ def plot_upgrades(scope=None):
     ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
 
     title_and_labels(plt,f'Cumulative {scope}Upgrades for Each Team', 28,
-                     'Races', 18, 'Number of Upgrades', 18, 0.58)
+                     'Races', 18, 'Number of Upgrades', 18, 0.5)
 
     handles, labels = get_handels_labels(ax)
     colors = [line.get_color() for line in ax.lines]
@@ -433,21 +528,30 @@ def plot_upgrades(scope=None):
     handles, labels, colors, last_values = zip(*info)
     labels = [f"{label} ({last_value:.0f})" for label, last_value in zip(labels, last_values)]
 
-    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
+    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", fontsize='x-large')
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
     plt.yticks(fontsize=12, fontname='Fira Sans')
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-    plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
     plt.tight_layout()
+    plt.savefig(f'../PNGs/{scope} UPGRADES.png', dpi=400)
     plt.show()
-    pd.set_option('display.max_columns', None)
-    print(transposed)
 
 
 def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
+    """
+        Cluster circuits
+
+        Parameters:
+        year (int): Year to plot
+        rounds (int): Rounds to analyze
+        prev_year (int, optional): Take data from a session of the previous year. Default: None
+        circuit (str, optional): Circuit to take data from last year. Default: None
+        clusters(int, optional): Number of clusters
+
+   """
+
     session_type = ['FP1', 'FP2', 'FP3', 'Q', 'S', 'SS', 'R']
     circuits = []
     data = []
@@ -488,31 +592,6 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
         max_speed = max(telemetry['Speed'])
         sorted_speed = sorted(telemetry['Speed'])
 
-        def get_percentile(data, percentile):
-            size = len(data)
-            return data[int((size - 1) * percentile)]
-
-        def get_quartiles(data):
-            data = sorted(data)
-
-            # Calculate the median
-            size = len(data)
-            if size % 2 == 0:
-                median = (data[size // 2 - 1] + data[size // 2]) / 2
-            else:
-                median = data[size // 2]
-
-            # Calculate Q1 (25th percentile) and Q3 (75th percentile)
-            lower_half = data[:size // 2] if size % 2 == 0 else data[:size // 2]
-            upper_half = data[size // 2:] if size % 2 == 0 else data[size // 2 + 1:]
-
-            q1 = get_percentile(lower_half, 0.5)
-            q3 = get_percentile(upper_half, 0.5)
-
-            avg = sum(data) / size
-
-            return q1, median, q3, avg
-
         q1, median, q3, avg = get_quartiles(sorted_speed)
 
         full_gas = telemetry[telemetry['Throttle'].isin([100, 99])]
@@ -525,28 +604,12 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
     data = StandardScaler().fit_transform(data)
 
-    # Use PCA to reduce dimensions to 2D for visualization
     pca = PCA(n_components=2)
     principal_components = pca.fit_transform(data)
-
-    if clusters is None:
-        wcss = []
-        for i in range(1, 11):
-            kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
-            kmeans.fit(data)
-            wcss.append(kmeans.inertia_)
-        plt.figure(figsize=(10, 5))
-        plt.plot(range(1, 11), wcss, marker='o', linestyle='--')
-        plt.title('Elbow Method')
-        plt.xlabel('Number of clusters')
-        plt.ylabel('WCSS')
-        plt.show()
-        exit(0)
 
     kmeans = KMeans(n_clusters=clusters, init='k-means++', random_state=42)
     y_kmeans = kmeans.fit_predict(data)
 
-    # Calculate mean of the original features for each cluster
     cluster_means = {}
     for cluster_id in np.unique(y_kmeans):
         cluster_means[cluster_id] = data[y_kmeans == cluster_id].mean(axis=0)
@@ -561,7 +624,6 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
         texts.append(ax.text(principal_components[i, 0], principal_components[i, 1], name,
                              font='Fira Sans', fontsize=13))
 
-    # Plotting centers and storing the text objects
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
         ax.scatter(center[0], center[1], s=300, c='#FF8C00')
 
@@ -584,6 +646,18 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
 
 
 def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False):
+    """
+        Print pitstops given the dhl data
+
+        Parameters:
+        year (int): Year to plot
+        groupBy (str): Driver or Team. Default: Driver
+        round (int, optional): Plot only a given round. Default: None
+        exclude (list, optional): Exclude pit stops. Default: None
+        points(bool, optional): Plot DHL system points. Default: False
+
+   """
+
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/Pit stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
@@ -685,6 +759,16 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
 
 
 def get_retirements_per_driver(driver, start=None, end=None):
+    """
+        Get retirements of a driver
+
+        Parameters:
+        driver (str): Driver
+        start (int): Year of start. Default: 1950
+        end (int): Year of end. Default: 2024
+
+   """
+
     ergast = Ergast()
     positions = pd.Series(dtype=object)
 
@@ -739,6 +823,17 @@ def get_retirements_per_driver(driver, start=None, end=None):
 
 
 def compare_drivers_season(d_1, d_2, season, DNFs=False):
+    """
+        Compare a season for 2 drivers
+
+        Parameters:
+        d_1 (str): Driver 1
+        d_2 (str): Driver 2
+        DNFs (bool): Count DNFs
+
+   """
+
+
     ergast = Ergast()
 
     races = ergast.get_race_results(season=season, limit=1000)
@@ -779,6 +874,13 @@ def compare_drivers_season(d_1, d_2, season, DNFs=False):
 
 
 def get_pit_stops_ergast(year):
+    """
+        Get pitstops data from ergast
+
+        Parameters:
+        year (int): Year of analysis
+
+   """
     ergast = Ergast()
     schedule = ergast.get_race_schedule(season=year, limit=1000)
     circuits = schedule.circuitId.values
@@ -840,6 +942,11 @@ def get_pit_stops_ergast(year):
 
 
 def get_retirements():
+    """
+        Get all retirements in F1 history
+
+   """
+
     races = []
     ergast = Ergast()
 
@@ -911,6 +1018,12 @@ def get_retirements():
 
 
 def get_circuitos():
+    """
+        Get all circuits in F1 history
+
+
+   """
+
     ergast = Ergast()
     circuitos = []
 
@@ -976,6 +1089,14 @@ def get_circuitos():
 
 
 def get_topspeed(gp):
+    """
+        Get top speeds for a range of rounds
+
+        Parameters:
+        gp (int): Number of rounds
+
+   """
+
     top_speed_array = []
 
     for i in range(gp):
@@ -1007,6 +1128,17 @@ def get_topspeed(gp):
 
 
 def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
+    """
+        Get the fastest data in a session
+
+        Parameters:
+        session (Session): Session to be analyzed
+        column (str): Data to plot
+        fastest_lap (bool): Get only data from the fastest lap
+
+   """
+
+
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
 
@@ -1099,6 +1231,17 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
 
 def wins_and_poles_circuit(circuit, start=None, end=None):
+    """
+        Get all wins and poles in a circuit
+
+        Parameters:
+        circuit (str): Circuit to analyze
+        start (int): Year of start
+        end (int): Year of end
+
+   """
+
+
     ergast = Ergast()
     winners = pd.Series(dtype=str)
     poles = pd.Series(dtype=str)
@@ -1141,6 +1284,11 @@ def wins_and_poles_circuit(circuit, start=None, end=None):
 
 
 def get_historical_race_days():
+    """
+        Get the data of all the races in F1 history
+
+   """
+
     dict = {}
     ergast = Ergast()
     for i in range(1950, 2024):
@@ -1181,6 +1329,10 @@ def get_historical_race_days():
 
 
 def plot_overtakes():
+    """
+        Get all the overtakes since 1999
+
+   """
     df = pd.read_csv('../resources/Overtakes.csv')
     df = df[df['Season'] >= 1999]
     df = df[~df['Race'].str.contains('Sprint')]
@@ -1252,6 +1404,14 @@ def plot_overtakes():
 
 
 def races_by_driver_dorsal(number):
+    """
+        Get the drivers who raced with a given number
+
+        Parameters:
+        number (int): Dorsal to be analuzed
+
+   """
+
     ergast = Ergast()
     drivers = pd.Series(dtype=str)
     for i in range(1950, 2024):
@@ -1269,6 +1429,11 @@ def races_by_driver_dorsal(number):
 
 
 def plot_circuit():
+    """
+        Plot a 3D cirucit
+
+   """
+
     session = fastf1.get_session(2022, 'Austin', 'Q')
     session.load()
 
@@ -1398,6 +1563,17 @@ def plot_circuit():
 
 
 def avg_driver_position(driver, team, year, session='Q'):
+    """
+        Get the avg qualy/race position
+
+        Parameters:
+        driver (str): A specific driver
+        team (str): Team of the driver
+        year (int): Year
+        session (str): Q o R
+
+   """
+
     ergast = Ergast()
     if session == 'Q':
         data = ergast.get_qualifying_results(season=year, limit=1000)
@@ -1476,6 +1652,16 @@ def avg_driver_position(driver, team, year, session='Q'):
 
 
 def lucky_drivers(start=None, end=None):
+
+    """
+        Get the luck of all drivers
+
+        start (int): Year of start
+        end (int): Year of end
+
+   """
+
+
     if start is None:
         start = 1950
     if end is None:
@@ -1541,6 +1727,17 @@ def lucky_drivers(start=None, end=None):
 
 
 def get_fastest_punctuable_lap(circuit, start=None, end=None, all_drivers=False):
+    """
+        Get the fastest lap of a circuit
+
+        Parameters:
+        circuit (str): A specific driver
+        start (int): Year of start
+        end (int): Year of end
+        all_drivers (bool): Top 10 or all drivers
+
+   """
+
     if start is None:
         start = 1950
     if end is None:
@@ -1575,6 +1772,17 @@ def get_fastest_punctuable_lap(circuit, start=None, end=None, all_drivers=False)
 
 
 def get_driver_results_circuit(driver, circuit, start=None, end=None):
+    """
+        Get the driver results on a circuit
+
+        Parameters:
+        driver (str): A specific driver
+        circuit (int): A specific circuit
+        start (int): Year of start
+        end (int): Year of end
+   """
+
+
     if start is None:
         start = 1950
     if end is None:

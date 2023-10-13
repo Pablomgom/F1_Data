@@ -1,4 +1,5 @@
 import pandas as pd
+from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
@@ -7,7 +8,19 @@ from src.general_analysis.table import render_mpl_table
 from src.variables.variables import team_colors
 
 
-def qualy_results_ergast(qualy):
+def qualy_results_ergast(year, round):
+    """
+        Plot the qualy result of a GP with Ergast API
+
+        Parameters:
+        year (int): Year
+        round (int): Round of GP
+
+    """
+
+    ergast = Ergast()
+    qualy = ergast.get_qualifying_results(season=year, round=round, limit=1000)
+
     n_drivers = len(qualy.content[0]['Q1'])
 
     n_drivers_session = int((n_drivers - 10) / 2)
@@ -67,7 +80,18 @@ def qualy_results_ergast(qualy):
     plt.show()
 
 
-def get_position_changes(race):
+def get_position_changes(year, round):
+    """
+        Plot the results of a race, with the position changes, in a table
+
+        Parameters:
+        year (int): Year
+        round (int): Round of GP
+
+    """
+
+    race = Ergast().get_race_results(season=year, round=round, limit=1000)
+
     finish = race.content[0][['familyName', 'givenName', 'grid', 'status', 'constructorName']]
     finish['Driver'] = finish['givenName'] + ' ' + finish['familyName']
     finish['Finish'] = range(1, finish.shape[0] + 1)

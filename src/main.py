@@ -1,135 +1,96 @@
+import sys
+
+import fastf1
 from fastf1.ergast import Ergast
-from matplotlib.font_manager import FontProperties
+from matplotlib import pyplot as plt
 
 from src.elo.elo import elo_execution
-from src.exceptions import race_same_team_exceptions
 from src.general_analysis.ergast import *
 from src.general_analysis.qualy import *
 from src.general_analysis.race_plots import *
-from src.general_analysis.race_videos import *
+from src.general_analysis.race_videos import bar_race
 from src.general_analysis.wdc import *
-from src.variables.variables import *
 from src.onetime_analysis.onetime_analysis import *
+from src.utils.utils import parse_args, load_session
+
+fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
+plt.rcParams["font.family"] = "Fira Sans"
+fastf1.Cache.enable_cache('../cache')
+
+FUNCTION_MAP = {
+    'load_session': load_session,
+    'elo_execution': elo_execution,
+    'plot_upgrades': plot_upgrades,
+    'dhl_pitstops': dhl_pitstops,
+    'cluster_circuits': cluster_circuits,
+    'lucky_drivers': lucky_drivers,
+    'qualy_diff_last_year': qualy_diff_last_year,
+    'team_performance_vs_qualy_last_year': team_performance_vs_qualy_last_year,
+    'qualy_diff_teammates': qualy_diff_teammates,
+    'race_pace_teammates': race_pace_teammates,
+    'driver_race_times_per_tyre': driver_race_times_per_tyre,
+    'get_fastest_data': get_fastest_data,
+    'win_wdc': win_wdc,
+    'race_pace_top_10': race_pace_top_10,
+    'qualy_diff': qualy_diff,
+    'race_diff': race_diff,
+    'position_changes': position_changes,
+    'telemetry_lap': telemetry_lap,
+    'overlying_laps': overlying_laps,
+    'race_distance': race_distance,
+    'long_runs_FP2': long_runs_FP2,
+    'fastest_by_point': fastest_by_point,
+    'track_dominance': track_dominance,
+    'plot_circuit_with_data': plot_circuit_with_data,
+    'tyre_strategies': tyre_strategies,
+    'qualy_results': qualy_results,
+    'get_fastest_punctuable_lap': get_fastest_punctuable_lap,
+    'races_by_driver_dorsal': races_by_driver_dorsal,
+    'plot_overtakes': plot_overtakes,
+    'get_historical_race_days': get_historical_race_days,
+    'wins_and_poles_circuit': wins_and_poles_circuit,
+    'get_pit_stops_ergast': get_pit_stops_ergast,
+    'compare_drivers_season': compare_drivers_season,
+    'qualy_results_ergast': qualy_results_ergast,
+    'get_position_changes': get_position_changes,
+    'get_circuitos': get_circuitos,
+    'get_retirements_per_driver': get_retirements_per_driver,
+    'team_wdc_history': team_wdc_history,
+    'bar_race': bar_race,
+    'get_retirements': get_retirements,
+    'wdc_comparation': wdc_comparation,
+    'get_topspeed': get_topspeed,
+    'get_driver_results_circuit': get_driver_results_circuit,
+    'race_qualy_avg_metrics': race_qualy_avg_metrics,
+    'qualy_margin': qualy_margin,
+    'compare_amount_points': compare_amount_points,
+    'compare_qualy_results': compare_qualy_results,
+    'avg_driver_position': avg_driver_position,
+    'full_compare_drivers_season': full_compare_drivers_season,
+    'simulate_season_different_psystem': simulate_season_different_psystem,
+    'get_DNFs_team': get_DNFs_team,
+    'simulate_qualy_championship': simulate_qualy_championship,
+    'help': help
+
+}
+
+session = None
 
 if __name__ == '__main__':
-
-    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
-    fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
-    plt.rcParams["font.family"] = "Fira Sans"
-
-    # elo_execution(1950, 2024)
-
-    # plot_upgrades('Performance')
-
-    # dhl_pitstops(2023, round=17, groupBy='Team')
-
-    # cluster_circuits(2023, 17, 2022, 'austin',  clusters=3)
-
-    fastf1.Cache.enable_cache('../cache')
-    session = fastf1.get_session(2023, 'Zandvoort', 'R')
-    # session.load()
-
-    # lucky_drivers(1950,2024)
-
-    # qualy_diff_last_year(17, 2021, 'losail')
-
-    # team_performance_vs_qualy_last_year('McLaren', ['Imola', 'Spanish', 'Canadian', 'British', 'Singapore'])
-
-    # qualy_diff_teammates('Red Bull Racing', 17)
-
-    # race_pace_teammates('McLaren', 17)
-
-    # driver_race_times_per_tyre(session, 'RUS')
-
-    # get_fastest_data(session, 'Speed')
-
-    # win_wdc(2023)
-
-    # race_pace_top_10(session)
-
-    # qualy_diff('Aston Martin', 'McLaren', 14)
-
-    # race_diff('Ferrari', 'Mercedes', 2023)
-
-    # position_changes(session)
-
-    # telemetry_lap(session, 'HAM', 49)
-
-    # overlying_laps(session, 'LEC', 'ALO', lap=33)
-
-    # race_distance(session, 'ALO', 'NOR')
-
-    # long_runs_FP2(session, 'HAM')
-
-    # fastest_by_point(session, 'SAI', 'LEC', scope='D')
-
-    # track_dominance(session, 'Red Bull Racing', 'Mercedes')
-
-    # plot_circuit_with_data(session, 'Speed')
-
-    # tyre_strategies(session)
-
-    # qualy_results(session)
-
-    ergast = Ergast()
-    drivers = ergast.get_driver_info(season=1959, limit=1000)
-    races = ergast.get_race_results(season=2006, round=16, limit=1000)
-    qualy = ergast.get_qualifying_results(season=1963, round=16, limit=1000)
-    sprints = ergast.get_sprint_results(season=1963, limit=1000)
-    schedule = ergast.get_race_schedule(season=1963, limit=1000)
-    circuitos = ergast.get_circuits(season=2022, round=18, limit=1000)
-    circuito = circuitos.circuitId.min()
-
-    # get_fastest_punctuable_lap('marina_bay', start=2008, all_drivers=False)
-
-    # races_by_driver_dorsal(0)
-
-    # plot_overtakes()
-
-    # get_historical_race_days()
-
-    # wins_and_poles_circuit(circuito, end=2023)
-
-    # get_pit_stops_ergast(2023)
-
-    # compare_drivers_season('Hamilton', 'Russell', 2023, DNFs=True)
-
-    # qualy_results_ergast(qualy)
-
-    # get_position_changes(races)
-
-    # get_circuitos()
-
-    # get_retirements_per_driver('Verstappen', 2015, 2024)
-
-    # team_wdc_history('McLaren', color='#d47205')
-
-    # bar_race(races, sprints, schedule)
-
-    # get_retirements()
-
-    # wdc_comparation('Jim Clark', 1960, 1969)
-
-    # get_topspeed(16)
-
-    # get_driver_results_circuit('max_verstappen', 'suzuka', 2015)
-
-    # race_qualy_avg_metrics(2023, session='R')
-
-    # qualy_margin('suzuka', start=1950, end=2024)
-
-    # compare_amount_points('mclaren', -1, end=2010)
-
-    # compare_qualy_results('alphatauri', 19, end=2010)
-
-    # avg_driver_position(None, 'red_bull', 2007, session='Q')
-
-    # full_compare_drivers_season(2021, 'hamilton', 'max_verstappen', d1_team='mercedes', d2_team='red_bull')
-
-    # simulate_season_different_psystem(2021, 2009)
-
-    # get_DNFs_team('ferrari', 2014, 2024)
-
-    # simulate_qualy_championship(2023, 2010)
-
+    while True:
+        func_name = input("Enter the function name (or 'exit' to quit): ")
+        if func_name.lower() == 'exit':
+            print("Exiting...")
+            sys.exit()
+        args_input = input(f"Enter arguments for {func_name} separated by commas: ")
+        args, kwargs = parse_args(args_input, FUNCTION_MAP, session)
+        try:
+            result = FUNCTION_MAP[func_name](*args, **kwargs)
+            if func_name.lower() == 'load_session':
+                session = result
+            if result is not None:
+                print(f"Result: {result}")
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
 

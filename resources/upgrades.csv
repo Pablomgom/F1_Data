@@ -106,6 +106,7 @@ Aston Martin|Front Wing|Circuit Specific|Jeddah|2023
 Aston Martin|Rear Wing|Circuit Specific|Jeddah|2023
 Aston Martin|Beam Wing|Circuit Specific|Jeddah|2023
 Haas|Front Wing|Circuit Specific|Jeddah|2023
+Haas|Rear Wing|Circuit Specific|Jeddah|2023
 AlphaTauri|Rear Wing|Performance|Jeddah|2023
 Williams|Front Wing|Circuit Specific|Jeddah|2023
 Williams|Beam Wing|Circuit Specific|Jeddah|2023
@@ -115,8 +116,6 @@ Williams|Coke/Engine Cover|Circuit Specific|Jeddah|2023
 Red Bull|Front Wing Endplate|Performance|Australia|2023
 Red Bull|Front Wing|Performance|Australia|2023
 Red Bull|Rear Corner|Circuit Specific|Australia|2023
-Mercedes|Floor Edge|Performance|Australia|2023
-Alpine|Halo|Performance|Australia|2023
 McLaren|Coke/Engine Cover|Circuit Specific|Australia|2023
 McLaren|Diffuser|Performance|Australia|2023
 Alfa Romeo|Nose|Performance|Australia|2023
@@ -146,6 +145,8 @@ Alpine|Front Wing|Circuit Specific|Baku|2023
 McLaren|Floor Body|Performance|Baku|2023
 McLaren|Rear Wing|Circuit Specific|Baku|2023
 McLaren|Rear Wing|Circuit Specific|Baku|2023
+McLaren|Beam Wing|Circuit Specific|Baku|2023
+McLaren|Beam Wing|Circuit Specific|Baku|2023
 McLaren|Beam Wing|Circuit Specific|Baku|2023
 Alfa Romeo|Rear Wing|Circuit Specific|Baku|2023
 Alfa Romeo|Beam Wing|Circuit Specific|Baku|2023
@@ -181,7 +182,6 @@ Alpine|Sidepod Inlet|Performance|Monaco|2023
 Alpine|Floor Edge|Performance|Monaco|2023
 Alpine|Rear Wing|Circuit Specific|Monaco|2023
 Alpine|Beam Wing|Circuit Specific|Monaco|2023
-McLaren|Floor Fences|Performance|Monaco|2023
 McLaren|Front Corner|Circuit Specific|Monaco|2023
 McLaren|Rear Corner|Performance|Monaco|2023
 McLaren|Rear Wing|Circuit Specific|Monaco|2023
@@ -215,11 +215,11 @@ Williams|Beam Wing|Circuit Specific|Monaco|2023
 Williams|Front Suspension|Performance|Monaco|2023
 Williams|Front Suspension|Performance|Monaco|2023
 Williams|Front Corner|Circuit Specific|Monaco|2023
+Red Bull|Floor Edge|Performance|Spain|2023
+Red Bull|Diffuser|Performance|Spain|2023
 Ferrari|Rear Wing|Circuit Specific|Spain|2023
 Ferrari|Coke/Engine Cover|Performance|Spain|2023
 Ferrari|Floor Body/Edge|Performance|Spain|2023
-Red Bull|Floor Edge|Performance|Spain|2023
-Red Bull|Diffuser|Performance|Spain|2023
 Mercedes|Sidepod Inlet|Performance|Spain|2023
 Mercedes|Diffuser|Performance|Spain|2023
 McLaren|Front Corner|Performance|Spain|2023
@@ -236,7 +236,6 @@ Red Bull|Front Wing|Performance|Canada|2023
 Mercedes|Sidepod Inlet|Performance|Canada|2023
 Alpine|Rear Wing|Performance|Canada|2023
 Alpine|Rear Suspension|Performance|Canada|2023
-Alpine|Front Corner|Reliability|Canada|2023
 McLaren|Rear Wing|Performance|Canada|2023
 McLaren|Beam Wing|Performance|Canada|2023
 Alfa Romeo|Rear Corner|Circuit Specific|Canada|2023
@@ -300,10 +299,10 @@ Red Bull|Rear Corner|Reliability|Budapest|2023
 Red Bull|Sidepod Inlet|Reliability|Budapest|2023
 Red Bull|Coke/Engine Cover|Reliability|Budapest|2023
 Red Bull|Floor Body|Performance|Budapest|2023
+Ferrari|Front Wing|Circuit Specific|Budapest|2023
 Mercedes|Front Suspension|Performance|Budapest|2023
 Mercedes|Front Wing|Performance|Budapest|2023
 Mercedes|Rear Wing|Circuit Specific|Budapest|2023
-Ferrari|Front Wing|Circuit Specific|Budapest|2023
 Alpine|Front Wing|Circuit Specific|Budapest|2023
 Aston Martin|Coke/Engine Cover|Circuit Specific|Budapest|2023
 Haas|Floor Body|Performance|Budapest|2023

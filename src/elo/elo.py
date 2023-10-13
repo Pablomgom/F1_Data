@@ -267,6 +267,14 @@ def update_ratings(drivers, race_results, race_index, race_name):
 
 
 def elo_execution(start, end):
+    """
+        Calculates the elo of the grid in the given years
+
+        Parameters:
+        start (int): Start year
+        end (int): End year
+
+    """
     ergast = Ergast()
     races = []
     races_name = []

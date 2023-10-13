@@ -3,13 +3,27 @@ from datetime import timedelta
 import fastf1
 import pandas as pd
 import bar_chart_race as bcr
+from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, animation
 
 from src.variables.variables import max_races
 
 
 
-def bar_race(races, sprints, schedule):
+def bar_race(year):
+
+    """
+         Creates a .mp4 with the points changes in a year
+
+         Parameters:
+         year (int): Year to plot
+    """
+
+    ergast = Ergast()
+    races = ergast.get_race_results(season=year, limit=1000)
+    sprints = ergast.get_sprint_results(season=year, limit=1000)
+    schedule = ergast.get_race_schedule(season=year, limit=1000)
+
 
     puntos = {}
     races_df = []
