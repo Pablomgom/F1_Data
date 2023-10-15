@@ -1,8 +1,16 @@
 import fastf1
 import numpy as np
 
-
 name_count = {}
+
+
+def find_similar_func(name, functions):
+    func_list = list(functions.keys())
+
+    for func_name in func_list:
+        if name in func_name:
+            print(help(functions[func_name]))
+
 
 def parse_args(args_input, function_map, session):
     args = []
@@ -12,13 +20,24 @@ def parse_args(args_input, function_map, session):
         arg = arg.strip()
         if '=' in arg:
             key, value = [x.strip() for x in arg.split('=')]
-            kwargs[key] = int(value) if value.isdigit() else value
+            if value == 'False':
+                value = False
+            elif value == 'True':
+                value = True
+            elif value == 'None':
+                value = None
+            try:
+                kwargs[key] = int(value) if value.isdigit() else value
+            except:
+                kwargs[key] = value
         else:
             if arg == 'session':
                 args.append(session)
+            elif arg == 'dict':
+                args.append(function_map)
             elif arg in function_map:
                 args.append(function_map[arg])
-            else:
+            elif arg != '':
                 args.append(int(arg) if arg.isdigit() else arg)
 
     return args, kwargs

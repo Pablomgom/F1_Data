@@ -1,15 +1,13 @@
-import math
-
 import fastf1
 import numpy as np
 import pandas as pd
 import re
 import statistics
-
+from unidecode import unidecode
 from adjustText import adjust_text
 from fastf1 import plotting
 from fastf1.ergast import Ergast
-from matplotlib import pyplot as plt, cm, ticker
+from matplotlib import cm, ticker
 from collections import Counter
 import matplotlib.patches as mpatches
 from matplotlib.font_manager import FontProperties
@@ -18,7 +16,7 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from statsmodels.tsa.arima.model import ARIMA
 
-from src.plots.plots import rounded_top_rect, annotate_bars, title_and_labels, get_handels_labels, get_font_properties
+from src.plots.plots import annotate_bars, title_and_labels, get_handels_labels, get_font_properties
 from src.general_analysis.table import render_mpl_table
 
 from sklearn.decomposition import PCA
@@ -29,7 +27,7 @@ import matplotlib.pyplot as plt
 from src.plots.plots import round_bars
 from src.utils.utils import append_duplicate_number, update_name, get_quartiles
 from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009, \
-    point_systems
+    point_systems, driver_colors_historical
 
 
 def get_DNFs_team(team, start, end):
@@ -377,7 +375,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         year (int): Year to plot
         session (str, optional): Qualy or Race. Default. Q
         predict (bool, optional): Predicts outcome of the season. Default: False
-        predict (bool, optional): Predicts outcome of the season. Default: False
         mode (bool, optional): Total sum or 4 MA. Default: None(4 MA)
 
    """
@@ -393,12 +390,12 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     if session == 'Q':
         data = ergast.get_qualifying_results(season=year, limit=1000)
         yticks = [1, 3, 6, 9, 12, 15, 18, 20]
-        title = 'Average qualy position in the last 4 races'
+        title = 'Average qualy position in the last 4 GPs'
     else:
         if predict:
-            title = 'Average points prediction in the last 4 races'
+            title = 'Average points prediction in the last 4 GPs'
         else:
-            title = 'Average points in the last 4 races'
+            title = 'Average points in the last 4 GPs'
 
     circuits = append_duplicate_number(circuits)
     for i in range(len(data.content)):
@@ -467,7 +464,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         handles.append(predict_patch)
         labels.append("Predictions")
 
-    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(1.0, 0.6))
+    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(0, 0.85))
 
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
@@ -479,15 +476,8 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     if session == 'Q':
         ax.invert_yaxis()
     plt.tight_layout()  # Adjusts the plot layout for better visibility
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
-    pd.options.display.max_colwidth = 50
-    pd.options.display.width = 1000
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    print(transposed)
-
 
 def plot_upgrades(scope=None):
     """
@@ -1807,3 +1797,83 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
                         position = 'P' + str(position)
                     team = results['constructorName'].values[0]
                     print(f'{year}: From P{grid} to {position} with {team}')
+
+
+def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, victories=True):
+
+    ergast = Ergast()
+    last_race = ergast.get_race_results(season=end - 1, round=17, limit=1000).content[0]
+    current_drivers = []
+    if not historical_drivers:
+        current_drivers = last_race.base_class_view['givenName'].values + ' ' + last_race.base_class_view['familyName'].values
+    races_df = None
+    for year in range(start, end):
+        races = ergast.get_race_results(season=year, limit=1000).content
+        for race in races:
+            race['Year'] = year
+            race['Driver'] = race['givenName'] + ' ' + race['familyName']
+            races_df = pd.concat([races_df, race], axis=0, ignore_index=True)
+            if historical_drivers:
+                drivers_names = (race['givenName'] + ' ' + race['familyName']).values
+                for d_n in drivers_names:
+                    current_drivers.append(d_n)
+        print(year)
+
+    positions = [1, 2, 3]
+    y_label = 'Total podiums'
+    if victories:
+        positions = [1]
+        y_label = 'Total wins'
+    races_df = races_df[races_df['position'].isin(positions)]
+    races_df = races_df[races_df['Driver'].isin(current_drivers)]
+    races_df = races_df.sort_values(by='Year')
+    races_df = races_df.groupby(['Driver', 'Year']).size().reset_index(name='Wins')
+
+    all_drivers = races_df['Driver'].unique()
+    all_combinations = [(driver, year) for driver in all_drivers for year in range(start, end)]
+    new_df = pd.DataFrame(all_combinations, columns=['Driver', 'Year'])
+    races_df = new_df.merge(races_df, on=['Driver', 'Year'], how='left')
+    races_df['Wins'] = races_df['Wins'].fillna(0).astype(int)
+    races_df['Cumulative Wins'] = races_df.groupby('Driver')['Wins'].cumsum()
+    races_df = races_df.sort_values(by='Year', ascending=True)
+    if top_10:
+        top_10_drivers = races_df.groupby('Driver')['Cumulative Wins'].max().sort_values(ascending=False).index.values[:8]
+        races_df = races_df[races_df['Driver'].isin(top_10_drivers)]
+    colors = []
+    for key, value in driver_colors_historical.items():
+        fastf1.plotting.DRIVER_COLORS[key] = value
+    for d in races_df['Driver'].unique():
+        colors.append(fastf1.plotting.DRIVER_COLORS[unidecode(d.lower())])
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    for i, (driver, color) in enumerate(zip(races_df['Driver'].unique(), colors)):
+        driver_data = races_df[races_df['Driver'] == driver]
+        if historical_drivers:
+            ax.plot(driver_data['Year'], driver_data['Cumulative Wins'], label=driver, color=color, linewidth=4.5)
+        else:
+            ax.plot(driver_data['Year'], driver_data['Cumulative Wins'], label=driver, color=color,
+                    linewidth=3.5, marker='o', markersize=7)
+    font_ticks = get_font_properties('Fira Sans', 15)
+    font_legend = get_font_properties('Fira Sans', 12)
+    handles, labels = get_handels_labels(ax)
+    last_values = []
+    for d in labels:
+        last_values.append(max(races_df[races_df['Driver'] == d]['Cumulative Wins'].values))
+    colors = [line.get_color() for line in ax.lines]
+    info = list(zip(handles, labels, colors, last_values))
+    info.sort(key=lambda item: item[3], reverse=True)
+    handles, labels, colors, last_values = zip(*info)
+    labels = [f"{label} ({last_value:.0f})" for label, last_value in zip(labels, last_values)]
+
+    plt.legend(handles=handles, labels=labels, prop=font_legend, loc="upper left", fontsize='x-large')
+    if historical_drivers:
+        ax.set_xlim(left=min(races_df[races_df['Cumulative Wins'] >= 1]['Year']) - 2)
+    ax.set_xlabel('Year', font='Fira Sans', fontsize=18)
+    ax.set_ylabel(y_label, font='Fira Sans', fontsize=18)
+    ax.grid(linestyle='--')
+    plt.xticks(fontproperties=font_ticks)
+    plt.yticks(fontproperties=font_ticks)
+    plt.savefig(f'../PNGs/Cumulative {y_label}.png', dpi=450)
+    plt.tight_layout()
+    plt.show()
+
