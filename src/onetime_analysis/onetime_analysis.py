@@ -16,6 +16,7 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from statsmodels.tsa.arima.model import ARIMA
 
+from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import annotate_bars, title_and_labels, get_handels_labels, get_font_properties
 from src.general_analysis.table import render_mpl_table
 
@@ -1877,3 +1878,31 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     plt.tight_layout()
     plt.show()
 
+
+def compare_my_ergast_teammates(given, family, start=2001, end=2024):
+
+    my_ergast = My_Ergast()
+    q = my_ergast.get_qualy_results([i for i in range(start, end)])
+    d_data = [0, 0, 0, 0, 0, 0, 0, 0]
+    t_data = [0, 0, 0, 0, 0, 0, 0, 0]
+    for qualy in q.content:
+        driver_data = qualy[(qualy['givenName'] == given) & (qualy['familyName'] == family)]
+        if len(driver_data) == 1:
+            team = driver_data['constructorName'].values[0]
+            team_data = qualy[qualy['constructorName'] == team]
+            team_data = team_data[(team_data['givenName'] != given) & (team_data['familyName'] != family)]
+            if len(team_data) == 1:
+                d_position = driver_data['position'].values[0]
+                t_position = team_data['position'].values[0]
+                if d_position != 0 and t_position != 0:
+                    if d_position < t_position:
+                        d_data[0] += 1
+                    else:
+                        t_data[0] += 1
+                print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]} - Driver: {d_position} - Teammate: {t_position}')
+            else:
+                print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]} WITH NO DATA FOR TEAM')
+        else:
+            print('WITH NO DATA FOR DRIVER')
+
+    print(d_data, t_data)

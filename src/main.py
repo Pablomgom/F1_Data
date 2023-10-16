@@ -1,8 +1,12 @@
 import sys
 import fastf1
+import pandas as pd
 from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
+
+from src.ergast_api.my_ergast import My_Ergast
+from src.onetime_analysis.onetime_analysis import compare_my_ergast_teammates
 from src.utils.utils import parse_args
 from src.variables.variables import get_funcs
 
@@ -14,7 +18,13 @@ fastf1.Cache.enable_cache('../cache')
 FUNCTION_MAP = get_funcs()
 session = None
 
+
+def insert_qualy_data():
+    pass
+
+
 if __name__ == '__main__':
+    '''
     while True:
         func = input("Enter the function name (or 'exit' to quit): ")
         func_name = func.split('(')[0]
@@ -33,4 +43,11 @@ if __name__ == '__main__':
             print('Wrong format')
         except Exception as e:
             print(f"An error occurred: {str(e)}")
+    '''
 
+    my_ergast = My_Ergast()
+    # races = my_ergast.get_race_results([year for year in range(2023, 2024)])
+    round = 17
+    # my_ergast.insert_qualy_data(2001, round)
+    a = my_ergast.get_qualy_results([2015], 4)
+    compare_my_ergast_teammates('Fernando', 'Alonso')
