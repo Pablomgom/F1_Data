@@ -319,7 +319,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     ax[0].set_ylabel('Speed')
     ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
                     f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
-                    font='Fira Sans', fontsize=24, y=1.1)
+                    font='Fira Sans', fontsize=18, y=1.1)
 
     twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     twin.set_ylabel('Time diff (s)')

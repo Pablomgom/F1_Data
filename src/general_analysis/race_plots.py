@@ -480,8 +480,6 @@ def tyre_strategies(session):
     drivers = session.drivers
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
-    drivers = ['VER', 'PIA', 'NOR', 'RUS', 'LEC', 'ALO', 'OCO', 'BOT', 'ZHO', 'PER',
-               'STR', 'GAS', 'ALB', 'MAG', 'TSU', 'HUL', 'LAW', 'SAR', 'HAM', 'SAI']
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
 
     past_stint = 1
@@ -576,11 +574,11 @@ def race_pace_top_10(race):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
-    point_finishers = ['1', '81', '4', '63', '16', '14', '31', '77', '24', '11']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
 
+    dict = fastf1.plotting.DRIVER_COLORS
     driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
                      abv, driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
 
