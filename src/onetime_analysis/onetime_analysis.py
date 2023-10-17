@@ -1884,29 +1884,20 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=
                     d_position = 200
                 if t_position == 0:
                     t_position = 200
+
                 if d_position < t_position:
                     d_data[0] += 1
                 else:
                     t_data[0] += 1
+
                 if d_position == 1:
                     d_data[1] += 1
                 elif t_position == 1:
                     t_data[1] += 1
-            else:
-                d_data[0] += 1
-        else:
-            if race_data is not None:
-                driver_data = race_data[(race_data['givenName'] == given) & (race_data['familyName'] == family)]
-                if len(driver_data) != 0:
-                    t_data[0] += 1
-                    print(f'{family} POLE IN {session["year"].values[0]}: {session["raceName"].values[0]}')
-
-
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([i for i in range(start, end)])
     r = my_ergast.get_race_results([i for i in range(start, end)])
-    s = my_ergast.get_sprint_results([i for i in range(start, end)])
     d_data = [0, 0, 0, 0, 0, 0, 0, 0]
     t_data = [0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -1957,16 +1948,12 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=
                     else:
                         t_data[2] += 1
 
-                    print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]}'
-                          f' - Driver: {d_position} - Teammate: {t_position}')
                 else:
-                    if not re.search(r'(Finished|\+)', d_status):
+                    if not re.search(r'(Disqualified|Finished|\+)', d_status):
+                        # print(f'{d_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
                         d_data[6] += 1
-                    if not re.search(r'(Finished|\+)', t_status):
+                    if not re.search(r'(Disqualified|Finished|\+)', t_status):
                         t_data[6] += 1
-            else:
-                print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]} WITH NO DATA FOR TEAM')
-        else:
-            print(f'{race["year"].values[0]}: {race["raceName"].values[0]} NO DATA')
+                        print(f'{t_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
 
     print(d_data, t_data)

@@ -46,19 +46,10 @@ if __name__ == '__main__':
     '''
 
     my_ergast = My_Ergast()
-    my_ergast = My_Ergast()
-    q = my_ergast.get_qualy_results([i for i in range(2001, 2024)])
-    r = my_ergast.get_race_results([i for i in range(2001, 2024)])
-    index = 0
-    for qualy in q.content:
-        race_data = r.content[index]
-        if len(race_data) != len(qualy):
-            print(f'{len(qualy)} - {len(race_data)} - {race_data["year"].min()} {qualy["raceName"].min()}')
-        index += 1
-    q = my_ergast.get_qualy_results([2002], 10)
-    r = my_ergast.get_race_results([2002], 10)
+    q = my_ergast.get_qualy_results([2011], 4)
+    r = my_ergast.get_race_results([2014], 6)
     a = 1
-    # compare_my_ergast_teammates('Fernando', 'Alonso', start=2001, end=2024, qualy_data=True)
-    # q = my_ergast.get_qualy_results([i for i in range(2001, 2024)])
-    # for qualy in q.content:
-    #     print(f'{qualy["year"].min()}: {qualy["raceName"].min()} - {len(qualy)}')
+    compare_my_ergast_teammates('Sergio', 'Pérez', start=2011, end=2021, qualy_data=True)
+
+    # my_ergast.get_qualy_row(r.content[0], 'Mick Schumacher', 'Haas F1 Team', 47, 20)
+

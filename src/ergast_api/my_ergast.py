@@ -58,12 +58,13 @@ race_results_schema = ['year', 'round', 'raceId', 'raceName', 'driverCurrentNumb
                        'position', 'points', 'laps', 'totalRaceTime',
                        'fastestLap', 'rank', 'fastestLapTime', 'fastestLapSpeed',
                        'constructorRef', 'constructorName', 'constructorNationality',
-                       'driverRef', 'driverCode', 'givenName', 'familyName', 'dob',
+                       'driverRef', 'driverCode', 'givenName', 'familyName', 'fullName', 'dob',
                        'driverNationality', 'status', 'circuitRef', 'circuitName',
                        'location', 'country']
 
-qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', 'q2', 'q3', 'year', 'raceName', 'constructorRef',
-                        'constructorName', 'driverCode', 'givenName', 'familyName', 'circuitName',
+qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', 'q2', 'q3',
+                        'raceName', 'constructorRef', 'constructorName',
+                        'givenName', 'familyName', 'fullName', 'circuitName',
                         'location', 'country']
 
 
@@ -79,6 +80,7 @@ class My_Ergast:
         self.lap_times = load_csv('lap_times')
         self.pit_stops = load_csv('pit_stops')
         self.qualifying = load_csv('qualifying')
+        self.qualifying['position'] = pd.to_numeric(self.qualifying['position'], errors='coerce').fillna(0).astype(int)
         self.races = load_csv('races')
         self.results = load_csv('results')
         self.seasons = load_csv('seasons')
@@ -98,6 +100,7 @@ class My_Ergast:
         results = pd.merge(results, self.circuits, on='circuitId', how='inner')
         results['fastestLapTime'] = results['fastestLapTime'].apply(string_to_timedelta)
         results['totalRaceTime'] = results['totalRaceTime'].apply(string_to_timedelta)
+        results['fullName'] = results['givenName'] + ' ' + results['familyName']
         races_list = get_list_dataframes(results, race_results_schema)
         race_results = ergast_struct(races_list)
         return race_results
@@ -117,6 +120,7 @@ class My_Ergast:
         results['totalRaceTime'] = results['totalRaceTime'].apply(string_to_timedelta)
         results['rank'] = None
         results['fastestLapSpeed'] = None
+        results['fullName'] = results['givenName'] + ' ' + results['familyName']
         races_list = get_list_dataframes(results, race_results_schema)
         race_results = ergast_struct(races_list)
         return race_results
@@ -132,6 +136,7 @@ class My_Ergast:
         results = pd.merge(results, self.drivers, on='driverId', how='inner')
         results = pd.merge(results, self.circuits, on='circuitId', how='inner')
         results = results.sort_values(by=['year', 'round'], ascending=[True, True])
+        results['fullName'] = results['givenName'] + ' ' + results['familyName']
         qualy_list = get_list_dataframes(results, qualy_results_schema)
         qualy_results = ergast_struct(qualy_list)
         return qualy_results
@@ -181,3 +186,30 @@ class My_Ergast:
         combined_data = pd.concat([self.qualifying, data_to_append], ignore_index=True)
         combined_data.to_csv('../resources/ergast_data/qualifying.csv', index=False)
         a = 1
+
+    def get_race_row(self, qualy_data, driver, team, number, grid):
+        resultId = self.results['resultId'].max() + 1
+        constructorId = self.constructors[self.constructors['constructorName'] == team]['constructorId'].min()
+        self.drivers['fullName'] = self.drivers['givenName'] + ' ' + self.drivers['familyName']
+        driverId = self.drivers[self.drivers['fullName'] == driver]['driverId'].min()
+        raceId = qualy_data['raceId'].min()
+        position_text = 'R'
+        points = 0
+        laps = 0
+        statusId = 81
+
+        print(f"""
+            {resultId},{raceId},{driverId},{constructorId},{number},{grid},{grid},"{position_text}",
+            {grid},{points},{laps},\\N,\\N,\\N,\\N,\\N,\\N,{statusId}
+        """)
+
+    def get_qualy_row(self, race_data, driver, team, number, grid):
+        qualyId = self.qualifying['qualifyId'].max() + 1
+        constructorId = self.constructors[self.constructors['constructorName'] == team]['constructorId'].min()
+        self.drivers['fullName'] = self.drivers['givenName'] + ' ' + self.drivers['familyName']
+        driverId = self.drivers[self.drivers['fullName'] == driver]['driverId'].min()
+        raceId = race_data['raceId'].min()
+
+        print(f"""
+            {qualyId},{raceId},{driverId},{constructorId},{number},{grid},/N,/N,/N
+        """)
