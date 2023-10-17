@@ -32,7 +32,6 @@ from src.variables.variables import team_colors_2023, driver_colors_2023, point_
 
 
 def get_DNFs_team(team, start, end):
-
     """
          Print the DNFs of a team
 
@@ -152,7 +151,6 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=No
         d1_team (str, optional): Team of d1
         d2_team (str, optional): Team of d2
    """
-
 
     ergast = Ergast()
     if mode == 'team':
@@ -298,7 +296,6 @@ def compare_qualy_results(team, threshold, end=None, exclude=None):
 
    """
 
-
     if end is None:
         end = 1950
     ergast = Ergast()
@@ -379,7 +376,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         mode (bool, optional): Total sum or 4 MA. Default: None(4 MA)
 
    """
-
 
     ergast = Ergast()
     data = ergast.get_race_results(season=year, limit=1000)
@@ -480,6 +476,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
 
+
 def plot_upgrades(scope=None):
     """
        Plot the upgrades for a season
@@ -509,7 +506,7 @@ def plot_upgrades(scope=None):
 
     ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
 
-    title_and_labels(plt,f'Cumulative {scope}Upgrades for Each Team', 28,
+    title_and_labels(plt, f'Cumulative {scope}Upgrades for Each Team', 28,
                      'Races', 18, 'Number of Upgrades', 18, 0.5)
 
     handles, labels = get_handels_labels(ax)
@@ -656,7 +653,8 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     if round is None:
         if points:
             max_round = pitstops['Race_ID'].max()
-            print(pitstops[pitstops['Race_ID'] == max_round].groupby('Team')['Points'].sum().sort_values(ascending=False))
+            print(
+                pitstops[pitstops['Race_ID'] == max_round].groupby('Team')['Points'].sum().sort_values(ascending=False))
             pitstops = pitstops.groupby('Team')['Points'].sum()
         else:
             pitstops = pitstops.groupby(groupBy)['Time'].median()
@@ -693,7 +691,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
             title = 'PIT STOPS TIME'
         y_label = 'Time (s)'
 
-
         for driver in drivers:
             for key, value in fastf1.plotting.DRIVER_COLORS.items():
                 parts = key.split(" ", 1)
@@ -722,7 +719,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         annotate_fontsize = 20
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
-
 
     round_bars(bars, ax1, colors, y_offset_rounded=y_offset_rounded)
     annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize)
@@ -823,7 +819,6 @@ def compare_drivers_season(d_1, d_2, season, DNFs=False):
         DNFs (bool): Count DNFs
 
    """
-
 
     ergast = Ergast()
 
@@ -1129,7 +1124,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
    """
 
-
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
 
@@ -1231,7 +1225,6 @@ def wins_and_poles_circuit(circuit, start=None, end=None):
         end (int): Year of end
 
    """
-
 
     ergast = Ergast()
     winners = pd.Series(dtype=str)
@@ -1601,7 +1594,7 @@ def avg_driver_position(driver, team, year, session='Q'):
             mean_pos = round(np.mean(pos_array), 2)
             avg_grid_pre[key] = mean_pos
         difference = {key: avg_grid[key] - avg_grid_pre[key] for key in avg_grid}
-        avg_grid= dict(sorted(avg_grid.items(), key=lambda item: item[1]))
+        avg_grid = dict(sorted(avg_grid.items(), key=lambda item: item[1]))
         avg_grid_pre = dict(sorted(avg_grid_pre.items(), key=lambda item: item[1]))
         drivers = list(avg_grid.keys())
         avg_pos = list(avg_grid.values())
@@ -1643,7 +1636,6 @@ def avg_driver_position(driver, team, year, session='Q'):
 
 
 def lucky_drivers(start=None, end=None):
-
     """
         Get the luck of all drivers
 
@@ -1651,7 +1643,6 @@ def lucky_drivers(start=None, end=None):
         end (int): Year of end
 
    """
-
 
     if start is None:
         start = 1950
@@ -1773,7 +1764,6 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
         end (int): Year of end
    """
 
-
     if start is None:
         start = 1950
     if end is None:
@@ -1801,12 +1791,12 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
 
 
 def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, victories=True):
-
     ergast = Ergast()
     last_race = ergast.get_race_results(season=end - 1, round=17, limit=1000).content[0]
     current_drivers = []
     if not historical_drivers:
-        current_drivers = last_race.base_class_view['givenName'].values + ' ' + last_race.base_class_view['familyName'].values
+        current_drivers = last_race.base_class_view['givenName'].values + ' ' + last_race.base_class_view[
+            'familyName'].values
     races_df = None
     for year in range(start, end):
         races = ergast.get_race_results(season=year, limit=1000).content
@@ -1838,7 +1828,8 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     races_df['Cumulative Wins'] = races_df.groupby('Driver')['Wins'].cumsum()
     races_df = races_df.sort_values(by='Year', ascending=True)
     if top_10:
-        top_10_drivers = races_df.groupby('Driver')['Cumulative Wins'].max().sort_values(ascending=False).index.values[:8]
+        top_10_drivers = races_df.groupby('Driver')['Cumulative Wins'].max().sort_values(ascending=False).index.values[
+                         :8]
         races_df = races_df[races_df['Driver'].isin(top_10_drivers)]
     colors = []
     for key, value in driver_colors_historical.items():
@@ -1879,30 +1870,103 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     plt.show()
 
 
-def compare_my_ergast_teammates(given, family, start=2001, end=2024):
+def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=True):
+    def process_data(session, d_data, t_data, col, race_data=None):
+        driver_data = session[(session['givenName'] == given) & (session['familyName'] == family)]
+        if len(driver_data) == 1:
+            team = driver_data['constructorName'].values[0]
+            team_data = session[session['constructorName'] == team]
+            team_data = team_data[(team_data['givenName'] != given) & (team_data['familyName'] != family)]
+            if len(team_data) == 1:
+                d_position = driver_data[col].values[0]
+                t_position = team_data[col].values[0]
+                if d_position == 0:
+                    d_position = 200
+                if t_position == 0:
+                    t_position = 200
+                if d_position < t_position:
+                    d_data[0] += 1
+                else:
+                    t_data[0] += 1
+                if d_position == 1:
+                    d_data[1] += 1
+                elif t_position == 1:
+                    t_data[1] += 1
+            else:
+                d_data[0] += 1
+        else:
+            if race_data is not None:
+                driver_data = race_data[(race_data['givenName'] == given) & (race_data['familyName'] == family)]
+                if len(driver_data) != 0:
+                    t_data[0] += 1
+                    print(f'{family} POLE IN {session["year"].values[0]}: {session["raceName"].values[0]}')
+
+
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([i for i in range(start, end)])
+    r = my_ergast.get_race_results([i for i in range(start, end)])
+    s = my_ergast.get_sprint_results([i for i in range(start, end)])
     d_data = [0, 0, 0, 0, 0, 0, 0, 0]
     t_data = [0, 0, 0, 0, 0, 0, 0, 0]
-    for qualy in q.content:
-        driver_data = qualy[(qualy['givenName'] == given) & (qualy['familyName'] == family)]
+
+    if qualy_data:
+        index = 0
+        for qualy in q.content:
+            process_data(qualy, d_data, t_data, 'position', r.content[index])
+            index += 1
+    else:
+        for qualy in r.content:
+            process_data(qualy, d_data, t_data, 'grid')
+
+    for race in r.content:
+        driver_data = race[(race['givenName'] == given) & (race['familyName'] == family)]
         if len(driver_data) == 1:
             team = driver_data['constructorName'].values[0]
-            team_data = qualy[qualy['constructorName'] == team]
+            team_data = race[race['constructorName'] == team]
             team_data = team_data[(team_data['givenName'] != given) & (team_data['familyName'] != family)]
+            d_points = driver_data['points'].values[0]
+            d_data[7] += d_points
             if len(team_data) == 1:
+                d_status = driver_data['status'].values[0]
+                t_status = team_data['status'].values[0]
                 d_position = driver_data['position'].values[0]
                 t_position = team_data['position'].values[0]
-                if d_position != 0 and t_position != 0:
+                d_points = driver_data['points'].values[0]
+                t_points = team_data['points'].values[0]
+                #VICTORIES
+                if d_position == 1:
+                    d_data[3] += 1
+                if t_position == 1:
+                    t_data[3] += 1
+                #PODIUMS
+                if d_position in [1, 2, 3]:
+                    d_data[4] += 1
+                if t_position in [1, 2, 3]:
+                    t_data[4] += 1
+                #POINT FINISHES
+                if d_points > 0:
+                    d_data[5] += 1
+                if t_points > 0:
+                    t_data[5] += 1
+                #TOTAL POINTS
+                t_data[7] += t_points
+                if re.search(r'(Finished|\+)', d_status) and re.search(r'(Finished|\+)', t_status):
                     if d_position < t_position:
-                        d_data[0] += 1
+                        d_data[2] += 1
                     else:
-                        t_data[0] += 1
-                print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]} - Driver: {d_position} - Teammate: {t_position}')
+                        t_data[2] += 1
+
+                    print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]}'
+                          f' - Driver: {d_position} - Teammate: {t_position}')
+                else:
+                    if not re.search(r'(Finished|\+)', d_status):
+                        d_data[6] += 1
+                    if not re.search(r'(Finished|\+)', t_status):
+                        t_data[6] += 1
             else:
                 print(f'{driver_data["year"].values[0]}: {driver_data["raceName"].values[0]} WITH NO DATA FOR TEAM')
         else:
-            print('WITH NO DATA FOR DRIVER')
+            print(f'{race["year"].values[0]}: {race["raceName"].values[0]} NO DATA')
 
     print(d_data, t_data)

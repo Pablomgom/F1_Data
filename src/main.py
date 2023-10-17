@@ -46,8 +46,19 @@ if __name__ == '__main__':
     '''
 
     my_ergast = My_Ergast()
-    # races = my_ergast.get_race_results([year for year in range(2023, 2024)])
-    round = 17
-    # my_ergast.insert_qualy_data(2001, round)
-    a = my_ergast.get_qualy_results([2015], 4)
-    compare_my_ergast_teammates('Fernando', 'Alonso')
+    my_ergast = My_Ergast()
+    q = my_ergast.get_qualy_results([i for i in range(2001, 2024)])
+    r = my_ergast.get_race_results([i for i in range(2001, 2024)])
+    index = 0
+    for qualy in q.content:
+        race_data = r.content[index]
+        if len(race_data) != len(qualy):
+            print(f'{len(qualy)} - {len(race_data)} - {race_data["year"].min()} {qualy["raceName"].min()}')
+        index += 1
+    q = my_ergast.get_qualy_results([2002], 10)
+    r = my_ergast.get_race_results([2002], 10)
+    a = 1
+    # compare_my_ergast_teammates('Fernando', 'Alonso', start=2001, end=2024, qualy_data=True)
+    # q = my_ergast.get_qualy_results([i for i in range(2001, 2024)])
+    # for qualy in q.content:
+    #     print(f'{qualy["year"].min()}: {qualy["raceName"].min()} - {len(qualy)}')

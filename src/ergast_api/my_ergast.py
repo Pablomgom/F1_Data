@@ -54,15 +54,15 @@ def get_list_dataframes(df, schema):
     return races_list
 
 
-race_results_schema = ['year', 'raceName', 'driverCurrentNumber', 'grid',
-                       'positionOrder', 'points', 'laps', 'totalRaceTime',
+race_results_schema = ['year', 'round', 'raceId', 'raceName', 'driverCurrentNumber', 'grid',
+                       'position', 'points', 'laps', 'totalRaceTime',
                        'fastestLap', 'rank', 'fastestLapTime', 'fastestLapSpeed',
                        'constructorRef', 'constructorName', 'constructorNationality',
                        'driverRef', 'driverCode', 'givenName', 'familyName', 'dob',
                        'driverNationality', 'status', 'circuitRef', 'circuitName',
                        'location', 'country']
 
-qualy_results_schema = ['number', 'position', 'q1', 'q2', 'q3', 'year', 'raceName', 'constructorRef',
+qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', 'q2', 'q3', 'year', 'raceName', 'constructorRef',
                         'constructorName', 'driverCode', 'givenName', 'familyName', 'circuitName',
                         'location', 'country']
 
@@ -102,6 +102,25 @@ class My_Ergast:
         race_results = ergast_struct(races_list)
         return race_results
 
+    def get_sprint_results(self, year, race_id=None):
+        races = self.races
+        if race_id is None:
+            races = races[races['year'].isin(year)]
+        else:
+            races = races[(races['year'].isin(year)) & (races['round'] == race_id)]
+        results = pd.merge(races, self.sprint_results, on='raceId', how='inner')
+        results = pd.merge(results, self.constructors, on='constructorId', how='inner')
+        results = pd.merge(results, self.drivers, on='driverId', how='inner')
+        results = pd.merge(results, self.status, on='statusId', how='inner')
+        results = pd.merge(results, self.circuits, on='circuitId', how='inner')
+        results['fastestLapTime'] = results['fastestLapTime'].apply(string_to_timedelta)
+        results['totalRaceTime'] = results['totalRaceTime'].apply(string_to_timedelta)
+        results['rank'] = None
+        results['fastestLapSpeed'] = None
+        races_list = get_list_dataframes(results, race_results_schema)
+        race_results = ergast_struct(races_list)
+        return race_results
+
     def get_qualy_results(self, year, race_id=None):
         qualys = self.qualifying
         qualys = pd.merge(qualys, self.races, on='raceId', how='inner')
@@ -136,9 +155,8 @@ class My_Ergast:
             'Sauber-Petronas': 'Sauber',
             'Jaguar-Cosworth': 'Jaguar',
             'Prost-Acer': 'Prost',
-            'Arrows-Asiatech': 'Arrows',
-            'Benetton-Renault': 'Benetton',
-            'Minardi-European': 'Minardi'
+            'Arrows-Cosworth': 'Arrows',
+            'Minardi-Asiatech': 'Minardi'
         }
 
         raceId = self.races[(self.races['year'] == year) & (self.races['round'] == round)]['raceId'].values[0]
