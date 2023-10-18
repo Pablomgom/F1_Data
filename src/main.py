@@ -46,10 +46,9 @@ if __name__ == '__main__':
     '''
 
     my_ergast = My_Ergast()
-    q = my_ergast.get_qualy_results([2011], 4)
-    r = my_ergast.get_race_results([2014], 6)
-    a = 1
-    compare_my_ergast_teammates('Sergio', 'Pérez', start=2011, end=2021, qualy_data=True)
+    q = my_ergast.get_qualy_results([2007], 11)
+    r = my_ergast.get_race_results([2007], 11)
+    compare_my_ergast_teammates('Max', 'Verstappen', start=2013, end=2024)
 
     # my_ergast.get_qualy_row(r.content[0], 'Mick Schumacher', 'Haas F1 Team', 47, 20)
 

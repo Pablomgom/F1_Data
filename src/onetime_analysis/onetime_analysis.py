@@ -1870,8 +1870,8 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     plt.show()
 
 
-def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=True):
-    def process_data(session, d_data, t_data, col, race_data=None):
+def compare_my_ergast_teammates(given, family, start=2001, end=2024):
+    def process_data(session, d_data, t_data, col, race_data):
         driver_data = session[(session['givenName'] == given) & (session['familyName'] == family)]
         if len(driver_data) == 1:
             team = driver_data['constructorName'].values[0]
@@ -1889,11 +1889,16 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=
                     d_data[0] += 1
                 else:
                     t_data[0] += 1
-
-                if d_position == 1:
+                driver_race_data = race_data[(race_data['givenName'] == given) & (race_data['familyName'] == family)]
+                team_race_data = race_data[race_data['constructorName'] == team]
+                team_race_data = team_race_data[(team_race_data['givenName'] != given) & (team_race_data['familyName'] != family)]
+                d_grid = driver_race_data['grid'].values[0]
+                t_grid = team_race_data['grid'].values[0]
+                if d_grid == 1:
                     d_data[1] += 1
-                elif t_position == 1:
+                elif t_grid == 1:
                     t_data[1] += 1
+                    print(f'{t_position} - {team_data["year"].min()} - {team_data["raceName"].min()}')
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([i for i in range(start, end)])
@@ -1901,14 +1906,11 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=
     d_data = [0, 0, 0, 0, 0, 0, 0, 0]
     t_data = [0, 0, 0, 0, 0, 0, 0, 0]
 
-    if qualy_data:
-        index = 0
-        for qualy in q.content:
-            process_data(qualy, d_data, t_data, 'position', r.content[index])
-            index += 1
-    else:
-        for qualy in r.content:
-            process_data(qualy, d_data, t_data, 'grid')
+    index = 0
+    for qualy in q.content:
+        process_data(qualy, d_data, t_data, 'position', r.content[index])
+        index += 1
+
 
     for race in r.content:
         driver_data = race[(race['givenName'] == given) & (race['familyName'] == family)]
@@ -1954,6 +1956,6 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024, qualy_data=
                         d_data[6] += 1
                     if not re.search(r'(Disqualified|Finished|\+)', t_status):
                         t_data[6] += 1
-                        print(f'{t_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
+                        # print(f'{t_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
 
     print(d_data, t_data)
