@@ -1,8 +1,13 @@
 import sys
 import fastf1
+import pandas as pd
 from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
+
+from src.ergast_api.my_ergast import My_Ergast
+from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates
+
 from src.utils.utils import parse_args
 from src.variables.variables import get_funcs
 
@@ -13,6 +18,11 @@ fastf1.Cache.enable_cache('../cache')
 
 FUNCTION_MAP = get_funcs()
 session = None
+
+
+def insert_qualy_data():
+    pass
+
 
 if __name__ == '__main__':
     while True:
@@ -33,4 +43,5 @@ if __name__ == '__main__':
             print('Wrong format')
         except Exception as e:
             print(f"An error occurred: {str(e)}")
+
 

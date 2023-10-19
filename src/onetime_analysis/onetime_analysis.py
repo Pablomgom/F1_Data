@@ -16,6 +16,7 @@ from matplotlib.ticker import FuncFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from statsmodels.tsa.arima.model import ARIMA
 
+from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import annotate_bars, title_and_labels, get_handels_labels, get_font_properties
 from src.general_analysis.table import render_mpl_table
 
@@ -31,7 +32,6 @@ from src.variables.variables import team_colors_2023, driver_colors_2023, point_
 
 
 def get_DNFs_team(team, start, end):
-
     """
          Print the DNFs of a team
 
@@ -151,7 +151,6 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=No
         d1_team (str, optional): Team of d1
         d2_team (str, optional): Team of d2
    """
-
 
     ergast = Ergast()
     if mode == 'team':
@@ -297,7 +296,6 @@ def compare_qualy_results(team, threshold, end=None, exclude=None):
 
    """
 
-
     if end is None:
         end = 1950
     ergast = Ergast()
@@ -378,7 +376,6 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         mode (bool, optional): Total sum or 4 MA. Default: None(4 MA)
 
    """
-
 
     ergast = Ergast()
     data = ergast.get_race_results(season=year, limit=1000)
@@ -479,6 +476,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
     plt.show()
 
+
 def plot_upgrades(scope=None):
     """
        Plot the upgrades for a season
@@ -508,7 +506,7 @@ def plot_upgrades(scope=None):
 
     ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
 
-    title_and_labels(plt,f'Cumulative {scope}Upgrades for Each Team', 28,
+    title_and_labels(plt, f'Cumulative {scope}Upgrades for Each Team', 28,
                      'Races', 18, 'Number of Upgrades', 18, 0.5)
 
     handles, labels = get_handels_labels(ax)
@@ -655,7 +653,8 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     if round is None:
         if points:
             max_round = pitstops['Race_ID'].max()
-            print(pitstops[pitstops['Race_ID'] == max_round].groupby('Team')['Points'].sum().sort_values(ascending=False))
+            print(
+                pitstops[pitstops['Race_ID'] == max_round].groupby('Team')['Points'].sum().sort_values(ascending=False))
             pitstops = pitstops.groupby('Team')['Points'].sum()
         else:
             pitstops = pitstops.groupby(groupBy)['Time'].median()
@@ -692,7 +691,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
             title = 'PIT STOPS TIME'
         y_label = 'Time (s)'
 
-
         for driver in drivers:
             for key, value in fastf1.plotting.DRIVER_COLORS.items():
                 parts = key.split(" ", 1)
@@ -721,7 +719,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         annotate_fontsize = 20
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
-
 
     round_bars(bars, ax1, colors, y_offset_rounded=y_offset_rounded)
     annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize)
@@ -822,7 +819,6 @@ def compare_drivers_season(d_1, d_2, season, DNFs=False):
         DNFs (bool): Count DNFs
 
    """
-
 
     ergast = Ergast()
 
@@ -1128,7 +1124,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
    """
 
-
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
 
@@ -1230,7 +1225,6 @@ def wins_and_poles_circuit(circuit, start=None, end=None):
         end (int): Year of end
 
    """
-
 
     ergast = Ergast()
     winners = pd.Series(dtype=str)
@@ -1600,7 +1594,7 @@ def avg_driver_position(driver, team, year, session='Q'):
             mean_pos = round(np.mean(pos_array), 2)
             avg_grid_pre[key] = mean_pos
         difference = {key: avg_grid[key] - avg_grid_pre[key] for key in avg_grid}
-        avg_grid= dict(sorted(avg_grid.items(), key=lambda item: item[1]))
+        avg_grid = dict(sorted(avg_grid.items(), key=lambda item: item[1]))
         avg_grid_pre = dict(sorted(avg_grid_pre.items(), key=lambda item: item[1]))
         drivers = list(avg_grid.keys())
         avg_pos = list(avg_grid.values())
@@ -1642,7 +1636,6 @@ def avg_driver_position(driver, team, year, session='Q'):
 
 
 def lucky_drivers(start=None, end=None):
-
     """
         Get the luck of all drivers
 
@@ -1650,7 +1643,6 @@ def lucky_drivers(start=None, end=None):
         end (int): Year of end
 
    """
-
 
     if start is None:
         start = 1950
@@ -1772,7 +1764,6 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
         end (int): Year of end
    """
 
-
     if start is None:
         start = 1950
     if end is None:
@@ -1800,12 +1791,12 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
 
 
 def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, victories=True):
-
     ergast = Ergast()
     last_race = ergast.get_race_results(season=end - 1, round=17, limit=1000).content[0]
     current_drivers = []
     if not historical_drivers:
-        current_drivers = last_race.base_class_view['givenName'].values + ' ' + last_race.base_class_view['familyName'].values
+        current_drivers = last_race.base_class_view['givenName'].values + ' ' + last_race.base_class_view[
+            'familyName'].values
     races_df = None
     for year in range(start, end):
         races = ergast.get_race_results(season=year, limit=1000).content
@@ -1837,7 +1828,8 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     races_df['Cumulative Wins'] = races_df.groupby('Driver')['Wins'].cumsum()
     races_df = races_df.sort_values(by='Year', ascending=True)
     if top_10:
-        top_10_drivers = races_df.groupby('Driver')['Cumulative Wins'].max().sort_values(ascending=False).index.values[:8]
+        top_10_drivers = races_df.groupby('Driver')['Cumulative Wins'].max().sort_values(ascending=False).index.values[
+                         :8]
         races_df = races_df[races_df['Driver'].isin(top_10_drivers)]
     colors = []
     for key, value in driver_colors_historical.items():
@@ -1876,4 +1868,3 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     plt.savefig(f'../PNGs/Cumulative {y_label}.png', dpi=450)
     plt.tight_layout()
     plt.show()
-

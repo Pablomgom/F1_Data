@@ -1,3 +1,6 @@
+from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps
+
+
 def get_funcs():
     from src.utils.utils import find_similar_func
     from src.onetime_analysis.onetime_analysis import wins_per_year
@@ -73,6 +76,8 @@ def get_funcs():
         'simulate_qualy_championship': simulate_qualy_championship,
         'find_similar_func': find_similar_func,
         'wins_per_year': wins_per_year,
+        'compare_my_ergast_teammates': compare_my_ergast_teammates,
+        'get_driver_laps': get_driver_laps,
         'help': help
     }
 
