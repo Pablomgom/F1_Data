@@ -1163,9 +1163,11 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
             column = 'Top Speeds'
         x_fix = 5
         y_fix = 0.25
+        annotate_fontsize = 11
     else:
         y_fix = 0.025
         x_fix = 0.75
+        annotate_fontsize = 8
         order = False
         column = f"{column[:-5]} {column[-5:-4]} Times"
         if not DRS:
@@ -1173,7 +1175,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
     circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=order)}
 
-    fig, ax1 = plt.subplots(figsize=(8.25, 6.5), dpi=175)
+    fig, ax1 = plt.subplots(figsize=(8, 6.5), dpi=175)
 
     colors = []
     for i in range(len(circuit_speed)):
@@ -1183,7 +1185,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
                    edgecolor='white')
 
     round_bars(bars, ax1, colors, y_offset_rounded=0.05)
-    annotate_bars(bars, ax1, y_fix, 8, text_annotate='default', ceil_values=False)
+    annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}',
                   font='Fira Sans', fontsize=14)

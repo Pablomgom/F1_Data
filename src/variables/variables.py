@@ -1,4 +1,5 @@
-from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps
+from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps, \
+    winning_positions_per_circuit
 
 
 def get_funcs():
@@ -78,6 +79,7 @@ def get_funcs():
         'wins_per_year': wins_per_year,
         'compare_my_ergast_teammates': compare_my_ergast_teammates,
         'get_driver_laps': get_driver_laps,
+        'winning_positions_per_circuit': winning_positions_per_circuit,
         'help': help
     }
 

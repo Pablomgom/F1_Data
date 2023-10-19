@@ -146,3 +146,26 @@ def get_driver_laps(year):
         print(f'{count}: {d} - {l[2]}%')
         count += 1
     a = 1
+
+
+def winning_positions_per_circuit(circuit, start=1950, end=2024):
+
+    ergast = My_Ergast()
+    r = ergast.get_race_results([i for i in range(start, end)])
+    positions_dict = {}
+    for race in r.content:
+        race_circuit = race['circuitRef'].min()
+        if circuit == race_circuit:
+            win_data = race[race['position'] == 1]
+            grid_pos = win_data['grid'].min()
+            year = win_data['year'].min()
+            d_name = win_data['fullName'].min()
+            if grid_pos in positions_dict:
+                positions_dict[grid_pos].append(f'{year}: {d_name}')
+            else:
+                positions_dict[grid_pos] = [f'{year}: {d_name}']
+    positions_dict = dict(sorted(positions_dict.items()))
+    for key, values in positions_dict.items():
+        print(f'FROM P{key}:')
+        for v in values:
+            print(v)
