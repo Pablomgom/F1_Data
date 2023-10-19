@@ -6,7 +6,8 @@ from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 
 from src.ergast_api.my_ergast import My_Ergast
-from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps
+from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates
+
 from src.utils.utils import parse_args
 from src.variables.variables import get_funcs
 
@@ -47,8 +48,8 @@ if __name__ == '__main__':
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([2007], 11)
-    r = my_ergast.get_race_results([2023], 8)
-    # compare_my_ergast_teammates('Max', 'Verstappen', start=2013, end=2024)
-    get_driver_laps(2014)
+    r = my_ergast.get_race_results([2007], 11)
+    compare_my_ergast_teammates('Max', 'Verstappen', start=2013, end=2024)
+
     # my_ergast.get_qualy_row(r.content[0], 'Mick Schumacher', 'Haas F1 Team', 47, 20)
 
