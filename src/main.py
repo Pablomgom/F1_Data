@@ -25,7 +25,6 @@ def insert_qualy_data():
 
 
 if __name__ == '__main__':
-    '''
     while True:
         func = input("Enter the function name (or 'exit' to quit): ")
         func_name = func.split('(')[0]
@@ -44,12 +43,5 @@ if __name__ == '__main__':
             print('Wrong format')
         except Exception as e:
             print(f"An error occurred: {str(e)}")
-    '''
 
-    my_ergast = My_Ergast()
-    q = my_ergast.get_qualy_results([2007], 11)
-    r = my_ergast.get_race_results([2007], 11)
-    compare_my_ergast_teammates('Max', 'Verstappen', start=2013, end=2024)
-
-    # my_ergast.get_qualy_row(r.content[0], 'Mick Schumacher', 'Haas F1 Team', 47, 20)
 

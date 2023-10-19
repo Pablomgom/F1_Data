@@ -4,6 +4,14 @@ from src.ergast_api.my_ergast import My_Ergast
 
 
 def compare_my_ergast_teammates(given, family, start=2001, end=2024):
+    """
+    Compare a driver against his teammates
+    :param given: Name
+    :param family: Surname
+    :param start: Year of start
+    :param end: Year of end
+    :return: None
+    """
     def process_data(session, d_data, t_data, col, race_data):
         driver_data = session[(session['givenName'] == given) & (session['familyName'] == family)]
         if len(driver_data) == 1:
@@ -97,6 +105,11 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
 
 
 def get_driver_laps(year):
+    """
+    Get the percetange of laps completed by driver per year
+    :param year: Year of analysis
+    :return: None
+    """
 
     ergast = My_Ergast()
     races = ergast.get_race_results([year])
