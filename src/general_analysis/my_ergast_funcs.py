@@ -1,5 +1,5 @@
 import re
-
+from collections import defaultdict
 from src.ergast_api.my_ergast import My_Ergast
 
 
@@ -12,6 +12,7 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
     :param end: Year of end
     :return: None
     """
+
     def process_data(session, d_data, t_data, col, race_data):
         driver_data = session[(session['givenName'] == given) & (session['familyName'] == family)]
         if len(driver_data) == 1:
@@ -32,7 +33,8 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
                     t_data[0] += 1
                 driver_race_data = race_data[(race_data['givenName'] == given) & (race_data['familyName'] == family)]
                 team_race_data = race_data[race_data['constructorName'] == team]
-                team_race_data = team_race_data[(team_race_data['givenName'] != given) & (team_race_data['familyName'] != family)]
+                team_race_data = team_race_data[
+                    (team_race_data['givenName'] != given) & (team_race_data['familyName'] != family)]
                 d_grid = driver_race_data['grid'].values[0]
                 t_grid = team_race_data['grid'].values[0]
                 if d_grid == 1:
@@ -52,7 +54,6 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
         process_data(qualy, d_data, t_data, 'position', r.content[index])
         index += 1
 
-
     for race in r.content:
         driver_data = race[(race['givenName'] == given) & (race['familyName'] == family)]
         if len(driver_data) == 1:
@@ -68,22 +69,22 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
                 t_position = team_data['position'].values[0]
                 d_points = driver_data['points'].values[0]
                 t_points = team_data['points'].values[0]
-                #VICTORIES
+                # VICTORIES
                 if d_position == 1:
                     d_data[3] += 1
                 if t_position == 1:
                     t_data[3] += 1
-                #PODIUMS
+                # PODIUMS
                 if d_position in [1, 2, 3]:
                     d_data[4] += 1
                 if t_position in [1, 2, 3]:
                     t_data[4] += 1
-                #POINT FINISHES
+                # POINT FINISHES
                 if d_points > 0:
                     d_data[5] += 1
                 if t_points > 0:
                     t_data[5] += 1
-                #TOTAL POINTS
+                # TOTAL POINTS
                 t_data[7] += t_points
                 if re.search(r'(Finished|\+)', d_status) and re.search(r'(Finished|\+)', t_status):
                     if d_position < t_position:
@@ -100,8 +101,6 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
                         # print(f'{t_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
 
     print(d_data, t_data)
-
-
 
 
 def get_driver_laps(year):
@@ -137,7 +136,7 @@ def get_driver_laps(year):
     for driver, laps in drivers_dict.items():
         total_laps = sum(laps[0])
         completed_laps = sum(laps[1])
-        percentage = round((completed_laps/total_laps) * 100, 2)
+        percentage = round((completed_laps / total_laps) * 100, 2)
         laps_dict[driver] = [total_laps, completed_laps, percentage]
 
     laps_dict = dict(sorted(laps_dict.items(), key=lambda item: item[1][2], reverse=True))
@@ -149,6 +148,13 @@ def get_driver_laps(year):
 
 
 def winning_positions_per_circuit(circuit, start=1950, end=2024):
+    """
+    Return the winning positions from each year for a circuit
+    :param circuit: circuit
+    :param start: year of start
+    :param end: year of end
+    :return:
+    """
 
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
@@ -169,3 +175,26 @@ def winning_positions_per_circuit(circuit, start=1950, end=2024):
         print(f'FROM P{key}:')
         for v in values:
             print(v)
+
+
+def q3_appearances(year):
+    ergast = My_Ergast()
+    q = ergast.get_qualy_results([year])
+    drivers_dict = {}
+    for qualy in q.content:
+        q_drivers = qualy['fullName'].values
+        for d in q_drivers:
+            qualy_data = qualy[qualy['fullName'] == d]
+            position = qualy_data['position'].min()
+            if position <= 10:
+                if d in drivers_dict:
+                    drivers_dict[d] += 1
+                else:
+                    drivers_dict[d] = 1
+    drivers_dict = dict(sorted(drivers_dict.items(), key=lambda item: item[1], reverse=True))
+    grouped_dict = defaultdict(list)
+    for key, value in drivers_dict.items():
+        grouped_dict[value].append(key)
+    for v, d in grouped_dict.items():
+        d = ', '.join(d)
+        print(f'{v} - {d}')
