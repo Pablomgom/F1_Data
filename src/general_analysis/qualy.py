@@ -12,6 +12,7 @@ from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
 import matplotlib.patches as mpatches
 
+from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
 
 
@@ -128,9 +129,6 @@ def qualy_diff_last_year(year, round_id, circuit=None):
        circuit (str, optional): Only to get the teams in case of error. Default = None
 
     """
-
-
-
     ergast = Ergast()
     current = ergast.get_qualifying_results(season=2023, round=round_id, limit=1000)
     previous = ergast.get_qualifying_results(season=year, limit=1000)
@@ -174,13 +172,14 @@ def qualy_diff_last_year(year, round_id, circuit=None):
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
     round_bars(bars, ax, colors, y_offset_rounded=0)
-    annotate_bars(bars, ax, 0.05, 12, '+{height}s', ceil_values=False)
+    annotate_bars(bars, ax, 0.02, 12, '+{height}s', ceil_values=False)
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'{current.event.EventName.upper()} QUALY COMPARISON: {year} vs. 2023', font='Fira Sans', fontsize=24)
+    plt.title(f'{current.event.EventName.upper()} QUALY COMPARISON: {year} vs. 2023', font='Fira Sans', fontsize=18)
     plt.xlabel('Team', font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
+    plt.xticks(rotation=90)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{current.event.EventName} QUALY COMPARATION {year} vs 2023.png', dpi=450)
     plt.show()
@@ -791,32 +790,35 @@ def qualy_margin(circuit, start=None, end=None):
 
     """
 
-
-    ergast = Ergast()
+    ergast = My_Ergast()
     dict_years = {}
     dict_drivers = {}
     if start is None:
         start = 1950
     if end is None:
         end = 2024
-    for i in range(start, end):
-        qualy = ergast.get_qualifying_results(season=i, circuit=circuit, limit=1000)
-        if len(qualy.content) > 0:
-            data = qualy.content[0]
+    qualy = ergast.get_qualy_results([i for i in range(start, end)])
+    for q in qualy.content:
+        q_cir = q['circuitRef'].min()
+        if q_cir == circuit:
+            year = q['year'].min()
+            if year == 2015:
+                a = 1
             try:
-                pole_time = data['Q3'][0]
-                second_time = data['Q3'][1]
+                pole_time = q['q3'].values[0]
+                second_time = q['q3'].values[1]
+                if pd.isna(pole_time) or pd.isna(pole_time):
+                    raise Exception
             except:
                 try:
-                    pole_time = data['Q2'][0]
-                    second_time = data['Q2'][1]
+                    pole_time = q['q2'].values[0]
+                    second_time = q['q2'].values[1]
                 except:
-                    pole_time = data['Q1'][0]
-                    second_time = data['Q1'][1]
+                    pole_time = q['q1'].values[0]
+                    second_time = q['q1'].values[1]
             diff = second_time - pole_time
-            dict_years[i] = diff.total_seconds()
-            dict_drivers[i] = f'from {data["familyName"][0]} to {data["familyName"][1]}'
-            print(str(i))
+            dict_years[year] = diff / np.timedelta64(1, 's')
+            dict_drivers[year] = f'from {q["familyName"].values[0]} to {q["familyName"].values[1]}'
 
     dict_years = {k: v for k, v in sorted(dict_years.items(), key=lambda item: item[1], reverse=False)}
 

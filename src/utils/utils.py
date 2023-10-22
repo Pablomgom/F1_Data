@@ -37,6 +37,8 @@ def parse_args(args_input, function_map, session):
                 args.append(function_map)
             elif arg in function_map:
                 args.append(function_map[arg])
+            elif arg == 'None':
+                args.append(None)
             elif arg != '':
                 args.append(int(arg) if arg.isdigit() else arg)
 

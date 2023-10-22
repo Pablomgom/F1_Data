@@ -1,6 +1,7 @@
 import re
 import statistics
 
+from adjustText import adjust_text
 from matplotlib.font_manager import FontProperties
 
 from src.plots.plots import round_bars, annotate_bars
@@ -12,7 +13,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from fastf1 import plotting
 
-from matplotlib import pyplot as plt, patches, image as mpimg
+from matplotlib import pyplot as plt, patches, image as mpimg, ticker
 import seaborn as sns
 import numpy as np
 
@@ -346,10 +347,10 @@ def long_runs_FP2(race, driver):
 
     # Calculate Q1 and Q3
     Q1 = series.quantile(0.25)
-    Q3 = series.quantile(0.55)
+    Q3 = series.quantile(0.75)
     IQR = Q3 - Q1
 
-    filtered_series = series[~((series < (Q1 - 1 * IQR)) | (series > Q3))]
+    filtered_series = series[~((series < (Q1 - 0.75 * IQR)) | (series > Q3 * 1.07))]
     driver_laps_filter['LapTime'] = filtered_series
     driver_laps_filter = driver_laps_filter[driver_laps_filter['LapTime'].notna()]
     driver_laps_filter['LapNumber'] = driver_laps_filter['LapNumber'] - driver_laps_filter['LapNumber'].min() + 1
@@ -395,28 +396,30 @@ def long_runs_FP2(race, driver):
                     legend=False,
                     zorder=-5)
 
-    # Annotate the moving average values:
-    bbox_props = dict(boxstyle="square,pad=0.4", fc="white", ec="none", lw=0)
 
+    bbox_props = dict(boxstyle="square,pad=0.4", fc="white", ec="none", lw=0)
+    annotations = []
     for lap, time in zip(driver_laps_filter['LapNumber'], driver_laps_filter['LapTime_seconds']):
         if not np.isnan(time):
-            ax.annotate(f"{format_func(time, None)}",
-                        (lap, time),
-                        textcoords="offset points",
-                        xytext=(0, 10),
-                        ha='center',
-                        font='Fira Sans',
-                        fontsize=11,
-                        color='red',
-                        bbox=bbox_props)  # Adding the white box here
-    # Create a font properties object with the desired font family and size
+            text = ax.annotate(f"{format_func(time, None)}",
+                               (lap, time),
+                               textcoords="offset points",
+                               xytext=(0, 10),
+                               ha='center',
+                               fontsize=11,
+                               color='red',
+                               bbox=bbox_props)
+            annotations.append(text)
+
+    adjust_text(annotations, ax=ax, autoalign='xy')
+
     font_properties = FontProperties(family='Fira Sans', size='x-large')
     plt.title(f'{driver} SPRINT PACE', font='Fira Sans', fontsize=26)
     # Set the font properties for the legend
     ax.legend(prop=font_properties)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
     sns.despine(left=True, bottom=True)
-
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.tight_layout()
     plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=150)
     plt.show()
@@ -433,15 +436,15 @@ def driver_race_times_per_tyre(race, driver):
 
     """
 
-    # The misc_mpl_mods option enables minor grid lines which clutter the plot
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     driver_laps = race.laps.pick_driver(driver).pick_quicklaps().reset_index()
+    driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
     sns.scatterplot(data=driver_laps,
                     x="LapNumber",
-                    y="LapTime",
+                    y="LapTime(s)",
                     ax=ax,
                     hue="Compound",
                     palette=fastf1.plotting.COMPOUND_COLORS,
@@ -451,15 +454,19 @@ def driver_race_times_per_tyre(race, driver):
 
     ax.set_xlabel("Lap Number", font='Fira Sans', fontsize=16)
     ax.set_ylabel("Lap Time", font='Fira Sans', fontsize=16)
+    def lap_time_formatter(x, pos):
+        minutes, seconds = divmod(x, 60)
+        return f"{int(minutes):02}:{seconds:06.3f}"
 
-    # The y-axis increases from bottom to top by default
-    # Since we are plotting time, it makes sense to invert the axis
-    ax.invert_yaxis()
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lap_time_formatter))
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+
     plt.suptitle(f"{driver} Laptimes in {race.event.OfficialEventName}", font='Fira Sans', fontsize=16)
 
     # Turn on major grid lines
     plt.grid(color='w', which='major', axis='both')
     sns.despine(left=True, bottom=True)
+
 
     plt.tight_layout()
     plt.savefig(f"../PNGs/RACE LAPS {driver} {race.event.OfficialEventName}.png", dpi=400)
@@ -574,16 +581,17 @@ def race_pace_top_10(race):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
+    point_finishers = ['VER', 'HAM', 'NOR', 'SAI', 'STR']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
-
-    dict = fastf1.plotting.DRIVER_COLORS
     driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
                      abv, driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
 
     fig, ax = plt.subplots(figsize=(8, 6))
     driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
+    mean_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].mean()
+    median_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].median()
 
     sns.violinplot(data=driver_laps,
                    x="Driver",
@@ -605,6 +613,24 @@ def race_pace_top_10(race):
                   size=5,
                   )
 
+    for i, driver in enumerate(finishing_order):
+        mean_time = mean_lap_times[driver]
+        median_time = median_lap_times[driver]
+
+        # Convert mean and median times to minutes, seconds, and milliseconds
+        mean_minutes, mean_seconds = divmod(mean_time, 60)
+        mean_seconds, mean_milliseconds = divmod(mean_seconds, 1)
+        median_minutes, median_seconds = divmod(median_time, 60)
+        median_seconds, median_milliseconds = divmod(median_seconds, 1)
+
+        # Place the mean and median labels below each violinplot
+        ax.text(i, min(driver_laps['LapTime(s)']) - 1,
+                f"Mean: {int(mean_minutes):02d}:{int(mean_seconds):02d}.{int(mean_milliseconds * 1000):03d}",
+                font='Fira Sans', fontsize=8, ha='center')
+        ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
+                f"Median: {int(median_minutes):02d}:{int(median_seconds):02d}.{int(median_milliseconds * 1000):03d}",
+                font='Fira Sans', fontsize=8, ha='center')
+
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
              max(driver_laps['LapTime']).total_seconds() + 2)  # change these numbers as per your needs
     plt.xticks(fontsize=15)
@@ -614,7 +640,7 @@ def race_pace_top_10(race):
     plt.suptitle(f"{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions",
                  font='Fira Sans', fontsize=20)
     sns.despine(left=False, bottom=False)
-    plt.legend(title='Tyre Compound', loc='lower right', fontsize='medium')
+    plt.legend(title='Tyre Compound', loc='upper left', fontsize='medium')
 
     plt.savefig(f"../PNGs/{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions.png", dpi=400)
     plt.tight_layout()

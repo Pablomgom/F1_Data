@@ -376,24 +376,25 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         mode (bool, optional): Total sum or 4 MA. Default: None(4 MA)
 
    """
-
+    reverse = True
     ergast = Ergast()
     data = ergast.get_race_results(season=year, limit=1000)
     teams = set(data.content[0]['constructorName'])
-    circuits = np.array(data.description['circuitId'])
-    circuits = [i.replace('_', ' ').title() for i in circuits]
     team_points = pd.DataFrame(columns=['Team', 'Points', 'Circuit'])
     yticks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
     if session == 'Q':
         data = ergast.get_qualifying_results(season=year, limit=1000)
         yticks = [1, 3, 6, 9, 12, 15, 18, 20]
         title = 'Average qualy position in the last 4 GPs'
+        reverse = False
     else:
         if predict:
             title = 'Average points prediction in the last 4 GPs'
         else:
             title = 'Average points in the last 4 GPs'
 
+    circuits = np.array(data.description['circuitId'])
+    circuits = [i.replace('_', ' ').title() for i in circuits]
     circuits = append_duplicate_number(circuits)
     for i in range(len(data.content)):
         for team in teams:
@@ -452,7 +453,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     handles, labels = ax.get_legend_handles_labels()
     colors = [line.get_color() for line in ax.lines]
     info = list(zip(handles, labels, colors, last_values))
-    info.sort(key=lambda item: item[3], reverse=True)
+    info.sort(key=lambda item: item[3], reverse=reverse)
     handles, labels, colors, last_values = zip(*info)
     labels = [f"{label} ({last_value:.2f})" for label, last_value in zip(labels, last_values)]
 
@@ -461,7 +462,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         handles.append(predict_patch)
         labels.append("Predictions")
 
-    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(0, 0.85))
+    plt.legend(handles=handles, labels=labels, prop=font, loc="upper left", bbox_to_anchor=(1, 0.6))
 
     plt.xticks(ticks=range(len(transposed)), labels=transposed.index,
                rotation=90, fontsize=12, fontname='Fira Sans')
@@ -1128,6 +1129,8 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
 
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    drivers.remove('OCO')
+    drivers.remove('PIA')
     circuit_speed = {}
     colors_dict = {}
 
@@ -1157,7 +1160,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
     if column == 'Speed':
         order = True
-        if fastest_lap is not None:
+        if fastest_lap:
             column = 'Top Speeds (only the fastest lap from each driver)'
         else:
             column = 'Top Speeds'
@@ -1166,7 +1169,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
         annotate_fontsize = 11
     else:
         y_fix = 0.025
-        x_fix = 0.75
+        x_fix = 0.45
         annotate_fontsize = 8
         order = False
         column = f"{column[:-5]} {column[-5:-4]} Times"
@@ -1188,7 +1191,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}',
-                  font='Fira Sans', fontsize=14)
+                  font='Fira Sans', fontsize=12)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
         y_label = 'Max speed'
@@ -1198,9 +1201,8 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)
 
-    max_value = max(circuit_speed.values())
 
-    # Adjust the y-axis limits
+    max_value = max(circuit_speed.values())
     ax1.set_ylim(min(circuit_speed.values()) - x_fix, max_value + x_fix)
 
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
@@ -1208,12 +1210,13 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     def format_ticks(val, pos):
         return '{:.0f}'.format(val)
 
-    plt.gca().yaxis.set_major_formatter(FuncFormatter(format_ticks))
+    if column == 'Speed':
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(format_ticks))
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=10)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{column} IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
-                dpi=175)
+                dpi=450)
     plt.show()
 
 
@@ -1562,7 +1565,7 @@ def avg_driver_position(driver, team, year, session='Q'):
 
     ergast = Ergast()
     if session == 'Q':
-        data = ergast.get_qualifying_results(season=year, limit=1000)
+        data = My_Ergast().get_qualy_results([2023])
     else:
         data = ergast.get_race_results(season=year, limit=1000)
 
@@ -1572,7 +1575,7 @@ def avg_driver_position(driver, team, year, session='Q'):
         drivers = []
         for gp in data.content:
             for d in gp['driverCode']:
-                if d not in ['RIC', 'DEV']:
+                if d not in ['LAW', 'DEV']:
                     drivers.append(d)
         drivers_array = set(drivers)
         drivers = {d: [] for d in drivers_array}
@@ -1614,7 +1617,7 @@ def avg_driver_position(driver, team, year, session='Q'):
         plt.yticks(fontsize=11)
         ax.yaxis.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
-        plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=150)
+        plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=450)
         plt.show()
         pre_positions = list(avg_grid_pre.keys())
         for i in range(len(drivers)):

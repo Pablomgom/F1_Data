@@ -25,6 +25,7 @@ def insert_qualy_data():
 
 
 if __name__ == '__main__':
+
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
         func_name = func.split('(')[0]
@@ -43,5 +44,8 @@ if __name__ == '__main__':
             print('Wrong format')
         except Exception as e:
             print(f"An error occurred: {str(e)}")
+
+
+
 
 

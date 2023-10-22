@@ -50,7 +50,7 @@ def get_list_dataframes(df, schema):
 
     # Sort the list of DataFrames using the custom sorting key
     races_list = sorted(races_list, key=custom_sort_key)
-    races_list = [apply_custom_schema(df, schema) for df in races_list]
+    races_list = [apply_custom_schema(df, schema).sort_values(by='position', ascending=True) for df in races_list]
     return races_list
 
 
@@ -64,8 +64,8 @@ race_results_schema = ['year', 'round', 'raceId', 'raceName', 'driverCurrentNumb
 
 qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', 'q2', 'q3',
                         'raceName', 'constructorRef', 'constructorName',
-                        'givenName', 'familyName', 'fullName', 'circuitName',
-                        'location', 'country']
+                        'givenName', 'familyName', 'fullName', 'driverCode', 'circuitName',
+                        'location', 'country', 'circuitRef']
 
 
 class My_Ergast:
@@ -161,7 +161,9 @@ class My_Ergast:
             'Jaguar-Cosworth': 'Jaguar',
             'Prost-Acer': 'Prost',
             'Arrows-Cosworth': 'Arrows',
-            'Minardi-Asiatech': 'Minardi'
+            'Minardi-Asiatech': 'Minardi',
+            'Haas': 'Haas F1 Team',
+            'Alpine': 'Alpine F1 Team'
         }
 
         raceId = self.races[(self.races['year'] == year) & (self.races['round'] == round)]['raceId'].values[0]
@@ -175,8 +177,6 @@ class My_Ergast:
                                   on='constructorName', how='inner')
         data_to_append['qualifyId'] = qualyId + data_to_append.index
         data_to_append['raceId'] = raceId
-        data_to_append['q2'] = '/N'
-        data_to_append['q3'] = '/N'
         data_to_append['q1'] = data_to_append['q1'].astype(str)
         data_to_append['q2'] = data_to_append['q2'].astype(str)
         data_to_append['q3'] = data_to_append['q3'].astype(str)
