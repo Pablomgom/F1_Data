@@ -1,5 +1,5 @@
 from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps, \
-    winning_positions_per_circuit, q3_appearances
+    winning_positions_per_circuit, q3_appearances, results_from_pole
 
 
 def get_funcs():
@@ -81,6 +81,7 @@ def get_funcs():
         'get_driver_laps': get_driver_laps,
         'winning_positions_per_circuit': winning_positions_per_circuit,
         'q3_appearances': q3_appearances,
+        'results_from_pole': results_from_pole,
         'help': help
     }
 

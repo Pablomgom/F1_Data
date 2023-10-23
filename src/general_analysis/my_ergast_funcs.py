@@ -198,3 +198,20 @@ def q3_appearances(year):
     for v, d in grouped_dict.items():
         d = ', '.join(d)
         print(f'{v} - {d}')
+
+
+def results_from_pole(driver, start=1950, end=2024):
+
+    ergast = My_Ergast()
+    r = ergast.get_race_results([i for i in range(start, end)])
+    for race in r.content:
+        pole = race[race['grid'] == 1]
+        pole = pole[pole['fullName'] == driver]
+        if len(pole) == 1:
+            status = pole['status'].values[0]
+            if re.search(r'(Finished|\+)', status):
+                finish_pos = f'P{pole["position"].values[0]}'
+            else:
+                finish_pos = 'DNF'
+
+            print(f'{pole["year"].values[0]} {pole["raceName"].values[0]}: From P1 to {finish_pos}')
