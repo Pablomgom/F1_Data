@@ -1,7 +1,5 @@
 import math
 import re
-import time
-
 import numpy as np
 from fastf1.ergast import Ergast
 
@@ -50,7 +48,7 @@ def get_avg_teammate_pos(given_name, family_name, results, drivers, da_pos):
                                 ]['driverId'].values)
         for teammate in teammates:
             teammate_pos = results[results['driverId'] == teammate]['position'].max()
-            teammate_status = results[results['position'] == teammate_pos]['status'].values[0]
+            teammate_status = results[results['position'] == teammate_pos]['status'].max()
             if get_finish_status(status=teammate_status):
                 avg_team_pos.append(teammate_pos)
             else:
@@ -65,7 +63,7 @@ def get_avg_teammate_pos(given_name, family_name, results, drivers, da_pos):
     full_names = []
     for driver in teammates:
         teammate = results[results['driverId'] == driver]
-        full_name = teammate['givenName'].values[0] + '//' + teammate['familyName'].values[0]
+        full_name = teammate['givenName'].max() + '//' + teammate['familyName'].max()
         full_names.append(full_name)
     drivers_to_check = []
     for full_name in full_names:
@@ -74,14 +72,14 @@ def get_avg_teammate_pos(given_name, family_name, results, drivers, da_pos):
                 drivers_to_check.append(teammate)
                 break
     avg_elo = get_avg_teamamte_elo(drivers_to_check, teammates)
-    return round(np.mean(avg_pos), 2), avg_elo
+    return np.mean(avg_pos), avg_elo
 
 
 def get_finish_status(given_name='', family_name='', results=None, status=None):
     if status is None:
         driver_result = results[(results['givenName'] == given_name) & (results['familyName'] == family_name)]
         driver_result = driver_result.sort_values(by='position', ascending=False)
-        status = driver_result['status'].values[0]
+        status = driver_result['status'].max()
     if not re.search(r'(Finished|\+)', status):
         return False
     return True
@@ -91,7 +89,7 @@ def is_accident(given_name='', family_name='', results=None, status=None):
     if status is None:
         driver_result = results[(results['givenName'] == given_name) & (results['familyName'] == family_name)]
         driver_result = driver_result.sort_values(by='position', ascending=False)
-        status = driver_result['status'].values[0]
+        status = driver_result['status'].max()
     if status in ['Accident', 'Collision', 'Spun off', 'Injured', 'Injury',
                   'Fatal accident', 'Collision damage', 'Damage', 'Physical']:
         return True
@@ -142,19 +140,18 @@ def get_valid_drivers(drivers, results, year):
         else:
             if is_accident(name[0], name[1], results) and year >= 2000:
                 team = results[(results['givenName'] == name[0])
-                               & (results['familyName'] == name[1])]['constructorId'].values[0]
+                               & (results['familyName'] == name[1])]['constructorId'].max()
                 team_results = results[results['constructorId'] == team]
                 teammate_data = team_results[(team_results['givenName'] != name[0])
                                              & (team_results['familyName'] != name[1])]
                 if len(teammate_data) == 1:
-                    teamamte_name = teammate_data['givenName'].values[0] + '//' + teammate_data['familyName'].values[0]
-                    teammate_status = teammate_data['status'].values[0]
+                    teamamte_name = teammate_data['givenName'].max() + '//' + teammate_data['familyName'].max()
+                    teammate_status = teammate_data['status'].max()
                     if get_finish_status(status=teammate_status) or not is_accident(status=teammate_status):
                         d.elo_changes -= 7.5
                         for d_t in drivers:
                             if d_t.name == teamamte_name:
                                 d_t.elo_changes += 7.5
-                                print(f'{d.name} -7.5 ---- {d_t.name} +7.5')
                                 break
     return valid_drivers
 
@@ -185,6 +182,8 @@ def update_ratings(drivers, race_results, race_index, race_name):
 
         for d_a in drivers_available:
             d_a_parts_name = d_a.name.split('//')
+            if d_a.name == 'Max//Verstappen':
+                a = 1
             d_a_pos = get_pos(d_a_parts_name[0], d_a_parts_name[1], race_results)
             for d_b in drivers_available:
                 if d_a.name != d_b.name:
@@ -200,9 +199,9 @@ def update_ratings(drivers, race_results, race_index, race_name):
                             s_a = 0
                         else:
                             s_a = 0.5
-                        d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
+                        d_a.elo_changes += calculate_elo(d_a.previous_rating,
                                                                d_b.previous_rating, s_a, weight,
-                                                               k_pos[current_year]) * d_a.races_factor, 2)
+                                                               k_pos[current_year]) * d_a.races_factor
 
             avg_team_pos = get_avg_teammate_pos(d_a_parts_name[0], d_a_parts_name[1], race_results, drivers, d_a_pos)
             if avg_team_pos[0] != -1:
@@ -236,9 +235,9 @@ def update_ratings(drivers, race_results, race_index, race_name):
                 else:
                     weight = weight * k_extra_weight[len(k_extra_weight)]
                     print(f'{d_a.name} - {round(avg_team_pos[0], 0)} - {max(list(k_extra_weight.keys()))}')
-                d_a.elo_changes += round(calculate_elo(d_a.previous_rating,
+                d_a.elo_changes += calculate_elo(d_a.previous_rating,
                                                        avg_team_pos[1], s_a, weight,
-                                                       k_team[current_year]) * d_a.races_factor, 2)
+                                                       k_team[current_year]) * d_a.races_factor
 
         gain_elo = []
         lose_elo = []
@@ -261,7 +260,6 @@ def update_ratings(drivers, race_results, race_index, race_name):
                 driver.elo_changes += -diff_elo
             driver.rating += driver.elo_changes
             driver.historical_elo[race_name] = driver.rating
-            driver.elo_changes = 0
             driver.previous_rating = driver.rating
             count += 1
 
@@ -296,6 +294,7 @@ def elo_execution(start, end):
         intersection = [value for value in driver_names if value in drivers_in_race]
         drivers_in_race = [d for d in drivers if d.name in intersection]
         for d in drivers_in_race:
+            d.elo_changes = 0
             d.num_races += 1
         update_ratings(drivers_in_race, race, race_index, races_name[race_index])
         print(f'{race_index}/{len(races)}')
@@ -359,11 +358,11 @@ def elo_execution(start, end):
         print('Not enough data for the MA')
 
     print('----------------------------------------------------------------------')
-    current_season = ergast.get_race_results(season=2023, limit=1000)
+    current_season = ergast.get_race_results(season=end - 1, limit=1000)
     season_races = []
     season_races += [race for race in current_season.content]
-    current_drivers_names = set(
-        [code for race in season_races for code in race['givenName'] + '//' + race['familyName']])
+    season_races = season_races[-1]
+    current_drivers_names = (season_races['givenName'] + '//' + season_races['familyName']).values
 
     current_drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
     prev_drivers = sorted(drivers, key=lambda driver: driver.historical_elo[races_name[-2]], reverse=True)
@@ -374,7 +373,10 @@ def elo_execution(start, end):
             prev_rank = prev_drivers_names.index(driver.name) + 1
             driver.rating = round(driver.rating, 2)
             prev_rating = round(driver.historical_elo[races_name[-2]], 2)
-            if prev_rating != 0:
+            if prev_rating == 0:
+                diff = round(driver.elo_changes, 2)
+                prev_rating = round(driver.rating - diff, 2)
+            else:
                 diff = round(driver.rating - prev_rating, 2)
-                print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff}) - Prev: {prev_rank}')
-                count += 1
+            print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff}) - Prev: {prev_rank}')
+            count += 1
