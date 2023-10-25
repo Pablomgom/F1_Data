@@ -39,9 +39,10 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
                 t_grid = team_race_data['grid'].values[0]
                 if d_grid == 1:
                     d_data[1] += 1
+                    # print(f'{d_position} - {driver_race_data["year"].min()} - {driver_race_data["raceName"].min()}')
                 elif t_grid == 1:
                     t_data[1] += 1
-                    print(f'{t_position} - {team_data["year"].min()} - {team_data["raceName"].min()}')
+                    # print(f'{t_position} - {team_data["year"].min()} - {team_data["raceName"].min()}')
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([i for i in range(start, end)])
@@ -91,12 +92,13 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
                         d_data[2] += 1
                     else:
                         t_data[2] += 1
+                    print(f'{d_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
 
                 else:
-                    if not re.search(r'(Disqualified|Finished|\+)', d_status):
+                    if not re.search(r'(Finished|\+)', d_status):
                         # print(f'{d_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
                         d_data[6] += 1
-                    if not re.search(r'(Disqualified|Finished|\+)', t_status):
+                    if not re.search(r'(Finished|\+)', t_status):
                         t_data[6] += 1
                         # print(f'{t_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
 

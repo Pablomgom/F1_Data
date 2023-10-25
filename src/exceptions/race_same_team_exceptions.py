@@ -18,10 +18,14 @@ def Ferrari_2023(round, max_laps):
         min_laps = 20
     if round == 15:
         max_laps = 52
+    if round == 18:
+        max_laps = 0
     return min_laps, max_laps
 
 
 def Mercedes_2023(round, max_laps):
+    if round == 18:
+        max_laps = 0
     return 0, max_laps
 
 

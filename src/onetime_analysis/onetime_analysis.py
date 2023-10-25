@@ -474,7 +474,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     if session == 'Q':
         ax.invert_yaxis()
     plt.tight_layout()  # Adjusts the plot layout for better visibility
-    plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=400)
+    plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=450)
     plt.show()
 
 
@@ -630,7 +630,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     plt.title('SIMILARITY BETWEEN CIRCUITS', font='Fira Sans', fontsize=28)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig('../PNGs/Track clusters.png', dpi=150)
+    plt.savefig('../PNGs/Track clusters.png', dpi=450)
     plt.show()
 
 

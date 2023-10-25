@@ -1,4 +1,5 @@
 import math
+import pickle
 import re
 import numpy as np
 from fastf1.ergast import Ergast
@@ -23,7 +24,7 @@ def calculate_elo(r1, r2, s1, weight, k=35):
 def get_pos(given_name, family_name, race_results):
     driver_data = race_results[(race_results['givenName'] == given_name) & (race_results['familyName'] == family_name)]
     if len(driver_data) > 0:
-        return driver_data['position'].max()
+        return driver_data['position'].min()
     else:
         return 0
 
@@ -168,7 +169,7 @@ def update_ratings(drivers, race_results, race_index, race_name):
         normalized_factors = normalize_factors(scaled_factors)
 
         years = np.array(list(range(1950, 2024)))
-        n_drivers = np.array(list(range(1, len(drivers))))
+        n_drivers = np.array(list(range(1, len(drivers) + 1)))
         values_k_pos = np.linspace(25, 7.5, len(years))
         values_k_team = np.linspace(82.5, 35, len(years))
         values_extra_weight_team = np.linspace(1.5, 0.5, len(drivers_available))
@@ -182,8 +183,6 @@ def update_ratings(drivers, race_results, race_index, race_name):
 
         for d_a in drivers_available:
             d_a_parts_name = d_a.name.split('//')
-            if d_a.name == 'Max//Verstappen':
-                a = 1
             d_a_pos = get_pos(d_a_parts_name[0], d_a_parts_name[1], race_results)
             for d_b in drivers_available:
                 if d_a.name != d_b.name:
@@ -200,8 +199,8 @@ def update_ratings(drivers, race_results, race_index, race_name):
                         else:
                             s_a = 0.5
                         d_a.elo_changes += calculate_elo(d_a.previous_rating,
-                                                               d_b.previous_rating, s_a, weight,
-                                                               k_pos[current_year]) * d_a.races_factor
+                                                         d_b.previous_rating, s_a, weight,
+                                                         k_pos[current_year]) * d_a.races_factor
 
             avg_team_pos = get_avg_teammate_pos(d_a_parts_name[0], d_a_parts_name[1], race_results, drivers, d_a_pos)
             if avg_team_pos[0] != -1:
@@ -236,8 +235,8 @@ def update_ratings(drivers, race_results, race_index, race_name):
                     weight = weight * k_extra_weight[len(k_extra_weight)]
                     print(f'{d_a.name} - {round(avg_team_pos[0], 0)} - {max(list(k_extra_weight.keys()))}')
                 d_a.elo_changes += calculate_elo(d_a.previous_rating,
-                                                       avg_team_pos[1], s_a, weight,
-                                                       k_team[current_year]) * d_a.races_factor
+                                                 avg_team_pos[1], s_a, weight,
+                                                 k_team[current_year]) * d_a.races_factor
 
         gain_elo = []
         lose_elo = []
@@ -255,6 +254,7 @@ def update_ratings(drivers, race_results, race_index, race_name):
             reverse = False
         drivers = sorted(drivers, key=lambda driver: driver.elo_changes, reverse=reverse)
         count = 0
+        total_elo_change = 0
         for driver in drivers:
             if count == 0:
                 driver.elo_changes += -diff_elo
@@ -262,9 +262,11 @@ def update_ratings(drivers, race_results, race_index, race_name):
             driver.historical_elo[race_name] = driver.rating
             driver.previous_rating = driver.rating
             count += 1
+            total_elo_change += driver.elo_changes
+        print(total_elo_change)
 
 
-def elo_execution(start, end):
+def elo_execution(start=None, end=None, restore=False, year=None, round=None, only_print=False, save=False):
     """
         Calculates the elo of the grid in the given years
 
@@ -273,32 +275,49 @@ def elo_execution(start, end):
         end (int): End year
 
     """
+
     ergast = Ergast()
-    races = []
-    races_name = []
-    for year in range(start, end):
-        year_data = ergast.get_race_results(season=year, limit=1000)
-        races += [race for race in year_data.content]
-        for i in range(len(year_data.description)):
-            race_names = year_data.description['raceName'].values[i]
-            races_name.append(f'{year} - {race_names}')
-    driver_names = set([code for race in races for code in race['givenName'] + '//' + race['familyName']])
-    drivers = [Driver(name) for name in driver_names]
-    for d in drivers:
-        for unique_race in races_name:
-            d.historical_elo[unique_race] = 0
-    driver_names = [d.name for d in drivers]
-    race_index = 0
-    for race in races:
-        drivers_in_race = [code for code in race['givenName'] + '//' + race['familyName']]
-        intersection = [value for value in driver_names if value in drivers_in_race]
-        drivers_in_race = [d for d in drivers if d.name in intersection]
-        for d in drivers_in_race:
-            d.elo_changes = 0
-            d.num_races += 1
-        update_ratings(drivers_in_race, race, race_index, races_name[race_index])
-        print(f'{race_index}/{len(races)}')
-        race_index += 1
+
+    if only_print:
+        with open("elo/elo_data.pkl", "rb") as file:
+            drivers = pickle.load(file)
+    else:
+        races = []
+        races_name = []
+        if restore:
+            data = ergast.get_race_results(season=year, round=round, limit=1000)
+            races += [race for race in data.content]
+            for i in range(len(data.description)):
+                race_names = data.description['raceName'].values[i]
+                races_name.append(f'{year} - {race_names}')
+            with open("elo/elo_data.pkl", "rb") as file:
+                drivers = pickle.load(file)
+            with open("elo/elo_data_bk.pkl", "wb") as file:
+                pickle.dump(drivers, file)
+        else:
+            for year in range(start, end):
+                year_data = ergast.get_race_results(season=year, limit=1000)
+                races += [race for race in year_data.content]
+                for i in range(len(year_data.description)):
+                    race_names = year_data.description['raceName'].values[i]
+                    races_name.append(f'{year} - {race_names}')
+            driver_names = set([code for race in races for code in race['givenName'] + '//' + race['familyName']])
+            drivers = [Driver(name) for name in driver_names]
+        for d in drivers:
+            for unique_race in races_name:
+                d.historical_elo[unique_race] = 0
+        driver_names = [d.name for d in drivers]
+        race_index = 0
+        for race in races:
+            drivers_in_race = [code for code in race['givenName'] + '//' + race['familyName']]
+            intersection = [value for value in driver_names if value in drivers_in_race]
+            drivers_in_race = [d for d in drivers if d.name in intersection]
+            for d in drivers_in_race:
+                d.elo_changes = 0
+                d.num_races += 1
+            update_ratings(drivers_in_race, race, race_index, races_name[race_index])
+            print(f'{race_index}/{len(races)}')
+            race_index += 1
 
     total_elo = 0
     for driver in drivers:
@@ -318,7 +337,7 @@ def elo_execution(start, end):
         years_sorted = sorted(driver.ma_elo.keys())
         driver.ma_elo_3ma = {}
         for i, year in enumerate(years_sorted):
-            if i >= 2:  # Ensure there are at least 3 years including the current year
+            if i >= 2:
                 three_years = [years_sorted[i - j] for j in range(3)]
                 avg = sum([driver.ma_elo[y] for y in three_years]) / 3
                 driver.ma_elo_3ma[year] = avg
@@ -329,7 +348,7 @@ def elo_execution(start, end):
     drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
     count = 1
     for driver in drivers[:25]:
-        driver.rating = round(driver.rating, 2)
+        driver.rating = np.round(driver.rating, 2)
         print(f'{count} - {driver.name} - {driver.rating}')
         count += 1
 
@@ -343,7 +362,7 @@ def elo_execution(start, end):
             driver.historical_elo.items(),
             key=lambda item: (item[1], item[0])
         )
-        max_rating = round(max_rating, 2)
+        max_rating = np.round(max_rating, 2)
         print(f'{count} - {driver.name} - {max_rating} (from race: {max_key})')
     try:
         print('----------------------------------------------------------------------')
@@ -351,32 +370,39 @@ def elo_execution(start, end):
         count = 1
         for driver in drivers[:25]:
             max_key = max(driver.ma_elo_3ma, key=driver.ma_elo_3ma.get)
-            max_rating = round(driver.ma_elo_3ma[max_key], 2)
+            max_rating = np.round(driver.ma_elo_3ma[max_key], 2)
             print(f'{count} - {driver.name} - {max_rating} (from year: {max_key})')
             count += 1
     except:
         print('Not enough data for the MA')
 
     print('----------------------------------------------------------------------')
-    current_season = ergast.get_race_results(season=end - 1, limit=1000)
+    if restore or only_print:
+        current_season = ergast.get_race_results(season=year, round=round, limit=1000)
+    else:
+        current_season = ergast.get_race_results(season=end - 1, limit=1000)
     season_races = []
     season_races += [race for race in current_season.content]
     season_races = season_races[-1]
     current_drivers_names = (season_races['givenName'] + '//' + season_races['familyName']).values
 
     current_drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)
-    prev_drivers = sorted(drivers, key=lambda driver: driver.historical_elo[races_name[-2]], reverse=True)
+    prev_drivers = sorted(drivers, key=lambda driver: driver.historical_elo[list(drivers[0].historical_elo)[-2]], reverse=True)
     prev_drivers_names = [d.name for d in prev_drivers]
     count = 1
     for driver in current_drivers:
         if driver.name in current_drivers_names:
             prev_rank = prev_drivers_names.index(driver.name) + 1
-            driver.rating = round(driver.rating, 2)
-            prev_rating = round(driver.historical_elo[races_name[-2]], 2)
+            driver.rating = np.round(driver.rating, 2)
+            prev_rating = np.round(driver.historical_elo[list(drivers[0].historical_elo)[-2]], 2)
             if prev_rating == 0:
-                diff = round(driver.elo_changes, 2)
-                prev_rating = round(driver.rating - diff, 2)
+                diff = np.round(driver.elo_changes, 2)
+                prev_rating = np.round(driver.rating - diff, 2)
             else:
-                diff = round(driver.rating - prev_rating, 2)
+                diff = np.round(driver.rating - prev_rating, 2)
             print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff}) - Prev: {prev_rank}')
             count += 1
+
+    if restore or save:
+        with open("elo/elo_data.pkl", "wb") as file:
+            pickle.dump(drivers, file)

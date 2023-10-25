@@ -1,6 +1,6 @@
 import sys
 import fastf1
-import pandas as pd
+import traceback
 from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
@@ -40,8 +40,8 @@ if __name__ == '__main__':
                 session = result
             if result is not None:
                 print(f"Result: {result}")
-        except IndexError:
-            print('Wrong format')
+        except IndexError as e:
+            traceback.print_exc()
         except Exception as e:
             print(f"An error occurred: {str(e)}")
 

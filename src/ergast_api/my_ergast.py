@@ -213,3 +213,5 @@ class My_Ergast:
         print(f"""
             {qualyId},{raceId},{driverId},{constructorId},{number},{grid},/N,/N,/N
         """)
+
+

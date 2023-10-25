@@ -158,10 +158,10 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
         else:
             color = colors[i]
 
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, corner_radius, color, y_offset=y_offset_rounded)
-        rounded_box.set_facecolor(color)
-        ax.add_patch(rounded_box)
+        if height != 0:
+            rounded_box = rounded_top_rect(x, y, width, height, corner_radius, color, y_offset=y_offset_rounded)
+            rounded_box.set_facecolor(color)
+            ax.add_patch(rounded_box)
         i += 1
 
 
