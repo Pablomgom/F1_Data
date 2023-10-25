@@ -461,7 +461,7 @@ def driver_race_times_per_tyre(race, driver):
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lap_time_formatter))
     ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
-    plt.suptitle(f"{driver} Laptimes in {race.event.OfficialEventName}", font='Fira Sans', fontsize=16)
+    plt.suptitle(f"{driver} Laptimes in {race.event.OfficialEventName}", font='Fira Sans', fontsize=14)
 
     # Turn on major grid lines
     plt.grid(color='w', which='major', axis='both')
@@ -469,7 +469,7 @@ def driver_race_times_per_tyre(race, driver):
 
 
     plt.tight_layout()
-    plt.savefig(f"../PNGs/RACE LAPS {driver} {race.event.OfficialEventName}.png", dpi=400)
+    plt.savefig(f"../PNGs/RACE LAPS {driver} {race.event.OfficialEventName}.png", dpi=500)
     plt.show()
 
 
