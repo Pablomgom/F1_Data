@@ -1263,8 +1263,12 @@ def wins_and_poles_circuit(circuit, start=None, end=None):
     poles = (poles.groupby(poles).agg(["count", lambda x: list(x.index)])
              .rename(columns={"count": "Times", "<lambda_0>": "Years"}))
 
-    winners = winners.sort_values("Times", ascending=False)
-    poles = poles.sort_values("Times", ascending=False)
+    winners['First_Year'] = winners['Years'].apply(lambda x: x[0])
+    winners = winners.sort_values(by=["Times", "First_Year"], ascending=[False, False])
+    winners = winners.drop(columns=["First_Year"])
+    poles['First_Year'] = poles['Years'].apply(lambda x: x[0])
+    poles = poles.sort_values(by=["Times", "First_Year"], ascending=[False, False])
+    poles = poles.drop(columns=["First_Year"])
 
     print('POLES')
     print(poles)
