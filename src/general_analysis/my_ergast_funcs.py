@@ -217,3 +217,37 @@ def results_from_pole(driver, start=1950, end=2024):
                 finish_pos = 'DNF'
 
             print(f'{pole["year"].values[0]} {pole["raceName"].values[0]}: From P1 to {finish_pos}')
+
+
+def highest_qualy(team, start, end=2024):
+
+    ergast = My_Ergast()
+    q = ergast.get_qualy_results([i for i in range(start, end)])
+    max_pos = 50
+    race = None
+    for qualy in q.content:
+        team_data = qualy[qualy['constructorRef'] == team]
+        if len(team_data) == 0:
+            print(f'No data for {team} in {qualy["year"].min()}')
+        else:
+            q_pos = team_data['position'].min()
+            if q_pos < max_pos:
+                max_pos = q_pos
+                race = f'{team_data["year"].min()} - {team_data["raceName"].min()}'
+            elif q_pos == max_pos:
+                race += f'{team_data["year"].min()} - {team_data["raceName"].min()} \n'
+
+    print(max_pos, race)
+
+
+def last_result_grid_pos(driver, grid_pos):
+    ergast = My_Ergast()
+    r = ergast.get_race_results([i for i in range(1950, 2023)])
+    r.content.reverse()
+    for race in r.content:
+        d_data = race[race['fullName'] == driver]
+        if len(d_data) == 1:
+            if d_data['grid'].iloc[0] == grid_pos:
+                print(f'{d_data["year"].iloc[0]} - {d_data["raceName"].iloc[0]}: From '
+                      f'{d_data["grid"].iloc[0]} to {d_data["position"].iloc[0]}')
+                break

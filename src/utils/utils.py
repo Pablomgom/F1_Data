@@ -26,10 +26,18 @@ def parse_args(args_input, function_map, session):
                 value = True
             elif value == 'None':
                 value = None
-            try:
-                kwargs[key] = int(value) if value.isdigit() else value
-            except:
-                kwargs[key] = value
+            else:
+                try:
+                    float_value = float(value)
+                    if float_value.is_integer():
+                        value = int(float_value)
+                    else:
+                        value = float_value
+                except ValueError:
+                    pass
+
+            kwargs[key] = value
+
         else:
             if arg == 'session':
                 args.append(session)
@@ -40,7 +48,14 @@ def parse_args(args_input, function_map, session):
             elif arg == 'None':
                 args.append(None)
             elif arg != '':
-                args.append(int(arg) if arg.isdigit() else arg)
+                try:
+                    float_arg = float(arg)
+                    if float_arg.is_integer():
+                        args.append(int(float_arg))
+                    else:
+                        args.append(float_arg)
+                except ValueError:
+                    args.append(arg)
 
     return args, kwargs
 

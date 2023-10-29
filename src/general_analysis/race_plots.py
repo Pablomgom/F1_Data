@@ -4,7 +4,7 @@ import statistics
 from adjustText import adjust_text
 from matplotlib.font_manager import FontProperties
 
-from src.plots.plots import round_bars, annotate_bars
+from src.plots.plots import round_bars, annotate_bars, get_font_properties, lighten_color
 from src.exceptions import race_same_team_exceptions, qualy_exceptions, race_diff_team_exceptions
 import fastf1
 import pandas as pd
@@ -326,7 +326,7 @@ def position_changes(session):
     plt.show()
 
 
-def long_runs_FP2(race, driver):
+def long_runs_FP2(race, driver, threshold=1.07):
     """
          Plots the long runs in FP2 for a given driver
 
@@ -340,18 +340,8 @@ def long_runs_FP2(race, driver):
 
     driver_laps = race.laps.pick_driver(driver)
     max_stint = driver_laps['Stint'].value_counts().index[0]
-    driver_laps_filter = driver_laps[driver_laps['Stint'] == max_stint]
+    driver_laps_filter = driver_laps[driver_laps['Stint'] == max_stint].pick_quicklaps(threshold)
 
-    # Convert to timedelta series
-    series = driver_laps_filter['LapTime']
-
-    # Calculate Q1 and Q3
-    Q1 = series.quantile(0.25)
-    Q3 = series.quantile(0.75)
-    IQR = Q3 - Q1
-
-    filtered_series = series[~((series < (Q1 - 0.75 * IQR)) | (series > Q3 * 1.07))]
-    driver_laps_filter['LapTime'] = filtered_series
     driver_laps_filter = driver_laps_filter[driver_laps_filter['LapTime'].notna()]
     driver_laps_filter['LapNumber'] = driver_laps_filter['LapNumber'] - driver_laps_filter['LapNumber'].min() + 1
     driver_laps_filter['LapTime_seconds'] = driver_laps_filter['LapTime'].dt.total_seconds()
@@ -414,15 +404,109 @@ def long_runs_FP2(race, driver):
     adjust_text(annotations, ax=ax, autoalign='xy')
 
     font_properties = FontProperties(family='Fira Sans', size='x-large')
-    plt.title(f'{driver} SPRINT PACE', font='Fira Sans', fontsize=26)
+    plt.title(f'{driver} LONG RUNS IN {str(race.event.year) + " " + race.event.Country + " " + race.name}',
+              font='Fira Sans', fontsize=20)
     # Set the font properties for the legend
-    ax.legend(prop=font_properties)
+    ax.legend(prop=font_properties, loc='upper left')
     ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
     sns.despine(left=True, bottom=True)
     ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=150)
+    plt.savefig(f"../PNGs/{driver} LAPS {race.event.OfficialEventName}.png", dpi=450)
     plt.show()
+
+
+
+def long_runs_FP2_v2(race, threshold=1.07):
+    """
+         Plots the long runs in FP2 for a given driver
+
+         Parameters:
+         race (Session): Session to analyze
+         driver (str): Driver
+
+    """
+
+    plotting.setup_mpl(misc_mpl_mods=False)
+    drivers = list(race.laps['Driver'].unique())
+    driver_laps = pd.DataFrame(columns=['Driver', 'Laps', 'Compound', 'Average'])
+    for d in drivers:
+        d_laps = race.laps.pick_driver(d)
+        max_stint = d_laps['Stint'].value_counts().index[0]
+        driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold)
+        stint_index = 1
+        try:
+            while len(driver_laps_filter) < 5:
+                max_stint = d_laps['Stint'].value_counts().index[stint_index]
+                driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold)
+                stint_index += 1
+            driver_laps_filter = driver_laps_filter[driver_laps_filter['LapTime'].notna()]
+            driver_laps_filter['LapNumber'] = driver_laps_filter['LapNumber'] - driver_laps_filter['LapNumber'].min() + 1
+            driver_laps_filter = driver_laps_filter.reset_index()
+            df_append = pd.DataFrame({
+                'Driver': d,
+                'Laps': [driver_laps_filter['LapTime'].to_list()],
+                'Compound': [driver_laps_filter['Compound'].iloc[0]],
+                'Average': driver_laps_filter['LapTime'].mean()
+            })
+            driver_laps = pd.concat([driver_laps, df_append], ignore_index=True)
+        except:
+            print(f'NO DATA FOR {d}')
+
+    driver_laps = driver_laps.sort_values(by='Average', ascending=False)
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    def darken_color_custom(color, amount=0.5):
+        """
+        Darkens the given color by reducing each RGB component by a given amount.
+        Input can be matplotlib color string, hex string, or RGB tuple.
+
+        Examples:
+        >> darken_color('g', 0.3)
+        >> darken_color('#F034A3', 0.6)
+        >> darken_color((.3,.55,.1), 0.5)
+        """
+        try:
+            c = mcolors.cnames[color]
+        except:
+            c = color
+        c = list(mcolors.to_rgb(c))
+        c = [max(0, i - i * amount) for i in c]
+        return c
+
+    for idx, row in driver_laps.iterrows():
+        driver = row['Driver']
+        laps = row['Laps']
+        tyre = row['Compound']
+        hex_color = plotting.COMPOUND_COLORS[tyre]
+        color_factor = np.linspace(0, 0.6, len(laps))
+        color_index = 0
+        for lap in laps:
+            color = darken_color_custom(hex_color, amount=round(color_factor[color_index], 1))
+            plt.scatter(lap, driver, color=color)
+            color_index += 1
+
+    ax.set_xlabel("Lap Time", font='Fira Sans', fontsize=16)
+    ax.set_ylabel("Driver", font='Fira Sans', fontsize=16)
+    plt.grid(color='w', which='major', axis='x', linestyle='--')
+    plt.xticks(font='Fira Sans')
+    plt.yticks(font='Fira Sans')
+    font_properties = FontProperties(family='Fira Sans', size='large')
+    plt.title(f'LONG RUNS IN {str(race.event.year) + " " + race.event.Country + " " + race.name}',
+              font='Fira Sans', fontsize=20)
+    soft_patch = mpatches.Patch(color='red', label='Soft')
+    medium_patch = mpatches.Patch(color='yellow', label='Medium')
+    hard_patch = mpatches.Patch(color='lightgray', label='Hard')
+    ax.legend(handles=[soft_patch, medium_patch, hard_patch], prop=font_properties, loc='upper right')
+    sns.despine(left=True, bottom=True)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(f"../PNGs/ LAPS {race.event.OfficialEventName}.png", dpi=450)
+    plt.show()
+
+
 
 
 def driver_race_times_per_tyre(race, driver):
@@ -570,7 +654,7 @@ def tyre_strategies(session):
     plt.show()
 
 
-def race_pace_top_10(race):
+def race_pace_top_10(race, threshold=1.07):
     """
     Plots the race pace of the top 10 drivers in a race
 
@@ -581,8 +665,9 @@ def race_pace_top_10(race):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
-    point_finishers = ['VER', 'HAM', 'NOR', 'SAI', 'STR']
-    driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps()
+    point_finishers = ['VER', 'HAM', 'LEC', 'NOR', 'RIC', 'ALB', 'OCO', 'HUL', 'BOT', 'STR']
+    driver_laps = (race.laps.pick_laps([i for i in range(36, 74)]).pick_drivers(point_finishers)
+                   .pick_quicklaps(threshold).pick_wo_box())
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
     driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
@@ -592,6 +677,9 @@ def race_pace_top_10(race):
     driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
     mean_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].mean()
     median_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].median()
+
+    # driver_colors = ['#0600ef', '#00d2be', '#ff8181', '#eeb370', '#70c2ff', '#900000',
+    #                  '#356cac', '#005aff', '#006f62', '#ffffff']
 
     sns.violinplot(data=driver_laps,
                    x="Driver",
@@ -624,12 +712,15 @@ def race_pace_top_10(race):
         median_seconds, median_milliseconds = divmod(median_seconds, 1)
 
         # Place the mean and median labels below each violinplot
-        ax.text(i, min(driver_laps['LapTime(s)']) - 1,
-                f"Mean: {int(mean_minutes):02d}:{int(mean_seconds):02d}.{int(mean_milliseconds * 1000):03d}",
-                font='Fira Sans', fontsize=8, ha='center')
+        # ax.text(i, min(driver_laps['LapTime(s)']) - 1.3,
+        #         f"Average",
+        #         font='Fira Sans', fontsize=9, ha='center')
+        # ax.text(i, min(driver_laps['LapTime(s)']) - 1.75,
+        #         f"{int(mean_minutes):02d}:{int(mean_seconds):02d}.{int(mean_milliseconds * 1000):03d}",
+        #         font='Fira Sans', fontsize=9, ha='center')
         ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
-                f"Median: {int(median_minutes):02d}:{int(median_seconds):02d}.{int(median_milliseconds * 1000):03d}",
-                font='Fira Sans', fontsize=8, ha='center')
+                f"{int(median_minutes):02d}:{int(median_seconds):02d}.{int(median_milliseconds * 1000):03d}",
+                font='Fira Sans', fontsize=9, ha='center')
 
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
              max(driver_laps['LapTime']).total_seconds() + 2)  # change these numbers as per your needs
@@ -642,7 +733,7 @@ def race_pace_top_10(race):
     sns.despine(left=False, bottom=False)
     plt.legend(title='Tyre Compound', loc='upper left', fontsize='medium')
 
-    plt.savefig(f"../PNGs/{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions.png", dpi=400)
+    plt.savefig(f"../PNGs/{race.event['EventDate'].year} {race.event['EventName']} Lap Time Distributions.png", dpi=450)
     plt.tight_layout()
     plt.show()
 
@@ -748,7 +839,7 @@ def race_diff(team_1, team_2, year):
     plt.show()
 
 
-def race_distance(session, driver_1, driver_2):
+def race_distance(session, top=10):
     """
          Plots the race time diff between 2 drivers, each lap
 
@@ -758,106 +849,48 @@ def race_distance(session, driver_1, driver_2):
          driver_2 (str): Driver 2
     """
 
-    laps_driver_1 = session.laps.pick_driver(driver_1).reset_index()
-    laps_driver_2 = session.laps.pick_driver(driver_2).reset_index()
-
-    laps_driver_1_box = pd.isna(laps_driver_1['PitInTime'])
-    filtered_laps_driver_1 = laps_driver_1[~laps_driver_1_box]
-    pit_laps_driver_1 = np.array(filtered_laps_driver_1.index + 1)
-
-    laps_driver_2_box = pd.isna(laps_driver_2['PitInTime'])
-    filtered_laps_driver_2 = laps_driver_2[~laps_driver_2_box]
-    pit_laps_driver_2 = np.array(filtered_laps_driver_2.index + 1)
-
-    laps_diff = []
-    laps = []
-    for i in range(len(laps_driver_1)):
-        laps_diff.append(laps_driver_1['Time'][i].total_seconds() - laps_driver_2['Time'][i].total_seconds())
-        laps.append(i + 1)
-
-    laps_diff = [0 if math.isnan(x) else x for x in laps_diff]
-    progressive_sum = laps_diff
-    colors = ['red']
-    for i in range(len(progressive_sum) - 1):
-        if progressive_sum[i] < progressive_sum[i + 1]:
-            colors.append('green')
+    drivers = session.results['Abbreviation'].values[:top]
+    laps = session.total_laps
+    diff = [[] for _ in range(len(drivers))]
+    leader_laps = session.laps.pick_driver(drivers[0])
+    leader_laps = leader_laps['Time'].dt.total_seconds().reset_index(drop=True)
+    driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
+                     abv, driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
+    bar_colors = [driver_colors[d] for d in drivers]
+    laps_array = [i for i in range(1, laps + 1)]
+    sc_laps = session.laps.pick_driver(drivers[0])['TrackStatus']
+    sc_laps = sc_laps.astype(str).str.contains('4|5|6|7')
+    s_int = sc_laps.astype(int)
+    cumsum = s_int.groupby((s_int != s_int.shift()).cumsum()).cumsum()
+    sc_laps = cumsum[cumsum > 0].index.values + 1
+    for i in range(len(drivers)):
+        diff[i] = []
+        d_laps = session.laps.pick_driver(drivers[i])
+        d_laps = d_laps['Time'].dt.total_seconds().reset_index(drop=True)
+        if i == 0:
+            diff[i].extend([0] * laps)
         else:
-            colors.append('red')
-    fig, ax = plt.subplots(figsize=(37, 8))
-    # Bar Plot
-    bars = plt.bar(laps, progressive_sum, color=colors, width=0.9)
+            delta_diff = d_laps - leader_laps
+            diff[i].extend(delta_diff.values)
+    fig, ax = plt.subplots(figsize=(8, 8))
+    for i in range(len(diff)):
+        plt.plot(laps_array, diff[i], color=bar_colors[i], label=drivers[i])
+    for i in sc_laps:
+        ax.axvline(x=i, facecolor='yellow', alpha=0.3)
 
-    # Annotate bars with their values
-    for bar in bars:
-        yval = bar.get_height()
-        offset = 0.7 if yval > 0 else -0.7  # This will adjust the position above or below the bar. Modify the value if needed.
-        plt.annotate(
-            f'{yval:.2f}',  # Format to 2 decimal places, modify as needed
-            (bar.get_x() + bar.get_width() / 2, yval + offset),  # Adjusted the y-coordinate here
-            ha='center',  # horizontal alignment
-            va='center',  # vertical alignment
-            fontsize=8  # font size
-        )
-    # Create custom legend
-
-    legend_elements = [Patch(facecolor='green', edgecolor='green', label=f'{driver_2} Faster'),
-                       Patch(facecolor='red', edgecolor='red', label=f'{driver_1} Faster')]
-    plt.legend(handles=legend_elements, loc='best', fontsize=20)
-
-    # Given offset for overlapping text
-    text_offset = 3
-
-    for pit_lap in pit_laps_driver_1:
-        end_y = progressive_sum[pit_lap - 1]
-
-        # If end_y is positive or zero, adjust the start_y and dy to ensure arrow's head ends at y=0
-        if end_y >= 0:
-            start_y = -15
-            dy = 13
-            text_y = -16
-        else:
-            start_y = end_y - 15
-            dy = 10
-            text_y = start_y - 1.5
-
-        # Check for overlap and adjust
-        if pit_lap in pit_laps_driver_2:
-            text_y -= text_offset
-
-        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='white')
-        plt.text(pit_lap, text_y, f'{driver_1} Pit Stop', color='white', fontsize=11, ha='center')
-
-    for pit_lap in pit_laps_driver_2:
-        end_y = progressive_sum[pit_lap - 1]
-
-        # If end_y is positive or zero, adjust the start_y and dy to ensure arrow's head ends at y=0
-        if end_y >= 0:
-            start_y = -15
-            dy = 13
-            text_y = -16.25
-        else:
-            start_y = end_y - 15
-            dy = 10
-            text_y = start_y - 1.25
-
-        if pit_lap + 1 in pit_laps_driver_1 and pit_lap + 1 not in pit_laps_driver_2:
-            text_y -= 2
-
-        plt.arrow(pit_lap, start_y, 0, dy, head_width=0.15, head_length=2, color='white')
-        plt.text(pit_lap, text_y, f'{driver_2} Pit Stop', color='white', fontsize=11, ha='center')
-
-    plt.xlabel('Laps', fontsize=20)
-    plt.ylabel('Progressive Time Difference (seconds)', fontsize=20)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.gca().invert_yaxis()
+    plt.xlabel('Laps', font='Fira Sans', fontsize=16)
+    plt.ylabel('Progressive Time Difference (seconds)', font='Fira Sans', fontsize=16)
+    plt.xticks(font='Fira Sans', fontsize=14)
+    plt.yticks(font='Fira Sans', fontsize=14)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.title(
-        f'Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}',
-        fontsize=20)
-    plt.grid(True, axis='y')
-    ax.set_yticks([20, 15, 10, 5, 0, -5, -10, -15, -20])
-
-    # Display the plot
+        f'Progressive Time Difference between in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}',
+        font='Fira Sans', fontsize=17)
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend(prop=get_font_properties('Fira Sans', 12), loc='lower left', fontsize='large')
     plt.tight_layout()  # Adjusts plot parameters for a better layout
     plt.savefig(
-        f'../PNGs/Progressive Time Difference between {driver_1} and {driver_2} in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}',
+        f'../PNGs/Progressive Time Difference between in {session.event["EventName"] + " " + str(session.event["EventDate"].year)}',
         dpi=400)
     plt.show()

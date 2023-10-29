@@ -21,6 +21,7 @@ session = None
 previous_input = ""
 
 if __name__ == '__main__':
+
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
         func_name = func.split('(')[0]
@@ -35,11 +36,9 @@ if __name__ == '__main__':
                 session = result
             if result is not None:
                 print(f"Result: {result}")
-        except IndexError as e:
-            traceback.print_exc()
         except Exception as e:
-            print(f"An error occurred: {str(e)}")
-
+            # traceback.print_exc()
+            print(e)
 
 
 

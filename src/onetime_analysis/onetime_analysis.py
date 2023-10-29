@@ -1127,15 +1127,13 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
-
+    drivers.pop('PER')
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
-    drivers.remove('OCO')
-    drivers.remove('PIA')
     circuit_speed = {}
     colors_dict = {}
 
     for driver in drivers:
-        d_laps = session.laps.pick_driver(driver).pick_quicklaps()
+        d_laps = session.laps.pick_driver(driver)
         if fastest_lap:
             d_laps = session.laps.pick_driver(driver).pick_fastest()
         if len(d_laps) > 0:
@@ -1144,7 +1142,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
                     d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
                 top_speed = max(d_laps.telemetry['Speed'])
             else:
-                top_speed = round(min(d_laps[column]).total_seconds(), 3)
+                top_speed = round(min(d_laps[column].dropna()).total_seconds(), 3)
             if fastest_lap:
                 team = d_laps['Team'].lower()
             else:
@@ -1569,7 +1567,7 @@ def avg_driver_position(driver, team, year, session='Q'):
 
     ergast = Ergast()
     if session == 'Q':
-        data = My_Ergast().get_qualy_results([2023])
+        data = ergast.get_qualifying_results(season=year, limit=1000)
     else:
         data = ergast.get_race_results(season=year, limit=1000)
 

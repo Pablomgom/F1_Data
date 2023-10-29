@@ -1,5 +1,6 @@
 from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps, \
-    winning_positions_per_circuit, q3_appearances, results_from_pole
+    winning_positions_per_circuit, q3_appearances, results_from_pole, highest_qualy, last_result_grid_pos
+from src.general_analysis.race_plots import long_runs_FP2_v2
 
 
 def get_funcs():
@@ -82,6 +83,9 @@ def get_funcs():
         'winning_positions_per_circuit': winning_positions_per_circuit,
         'q3_appearances': q3_appearances,
         'results_from_pole': results_from_pole,
+        'highest_qualy': highest_qualy,
+        'long_runs_FP2_v2': long_runs_FP2_v2,
+        'last_result_grid_pos': last_result_grid_pos,
         'help': help
     }
 

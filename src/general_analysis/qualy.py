@@ -283,7 +283,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
 
     delta_time = adjust_to_final(delta_time, final_value)
 
-    fig, ax = plt.subplots(nrows=4, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1, 1]}, dpi=150)
+    fig, ax = plt.subplots(nrows=4, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1, 1.25]}, dpi=150)
 
     if lap is None:
         ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
@@ -384,7 +384,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
 
     # Display the plot
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=150)
+    plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=450)
     plt.show()
 
 
@@ -766,7 +766,7 @@ def track_dominance(session, team_1, team_2):
     legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
                     Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
 
-    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='upper left', fontsize='x-large')
+    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='lower left', fontsize='x-large')
 
     plt.suptitle(f"TRACK DOMINANCE {team_1} vs {team_2}:"
                  f" {str(session.session_info['StartDate'].year) + ' ' + session.event.EventName} \n", font='Fira Sans',
