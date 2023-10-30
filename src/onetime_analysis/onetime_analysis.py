@@ -609,9 +609,9 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     colors = ['red', 'blue', 'green']  # Assuming 3 clusters; extend this list if there are more clusters
 
     for i, name in enumerate(circuits):
-        ax.scatter(principal_components[i, 0], principal_components[i, 1], color=colors[y_kmeans[i]], s=100)
+        ax.scatter(principal_components[i, 0], principal_components[i, 1], color=colors[y_kmeans[i]], s=90)
         texts.append(ax.text(principal_components[i, 0], principal_components[i, 1], name,
-                             font='Fira Sans', fontsize=13))
+                             font='Fira Sans', fontsize=11))
 
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
         ax.scatter(center[0], center[1], s=300, c='#FF8C00')

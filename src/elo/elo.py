@@ -281,6 +281,7 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
     if only_print:
         with open("elo/elo_data.pkl", "rb") as file:
             drivers = pickle.load(file)
+
     else:
         races = []
         races_name = []
