@@ -26,6 +26,10 @@ def parse_args(args_input, function_map, session):
                 value = True
             elif value == 'None':
                 value = None
+            elif value[0] == '[':
+                value = value.replace('[', '').replace(']','')
+                list_values = value.split(',')
+                value = [val for val in list_values]
             else:
                 try:
                     float_value = float(value)

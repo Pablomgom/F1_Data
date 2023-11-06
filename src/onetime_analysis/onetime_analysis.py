@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 from src.plots.plots import round_bars
 from src.utils.utils import append_duplicate_number, update_name, get_quartiles
 from src.variables.variables import team_colors_2023, driver_colors_2023, point_system_2010, point_system_2009, \
-    point_systems, driver_colors_historical
+    point_systems, driver_colors_historical, team_colors
 
 
 def get_DNFs_team(team, start, end):
@@ -220,7 +220,10 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=No
             d2_avg_pos, median_d2_pos = avg_driver_position(d2, d2_team, year)
         else:
             d2_avg_pos, median_d2_pos = avg_driver_position(d2, team, year)
-        d1_race_results = ergast.get_race_results(season=year, driver=d1, limit=1000).content
+        my_ergast = My_Ergast()
+        d1_race_results = my_ergast.get_race_results([year]).content
+        for idx, race in enumerate(d1_race_results):
+            d1_race_results[idx] = race[race['familyName'] == d1]
         d1_code = d1_race_results[0]['driverCode'].values[0]
         d1_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d1_race_results
                                            if re.search(r'(Finished|\+)', i['status'].max())])
@@ -230,8 +233,11 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=No
 
         d1_victories = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] == 1])
         d1_podiums = len([i['position'].values[0] for i in d1_race_results if i['position'].values[0] <= 3])
+        d1_points = sum([i['points'].values[0] for i in d1_race_results])
 
-        d2_race_results = ergast.get_race_results(season=year, driver=d2, limit=1000).content
+        d2_race_results = my_ergast.get_race_results([year]).content
+        for idx, race in enumerate(d2_race_results):
+            d2_race_results[idx] = race[race['familyName'] == d2]
         d2_code = d2_race_results[0]['driverCode'].values[0]
         d2_mean_race_pos_no_dnf = np.mean([i['position'].values[0] for i in d2_race_results
                                            if re.search(r'(Finished|\+)', i['status'].max())])
@@ -241,9 +247,7 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=No
 
         d2_victories = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] == 1])
         d2_podiums = len([i['position'].values[0] for i in d2_race_results if i['position'].values[0] <= 3])
-
-        d1_points = ergast.get_driver_standings(season=year, driver=d1, limit=1000).content[0]['points'].values[0]
-        d2_points = ergast.get_driver_standings(season=year, driver=d2, limit=1000).content[0]['points'].values[0]
+        d2_points = sum([i['points'].values[0] for i in d2_race_results])
 
         d1_percentage = round((d1_points / (d1_points + d2_points)) * 100, 2)
         d2_percentage = round((d2_points / (d1_points + d2_points)) * 100, 2)
@@ -382,16 +386,18 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     teams = set(data.content[0]['constructorName'])
     team_points = pd.DataFrame(columns=['Team', 'Points', 'Circuit'])
     yticks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45]
+    if year < 2010:
+        yticks = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
     if session == 'Q':
         data = ergast.get_qualifying_results(season=year, limit=1000)
         yticks = [1, 3, 6, 9, 12, 15, 18, 20]
-        title = 'Average qualy position in the last 4 GPs'
+        title = f'{year} Average qualy position in the last 4 GPs'
         reverse = False
     else:
         if predict:
-            title = 'Average points prediction in the last 4 GPs'
+            title = f'{year} Average points prediction in the last 4 GPs'
         else:
-            title = 'Average points in the last 4 GPs'
+            title = f'{year} Average points in the last 4 GPs'
 
     circuits = np.array(data.description['circuitId'])
     circuits = [i.replace('_', ' ').title() for i in circuits]
@@ -412,7 +418,8 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         ct = ct.cumsum(axis=1)
     else:
         ct = ct.rolling(window=4, min_periods=1, axis=1).mean()
-    ordered_colors = [team_colors_2023[team] for team in ct.index]
+    colors_dict = team_colors.get(year, team_colors_2023)
+    ordered_colors = [colors_dict[team] for team in ct.index]
     transposed = ct.transpose()
     if predict:
         forecasted_data = []
@@ -703,7 +710,9 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     fig, ax1 = plt.subplots(figsize=plot_size)
 
     if round is not None and groupBy == 'Driver':
+        pitstops = pitstops.sort_values(by='Lap', ascending=True)
         pitstops['Driver'] = pitstops['Driver'].apply(update_name)
+        pitstops = pitstops.sort_values(by='Time', ascending=True)
 
     if exclude is not None:
         pitstops = pitstops[~pitstops['Driver'].isin(exclude)]
@@ -1127,7 +1136,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
 
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
-    drivers.pop('PER')
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
     circuit_speed = {}
     colors_dict = {}
@@ -1567,7 +1575,8 @@ def avg_driver_position(driver, team, year, session='Q'):
 
     ergast = Ergast()
     if session == 'Q':
-        data = ergast.get_qualifying_results(season=year, limit=1000)
+        my_ergast = My_Ergast()
+        data = my_ergast.get_qualy_results([year])
     else:
         data = ergast.get_race_results(season=year, limit=1000)
 
@@ -1632,7 +1641,7 @@ def avg_driver_position(driver, team, year, session='Q'):
             print(f'{i + 1}: {driver} - {avg_pos[i]} ({diff}) from {pre_pos}')
     else:
         for gp in data.content:
-            session_data = gp[(gp['driverId'] == driver) & (gp['constructorId'] == team)]
+            session_data = gp[(gp['familyName'] == driver) & (gp['constructorRef'] == team)]
             if len(session_data) > 0:
                 position.append(session_data['position'].values[0])
             else:

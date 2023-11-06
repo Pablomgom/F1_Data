@@ -272,17 +272,12 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     final_value = ((d2_lap['LapTime'] - d1_lap['LapTime']).total_seconds())
 
     def adjust_to_final(series, final_value):
-        # Calculate the adjustment required for each element
         diff = final_value - series.iloc[-1]
         adjustments = [diff * (i + 1) / len(series) for i in range(len(series))]
-
-        # Adjust the original series
         adjusted_series = series + adjustments
-
         return adjusted_series
 
     delta_time = adjust_to_final(delta_time, final_value)
-
     fig, ax = plt.subplots(nrows=4, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1, 1.25]}, dpi=150)
 
     if lap is None:
@@ -320,7 +315,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
                     f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
                     font='Fira Sans', fontsize=18, y=1.1)
 
-    twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[0].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     twin.set_ylabel('Time diff (s)')
 
     legend_elements = [
@@ -328,15 +323,10 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
         Line2D([0], [0], color='red', lw=2, label=f'{driver_2} ahead')
     ]
 
-    # Get the legend handles and labels from the first axes
     handles1, labels1 = ax[0].get_legend_handles_labels()
-
-    # Combine the handles and labels
     handles = handles1 + legend_elements
     labels = labels1 + [entry.get_label() for entry in legend_elements]
-
-    # Create a single legend with the handles and labels
-    ax[0].legend(handles, labels, loc='lower left')
+    ax[0].legend(handles, labels, loc='lower right')
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],
@@ -381,7 +371,6 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
-
     # Display the plot
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=450)
@@ -802,8 +791,6 @@ def qualy_margin(circuit, start=None, end=None):
         q_cir = q['circuitRef'].min()
         if q_cir == circuit:
             year = q['year'].min()
-            if year == 2015:
-                a = 1
             try:
                 pole_time = q['q3'].values[0]
                 second_time = q['q3'].values[1]
@@ -813,6 +800,8 @@ def qualy_margin(circuit, start=None, end=None):
                 try:
                     pole_time = q['q2'].values[0]
                     second_time = q['q2'].values[1]
+                    if pd.isna(pole_time) or pd.isna(pole_time):
+                        raise Exception
                 except:
                     pole_time = q['q1'].values[0]
                     second_time = q['q1'].values[1]

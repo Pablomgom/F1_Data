@@ -1,6 +1,6 @@
 from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps, \
     winning_positions_per_circuit, q3_appearances, results_from_pole, highest_qualy, last_result_grid_pos
-from src.general_analysis.race_plots import long_runs_FP2_v2
+from src.general_analysis.race_plots import long_runs_FP2_v2, teams_diff_session
 
 
 def get_funcs():
@@ -86,41 +86,12 @@ def get_funcs():
         'highest_qualy': highest_qualy,
         'long_runs_FP2_v2': long_runs_FP2_v2,
         'last_result_grid_pos': last_result_grid_pos,
+        'teams_diff_session': teams_diff_session,
         'help': help
     }
 
     return FUNCTION_MAP
 
-
-team_colors = {
-    "McLaren": "#737474",  # Silver and Black, highlighted color is Rocket Red (Orange)
-    "BMW Sauber": "#DFF5FF",  # Mainly White, Blue for the logo
-    "Ferrari": "#FF0000",  # Traditional Ferrari Racing Red
-    "Williams": "#1700FF",  # Blue and White, blue being the dominant color
-    "Toyota": "#FF7B7B",  # Red and White, Red being the dominant color
-    "Renault": "#FDF503",  # Yellow and Blue, Yellow being the dominant color
-    "Red Bull": "#6271CF",  # Dark Blue, for Red Bull's logo
-    "Super Aguri": "#FFE9E9",  # Burgundy Red
-    "Toro Rosso": "#07226A",  # Red, akin to the parent team (Red Bull) but darker
-    "Honda": "#009F8E",  # Earth Dreams livery, no specific color scheme
-    "Spyker": "#FF6600",  # Dutch Orange
-    "Force India": "#57ff24",
-    "Brawn": "#C8FFCE",
-    "Mercedes": "#9EA799",
-    "Sauber": "#D6D6D6",
-    "Virgin": "#B14747",
-    "Lotus": "#0C5A00",
-    "HRT": "#3B0000",
-    "Lotus F1": "#FDF503",
-    "Caterham": "#0C5A00",
-    "Marussia": "#B14747",
-    "Haas F1 Team": "#FFFFFF",
-    "Haas": "#FFFFFF",
-    "Manor Marussia": "#B14747",
-    "Alfa Romeo": "#510000",
-    "Racing Point": "#FF7AED",
-    "AlphaTauri": "#07226A",
-}
 
 team_colors_2023 = {
     'Mercedes': '#00d2be',
@@ -136,6 +107,42 @@ team_colors_2023 = {
     'Haas F1 Team': '#ffffff',
     'Williams': '#005aff'
 }
+
+
+team_colors_2009 = {
+    'Brawn': '#E4FFD7',
+    'Ferrari': '#dc0000',
+    'Red Bull': '#0600ef',
+    'McLaren': '#C0C0C0',
+    'BMW Sauber': '#0000FF',
+    'Renault': '#FFCC00',
+    'Toyota': '#FF8686',
+    'Toro Rosso': '#00004D',
+    'Force India': '#FF6600',
+    'Williams': '#000080'
+}
+
+team_colors_2008 = {
+    'Honda': '#E4FFD7',
+    'Ferrari': '#dc0000',
+    'Red Bull': '#0600ef',
+    'McLaren': '#C0C0C0',
+    'BMW Sauber': '#0000FF',
+    'Renault': '#FFCC00',
+    'Toyota': '#FF8686',
+    'Toro Rosso': '#00004D',
+    'Force India': '#FF6600',
+    'Williams': '#000080',
+    'Super Aguri': '#FFFFFF'
+}
+
+team_colors = {
+    2008: team_colors_2008,
+    2009: team_colors_2009,
+    2023: team_colors_2023
+}
+
+
 
 driver_colors_2023 = {
     'BOT': '#900000',

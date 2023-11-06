@@ -22,24 +22,26 @@ previous_input = ""
 
 if __name__ == '__main__':
 
-    while True:
-        func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
-        func_name = func.split('(')[0]
-        if func_name.lower() == 'exit':
-            print("Exiting...")
-            sys.exit()
-        try:
-            args_input = func.split('(')[1].replace(')', '')
-            args, kwargs = parse_args(args_input, FUNCTION_MAP, session)
-            result = FUNCTION_MAP[func_name](*args, **kwargs)
-            if func_name.lower() == 'load_session':
-                session = result
-            if result is not None:
-                print(f"Result: {result}")
-        except Exception as e:
-            # traceback.print_exc()
-            print(e)
+    # while True:
+    #     func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
+    #     func_name = func.split('(')[0]
+    #     if func_name.lower() == 'exit':
+    #         print("Exiting...")
+    #         sys.exit()
+    #     try:
+    #         args_input = func.split('(')[1].replace(')', '')
+    #         args, kwargs = parse_args(args_input, FUNCTION_MAP, session)
+    #         result = FUNCTION_MAP[func_name](*args, **kwargs)
+    #         if func_name.lower() == 'load_session':
+    #             session = result
+    #         if result is not None:
+    #             print(f"Result: {result}")
+    #     except Exception as e:
+    #         traceback.print_exc()
+    #         # print(e)
 
+    My_Ergast().insert_qualy_data(2023, 20)
 
-
-
+    a = My_Ergast().get_qualy_results([2023])
+    b = My_Ergast().get_race_results([2023])
+    c = 1

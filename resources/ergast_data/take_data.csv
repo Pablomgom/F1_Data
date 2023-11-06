@@ -1,21 +1,21 @@
 Pos,No,Driver,Constructor,q1,q2,q3,Grid
-1,16,Charles Leclerc,Ferrari,1:18.401,1:17.901,1:17.166,1
-2,55,Carlos Sainz,Ferrari,1:18.755,1:18.382,1:17.233,2
-3,1,Max Verstappen,Red Bull,1:18.099,1:17.625,1:17.263,3
-4,3,Daniel Ricciardo,AlphaTauri,1:18.341,1:17.706,1:17.382,4
-5,11,Sergio Pérez,Red Bull,1:18.553,1:18.124,1:17.423,5
-6,44,Lewis Hamilton,Mercedes,1:18.677,1:17.571,1:17.454,6
-7,81,Oscar Piastri,McLaren,1:18.241,1:17.874,1:17.623,7
-8,63,George Russell,Mercedes,1:18.893,1:17.673,1:17.674,8
-9,77,Valtteri Bottas,Alfa Romeo,1:18.429,1:18.016,1:18.032,9
-10,24,Guanyu Zhou,Alfa Romeo,1:19.016,1:18.440,1:18.050,10
-11,10,Pierre Gasly,Alpine,1:18.945,1:18.521,,11
-12,27,Nico Hülkenberg,Haas,1:18.969,1:18.524,,12
-13,14,Fernando Alonso,Aston Martin,1:18.848,1:18.738,,13
-14,23,Alexander Albon,Williams,1:18.828,1:19.147,,14
-15,22,Yuki Tsunoda,AlphaTauri,1:18.890,,,191
-16,31,Esteban Ocon,Alpine,1:19.080,,,15
-17,20,Kevin Magnussen,Haas,1:19.163,,,16
-18,18,Lance Stroll,Aston Martin,1:19.227,,,17
-19,4,Lando Norris,McLaren,1:21.554,,,18
-20,2,Logan Sargeant,Williams,,,,20
+1,1,Max Verstappen,Red Bull,1:10.436,1:10.162,1:10.727,1
+2,16,Charles Leclerc,Ferrari,1:10.472,1:10.303,1:11.021,2
+3,18,Lance Stroll,Aston Martin,1:10.551,1:10.375,1:11.344,3
+4,14,Fernando Alonso,Aston Martin,1:10.557,1:10.237,1:11.387,4
+5,44,Lewis Hamilton,Mercedes,1:10.604,1:10.266,1:11.469,5
+6,63,George Russell,Mercedes,1:10.340,1:10.316,1:11.590,8
+7,4,Lando Norris,McLaren,1:10.623,1:10.021,1:11.987,6
+8,55,Carlos Sainz,Ferrari,1:10.624,1:10.254,1:11.989,7
+9,11,Sergio Pérez,Red Bull,1:10.668,1:10.219,1:12.321,9
+10,81,Oscar Piastri,McLaren,1:10.519,1:10.330,,10
+11,27,Nico Hülkenberg,Haas,1:10.475,1:10.547,,11
+12,31,Esteban Ocon,Alpine,1:10.763,1:10.562,,14
+13,10,Pierre Gasly,Alpine,1:10.793,1:10.567,,15
+14,20,Kevin Magnussen,Haas,1:10.602,1:10.723,,12
+15,23,Alexander Albon,Williams,1:10.621,1:10.840,,13
+16,22,Yuki Tsunoda,AlphaTauri,1:10.837,,,16
+17,3,Daniel Ricciardo,AlphaTauri,1:10.843,,,17
+18,77,Valtteri Bottas,Alfa Romeo,1:10.955,,,18
+19,2,Logan Sargeant,Williams,1:11.035,,,19
+20,24,Guanyu Zhou,Alfa Romeo,1:11.275,,,20
