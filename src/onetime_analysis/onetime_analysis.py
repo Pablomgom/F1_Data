@@ -1703,13 +1703,13 @@ def lucky_drivers(start=None, end=None):
                                 if len(teammate_data) > 0:
                                     for j in range(len(teammate_data)):
                                         status_d2 = teammate_data['status'].values[j]
-                                        if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)',
+                                        if re.search(r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
                                                      status_d1):
-                                            if not re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)',
+                                            if not re.search(r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
                                                              status_d2):
                                                 luck[driver] += 1
                                         else:
-                                            if re.search(r'(Spun off|Accident|Withdrew|Collision|Finished|Did|\+)',
+                                            if re.search(r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
                                                          status_d2):
                                                 luck[driver] -= 1
         print(driver)
