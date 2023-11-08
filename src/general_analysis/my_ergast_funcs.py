@@ -142,10 +142,9 @@ def get_driver_laps(year):
         laps_dict[driver] = [total_laps, completed_laps, percentage]
 
     laps_dict = dict(sorted(laps_dict.items(), key=lambda item: item[1][2], reverse=True))
-    print(laps_dict)
     count = 1
     for d, l in laps_dict.items():
-        print(f'{count}: {d} - {l[2]}%')
+        print(f'{count}: {d} - {l[2]}% ({l[1]}-{l[0]})')
         count += 1
 
 
