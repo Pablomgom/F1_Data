@@ -1,3 +1,5 @@
+import pickle
+
 import fastf1
 import numpy as np
 import pandas as pd
@@ -128,7 +130,7 @@ def simulate_qualy_championship(year, system):
         system (dict): Point system
    """
 
-    qualy_data = Ergast().get_qualifying_results(season=year, limit=1000).content
+    qualy_data = My_Ergast().get_qualy_results([year]).content
     drivers = set([code for df in qualy_data for code in df['driverCode'].values])
     driver_points = {}
     for driver in drivers:
@@ -392,8 +394,10 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
         data = ergast.get_qualifying_results(season=year, limit=1000)
         yticks = [1, 3, 6, 9, 12, 15, 18, 20]
         title = f'{year} Average qualy position in the last 4 GPs'
+        ylabel = 'Qualy position'
         reverse = False
     else:
+        ylabel = 'Total points'
         if predict:
             title = f'{year} Average points prediction in the last 4 GPs'
         else:
@@ -454,7 +458,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     font = FontProperties(family='Fira Sans', size=12)
     plt.title(title, font='Fira Sans', fontsize=28)
     plt.xlabel("Races", font='Fira Sans', fontsize=18)
-    plt.ylabel("Total Points", font='Fira Sans', fontsize=18)
+    plt.ylabel(ylabel, font='Fira Sans', fontsize=18)
     predict_patch = mpatches.Patch(color='green', alpha=0.5, label='Predictions')
     last_values = transposed.iloc[-1].values
     handles, labels = ax.get_legend_handles_labels()
@@ -481,7 +485,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     if session == 'Q':
         ax.invert_yaxis()
     plt.tight_layout()  # Adjusts the plot layout for better visibility
-    plt.savefig(f'../PNGs/AVERAGE POINTS.png', dpi=450)
+    plt.savefig(f'../PNGs/AVERAGE POINTS {year}.png', dpi=450)
     plt.show()
 
 
@@ -613,7 +617,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
     fig, ax = plt.subplots(figsize=(8, 8), dpi=150)
 
     texts = []
-    colors = ['red', 'blue', 'green']  # Assuming 3 clusters; extend this list if there are more clusters
+    colors = ['red', 'blue', 'green', 'purple']  # Assuming 3 clusters; extend this list if there are more clusters
 
     for i, name in enumerate(circuits):
         ax.scatter(principal_components[i, 0], principal_components[i, 1], color=colors[y_kmeans[i]], s=90)
@@ -621,7 +625,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
                              font='Fira Sans', fontsize=11))
 
     for i, center in enumerate(pca.transform(kmeans.cluster_centers_)):
-        ax.scatter(center[0], center[1], s=300, c='#FF8C00')
+        ax.scatter(center[0], center[1], s=300, c='#FF8C00', zorder=-100)
 
     adjust_text(texts, autoalign='xy', ha='right', va='bottom', only_move={'points': 'y', 'text': 'xy'})
 
@@ -629,7 +633,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None):
                     Line2D([0], [0], color='red', lw=4),
                     Line2D([0], [0], color='green', lw=4)]
 
-    plt.legend(legend_lines, ['Low speed tracks', 'Medium speed tracks', 'High speed tracks'],
+    plt.legend(legend_lines, ['High speed tracks', 'Medium speed tracks', 'Low speed tracks'],
                loc='lower center', fontsize='large')
 
     ax.axis('off')
@@ -775,13 +779,17 @@ def get_retirements_per_driver(driver, start=None, end=None):
         for race in total_races:
             race = race[race['familyName'] == driver]
             if not pd.isna(race['status'].max()):
-                if re.search(r'(Spun off|Accident|Collision)', race['status'].max()):
-                    positions = pd.concat([positions, pd.Series(['Accident DNF'])], ignore_index=True)
+                if re.search(r'(Spun off|Accident|Collision|Damage)', race['status'].max()):
+                    positions = pd.concat([positions, pd.Series(['Crash'])], ignore_index=True)
                 elif re.search(r'(Finished|\+)', race['status'].max()):
                     positions = pd.concat([positions, pd.Series(['P' + str(race['position'].max())])],
                                           ignore_index=True)
+
+                    if race['position'].max() == 18:
+                        print(race)
+
                 else:
-                    positions = pd.concat([positions, pd.Series(['Mechanical DNF'])], ignore_index=True)
+                    positions = pd.concat([positions, pd.Series(['Mech DNF'])], ignore_index=True)
         print(i)
 
     positions = positions.value_counts()
@@ -800,21 +808,32 @@ def get_retirements_per_driver(driver, start=None, end=None):
     colormap = cm.get_cmap('tab20', len(top_N))
     colors = [colormap(i) for i in range(len(top_N))]
 
-    def func(pct, allvalues):
-        absolute = int(round(pct / 100. * np.sum(allvalues), 2))
-        return "{:.1f}%\n({:d})".format(pct, absolute)
+    def autopct_generator(values):
+        def inner_autopct(pct):
+            total = sum(values)
+            val = int(round(pct * total / 100.0))
+            for i, (value, label) in enumerate(zip(values, labels)):
+                if val == value:
+                    return "{p:.2f}%\n({v:d})\n{label}".format(p=pct, v=val, label=label)
+            return ""
 
-    top_N.plot.pie(ax=ax, autopct=lambda pct: func(pct, top_N), labels=['' for _ in top_N.index], legend=False,
+        return inner_autopct
+
+    # Generate labels and corresponding values
+    labels = top_N.index.tolist()
+    values = top_N.values
+
+    # Adjust pie plot call
+    top_N.plot.pie(ax=ax, autopct=autopct_generator(values),
+                   labels=['' for _ in labels], legend=False,
                    wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors,
-                   textprops={"color": "black"})  # Set line color to black
+                   textprops={"color": "black", "ha": "center"})
 
-    ax.legend(title="Finish legend", loc="center left", labels=top_N.index, bbox_to_anchor=(0.8, 0.1))
-
-    plt.title(f'{driver} finish history (Total races: {positions.sum()})',
+    plt.title(f'{driver} historical positions (Total races: {positions.sum()})',
               font='Fira Sans', fontsize=16, color='white')
     plt.ylabel('')
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver} finish history', dpi=150)
+    plt.savefig(f'../PNGs/{driver} finish history', dpi=450)
     plt.show()
     print(positions)
 
@@ -1139,7 +1158,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
     circuit_speed = {}
     colors_dict = {}
-
     for driver in drivers:
         d_laps = session.laps.pick_driver(driver)
         if fastest_lap:
@@ -1148,6 +1166,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
             if column == 'Speed':
                 if not DRS:
                     d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
+
                 top_speed = max(d_laps.telemetry['Speed'])
             else:
                 top_speed = round(min(d_laps[column].dropna()).total_seconds(), 3)
@@ -1196,7 +1215,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     round_bars(bars, ax1, colors, y_offset_rounded=0.05)
     annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False)
 
-    ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Country + " " + session.name}',
+    ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Location + " " + session.name}',
                   font='Fira Sans', fontsize=12)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
@@ -1206,7 +1225,6 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     ax1.set_ylabel(y_label, fontweight='bold', fontsize=12)
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)
-
 
     max_value = max(circuit_speed.values())
     ax1.set_ylim(min(circuit_speed.values()) - x_fix, max_value + x_fix)
@@ -1705,12 +1723,14 @@ def lucky_drivers(start=None, end=None):
                                         status_d2 = teammate_data['status'].values[j]
                                         if re.search(r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
                                                      status_d1):
-                                            if not re.search(r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
-                                                             status_d2):
+                                            if not re.search(
+                                                    r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
+                                                    status_d2):
                                                 luck[driver] += 1
                                         else:
-                                            if re.search(r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
-                                                         status_d2):
+                                            if re.search(
+                                                    r'(Spun off|Accident|Withdrew|Collision|Damage|Finished|Did|\+)',
+                                                    status_d2):
                                                 luck[driver] -= 1
         print(driver)
 
@@ -1884,3 +1904,96 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
     plt.savefig(f'../PNGs/Cumulative {y_label}.png', dpi=450)
     plt.tight_layout()
     plt.show()
+
+
+def air_track_temps():
+    plt.rcParams['font.family'] = 'Fira Sans'
+    plt.rcParams['font.sans-serif'] = 'Fira Sans'
+    with open("awards/sessions.pkl", "rb") as file:
+        sessions = pickle.load(file)
+    race_names = []
+    track_temp = []
+    air_temp = []
+    count = 0
+    for s in sessions:
+        if s.event.Location not in race_names:
+            race_names.append(s.event.Location)
+            track_temp.append(min(s.weather_data['TrackTemp']))
+            air_temp.append(min(s.weather_data['AirTemp']))
+            count += 1
+        else:
+            prev_track_temp = track_temp[count - 1]
+            curr_track_temp = min(s.weather_data['TrackTemp'])
+            curr_air_temp = min(s.weather_data['AirTemp'])
+
+            if curr_track_temp < prev_track_temp and curr_track_temp != 0:
+                track_temp[count - 1] = curr_track_temp
+                air_temp[count - 1] = curr_air_temp
+
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=150)
+    ax.scatter(track_temp, air_temp, color='orange')
+
+    texts = []
+    delta = []
+    delta_dict = {}
+    for i, txt in enumerate(race_names):
+        ax.scatter(track_temp[i], air_temp[i], color='orange', s=70)
+        texts.append(ax.text(track_temp[i], air_temp[i], txt, fontname='Fira Sans', color='white', fontsize=11))
+        diff = track_temp[i] - air_temp[i]
+        delta.append(diff)
+        delta_dict[race_names[i]] = diff
+
+    print(f'MEAN: {statistics.mean(delta)}')
+    print(f'MEDIAN: {statistics.median(delta)}')
+
+    delta_dict = dict(sorted(delta_dict.items(), key=lambda item: item[1], reverse=False))
+    for r, d in delta_dict.items():
+        print(f'{r}: {round(d, 2)}')
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # Find the lower bound of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # Find the upper bound of both axes
+    ]
+    ax.plot(lims, lims, color='white', alpha=0.6, zorder=-10)  # Plot the x=y line
+
+    adjust_text(texts)
+    print(race_names)
+    print(track_temp)
+    print(air_temp)
+    plt.title("Minimum Track and Air Temperatures in 2023 season", font='Fira Sans', fontsize=18)
+    plt.xlabel("Track Temperature (°C)", fontname='Fira Sans', fontsize=17)
+    plt.ylabel("Air Temperature (°C)", fontname='Fira Sans', fontsize=17)
+    plt.xticks(fontname='Fira Sans', fontsize=15)
+    plt.yticks(fontname='Fira Sans', fontsize=15)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.savefig('../PNGs/Track temps.png', dpi=450)
+    plt.show()
+
+
+def fp_results(start, end, session=2):
+
+    for i in range(end, start - 1, -1):
+        year_data = fastf1.get_event_schedule(i)
+        year_data = year_data[year_data['EventFormat'] != 'testing']
+        count = 0
+        for j in range(len(year_data), 0, -1):
+            try:
+                practice_times = {}
+                s = fastf1.get_session(i, j, session)
+                s.load()
+                drivers = s.laps['Driver'].unique()
+                for d in drivers:
+                    d_lap = s.laps.pick_driver(d).pick_fastest()['LapTime']
+                    team = s.laps.pick_driver(d).pick_fastest()['Team']
+                    if not pd.isna(d_lap):
+                        practice_times[f'{d} + {team}'] = d_lap
+                practice_times = dict(sorted(practice_times.items(), key=lambda item: item[1], reverse=False))
+                top2 = list(practice_times.keys())[0:2]
+                if 'Ferrari' in top2[0] and 'Ferrari' in top2[1]:
+                    print(s)
+                    if count == 1:
+                        exit(0)
+                    count += 1
+            except:
+               print('No data')

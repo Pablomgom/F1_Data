@@ -1,5 +1,6 @@
 from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates, get_driver_laps, \
-    winning_positions_per_circuit, q3_appearances, results_from_pole, highest_qualy, last_result_grid_pos
+    winning_positions_per_circuit, q3_appearances, results_from_pole, highest_qualy, last_result_grid_pos, \
+    comebacks_in_circuit
 from src.general_analysis.race_plots import long_runs_FP2_v2, teams_diff_session
 
 
@@ -20,7 +21,7 @@ def get_funcs():
         wins_and_poles_circuit, get_pit_stops_ergast, compare_drivers_season, get_circuitos, get_retirements_per_driver, \
         get_retirements, get_topspeed, get_driver_results_circuit, race_qualy_avg_metrics, compare_amount_points, \
         compare_qualy_results, avg_driver_position, full_compare_drivers_season, simulate_season_different_psystem, \
-        get_DNFs_team, simulate_qualy_championship
+        get_DNFs_team, simulate_qualy_championship, air_track_temps, fp_results
     from src.utils.utils import load_session
 
     FUNCTION_MAP = {
@@ -87,6 +88,9 @@ def get_funcs():
         'long_runs_FP2_v2': long_runs_FP2_v2,
         'last_result_grid_pos': last_result_grid_pos,
         'teams_diff_session': teams_diff_session,
+        'air_track_temps': air_track_temps,
+        'comebacks_in_circuit': comebacks_in_circuit,
+        'fp_results': fp_results,
         'help': help
     }
 
@@ -226,5 +230,35 @@ point_system_2010 = {
 point_systems = {
     2009: point_system_2009,
     2010: point_system_2010
+}
+
+driver_team_colors_2010 = {
+    'Fernando Alonso': '#FF2800',  # Ferrari
+    'Felipe Massa': '#FF2800',  # Ferrari
+    'Mark Webber': '#1E41FF',  # Red Bull Racing
+    'Sebastian Vettel': '#1E41FF',  # Red Bull Racing
+    'Vitantonio Liuzzi': '#F596C8',  # Force India
+    'Adrian Sutil': '#F596C8',  # Force India
+    'Robert Kubica': '#FFD700',  # Renault
+    'Vitaly Petrov': '#FFD700',  # Renault
+    'Jenson Button': '#00D2BE',  # McLaren
+    'Lewis Hamilton': '#00D2BE',  # McLaren
+    'Pedro de la Rosa': '#9B0000',  # Sauber
+    'Kamui Kobayashi': '#9B0000',  # Sauber
+    'Nick Heidfeld': '#9B0000',  # Sauber (replaced de la Rosa mid-season)
+    'Jaime Alguersuari': '#00327D',  # Toro Rosso
+    'Sébastien Buemi': '#00327D',  # Toro Rosso
+    'Christian Klien': '#2A2D2F',  # HRT (part of the season)
+    'Bruno Senna': '#2A2D2F',  # HRT
+    'Sakon Yamamoto': '#2A2D2F',  # HRT
+    'Karun Chandhok': '#2A2D2F',  # HRT (part of the season)
+    'Lucas di Grassi': '#FFFFFF',  # Virgin
+    'Timo Glock': '#FFFFFF',  # Virgin
+    'Nico Rosberg': '#B4B4B4',  # Mercedes
+    'Michael Schumacher': '#B4B4B4',  # Mercedes
+    'Nico Hülkenberg': '#0082FA',  # Williams
+    'Rubens Barrichello': '#0082FA',  # Williams
+    'Heikki Kovalainen': '#006F62',  # Lotus Racing
+    'Jarno Trulli': '#006F62',  # Lotus Racing
 }
 

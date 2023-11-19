@@ -66,6 +66,7 @@ def parse_args(args_input, function_map, session):
 
 def load_session(year, gp, race_type):
     session = fastf1.get_session(year, gp, race_type)
+    print(session.api_path)
     session.load()
     return session
 
@@ -120,3 +121,24 @@ def get_quartiles(data):
     avg = sum(data) / size
 
     return q1, median, q3, avg
+
+
+def delta_time(reference_lap, compare_lap):
+
+
+    ref = reference_lap.get_car_data(interpolate_edges=True).add_distance()
+    comp = compare_lap.get_car_data(interpolate_edges=True).add_distance()
+
+    def mini_pro(stream):
+        # Ensure that all samples are interpolated
+        dstream_start = stream[1] - stream[0]
+        dstream_end = stream[-1] - stream[-2]
+        return np.concatenate([[stream[0] - dstream_start], stream, [stream[-1] + dstream_end]])
+
+    ltime = mini_pro(comp['Time'].dt.total_seconds().to_numpy())
+    ldistance = mini_pro(comp['Distance'].to_numpy())
+    lap_time = np.interp(ref['Distance'], ldistance, ltime)
+
+    delta = lap_time - ref['Time'].dt.total_seconds()
+
+    return delta, ref, comp

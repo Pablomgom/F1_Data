@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from fastf1 import plotting
 
-from matplotlib import pyplot as plt, patches, image as mpimg, ticker
+from matplotlib import pyplot as plt, patches, image as mpimg, ticker, patheffects
 import seaborn as sns
 import numpy as np
 
@@ -433,7 +433,12 @@ def long_runs_FP2_v2(race, threshold=1.07):
     driver_laps = pd.DataFrame(columns=['Driver', 'Laps', 'Compound', 'Average'])
     for d in drivers:
         d_laps = race.laps.pick_driver(d)
-        max_stint = d_laps['Stint'].value_counts().index[0]
+        max_stint = d_laps['Stint'].value_counts()
+        max_stint = max_stint.reset_index()
+        max_stint.columns = ['Stint', 'Counts']
+        max_stint = max_stint.sort_values(by=['Counts', 'Stint'], ascending=[False, False])
+        max_stint = max_stint['Stint'].iloc[0]
+        print(f'{d}\n {d_laps[["Stint", "Compound"]].value_counts()}')
         driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold).pick_wo_box()
         stint_index = 1
         try:
@@ -448,7 +453,7 @@ def long_runs_FP2_v2(race, threshold=1.07):
                 'Driver': d,
                 'Laps': [driver_laps_filter['LapTime'].to_list()],
                 'Compound': [driver_laps_filter['Compound'].iloc[0]],
-                'Average': driver_laps_filter['LapTime'].mean()
+                'Average': driver_laps_filter['LapTime'].median()
             })
             driver_laps = pd.concat([driver_laps, df_append], ignore_index=True)
         except:
@@ -493,12 +498,8 @@ def long_runs_FP2_v2(race, threshold=1.07):
     plt.xticks(font='Fira Sans', fontsize=14)
     plt.yticks(font='Fira Sans', fontsize=14)
     font_properties = FontProperties(family='Fira Sans', size='large')
-    plt.title(f'STINTS IN {str(race.event.year) + " " + race.event.Country + " " + race.name}',
+    plt.title(f'LONG RUNS IN {str(race.event.year) + " " + race.event.Country + " " + race.name}',
               font='Fira Sans', fontsize=20)
-    soft_patch = mpatches.Patch(color='red', label='Soft')
-    medium_patch = mpatches.Patch(color='yellow', label='Medium')
-    hard_patch = mpatches.Patch(color='lightgray', label='Hard')
-    ax.legend(handles=[soft_patch, medium_patch, hard_patch], prop=font_properties, loc='upper right')
     sns.despine(left=True, bottom=True)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
     plt.tight_layout()
@@ -571,7 +572,6 @@ def tyre_strategies(session):
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
-
     past_stint = 1
     past_driver = stints.loc[0, 'Driver']
     for i in range(len(stints)):
@@ -585,8 +585,10 @@ def tyre_strategies(session):
         if past_stint != current_stint:
             tyre_laps_prev = stints.loc[i - 1, 'TyreLife']
             tyre_laps = stints.loc[i, 'TyreLife']
+            compound_prev = stints.loc[i - 1, 'Compound']
+            compound = stints.loc[i, 'Compound']
 
-            if tyre_laps_prev + 1 == tyre_laps:
+            if tyre_laps_prev + 1 == tyre_laps and (compound_prev == compound):
                 indexes = stints.index[stints['Driver'] == stints.loc[i, 'Driver']].tolist()
                 indexes = [x for x in indexes if x >= i]
                 for index in indexes:
@@ -619,6 +621,17 @@ def tyre_strategies(session):
                 alpha = 0.65
                 rgb_color = mcolors.to_rgb(plotting.COMPOUND_COLORS[row["Compound"]])
                 color = tuple([x * 0.95 for x in rgb_color])
+            stint_text = str(row["StintLength"])
+            text_x_position = previous_stint_end + row["StintLength"] / 2  # center the text in the stint bar
+            text_y_position = driver  # align vertically with the driver's bar
+            text = ax.text(
+                text_x_position, text_y_position, stint_text,
+                ha='center', va='center', font='Fira Sans', fontsize=9, color='black', alpha=0.75
+            )
+
+            text.set_path_effects([
+                patheffects.withStroke(linewidth=0.8, foreground="white")
+            ])
 
             plt.barh(
                 y=driver,
@@ -635,6 +648,8 @@ def tyre_strategies(session):
             patches[label] = mpatches.Patch(color=color_rgb + (alpha,), label=label)
 
             previous_stint_end += row["StintLength"]
+
+
 
     patches = {k: patches[k] for k in sorted(patches.keys(), key=lambda x: (x.split()[1], x.split()[0]))}
     plt.legend(handles=patches.values(), bbox_to_anchor=(0.5, -0.1), loc='upper center', ncol=2)
@@ -664,7 +679,7 @@ def race_pace_top_10(race, threshold=1.07):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = race.drivers[:10]
-    point_finishers = ['VER', 'NOR', 'ALO', 'SAI', 'GAS', 'HAM', 'TSU', 'SAR', 'HUL']
+    point_finishers = ['VER', 'LEC', 'PIA', 'RUS', 'OCO', 'STR', 'ALB', 'MAG', 'RIC', 'ZHO']
     driver_laps = race.laps.pick_drivers(point_finishers).pick_quicklaps(threshold).pick_wo_box()
     driver_laps = driver_laps.reset_index()
     finishing_order = [race.get_driver(i)["Abbreviation"] for i in point_finishers]
@@ -676,8 +691,8 @@ def race_pace_top_10(race, threshold=1.07):
     mean_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].mean()
     median_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].median()
 
-    # driver_colors = ['#00d2be', '#dc0000', '#FF69B4', '#0600ef', '#900000', '#006f62',
-    #                  '#ffffff', '#2b4562', '#005aff']
+    driver_colors = ['#0600ef', '#dc0000', '#ff8700', '#00d2be', '#FF69B4', '#006f62',
+                     '#005aff', '#cacaca', '#2b4562', '#900000']
 
     sns.violinplot(data=driver_laps,
                    x="Driver",
@@ -713,12 +728,12 @@ def race_pace_top_10(race, threshold=1.07):
         # ax.text(i, min(driver_laps['LapTime(s)']) - 1.3,
         #         f"Average",
         #         font='Fira Sans', fontsize=9, ha='center')
-        ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
-                f"{int(mean_minutes):02d}:{int(mean_seconds):02d}.{int(mean_milliseconds * 1000):03d}",
-                font='Fira Sans', fontsize=9, ha='center')
         # ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
-        #         f"{int(median_minutes):02d}:{int(median_seconds):02d}.{int(median_milliseconds * 1000):03d}",
+        #         f"{int(mean_minutes):02d}:{int(mean_seconds):02d}.{int(mean_milliseconds * 1000):03d}",
         #         font='Fira Sans', fontsize=9, ha='center')
+        ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
+                f"{int(median_minutes):02d}:{int(median_seconds):02d}.{int(median_milliseconds * 1000):03d}",
+                font='Fira Sans', fontsize=9, ha='center')
 
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
              max(driver_laps['LapTime']).total_seconds() + 2)  # change these numbers as per your needs

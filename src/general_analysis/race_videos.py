@@ -24,8 +24,6 @@ def bar_race(year):
     sprints = ergast.get_sprint_results(season=year, limit=1000)
     schedule = ergast.get_race_schedule(season=year, limit=1000)
 
-
-    puntos = {}
     races_df = []
 
     for i in range(len(races.content)):
@@ -47,19 +45,14 @@ def bar_race(year):
     def sort_key(df):
         return df['raceDate'].min(), -df['raceType'].max()
 
-    # Sort the list of dataframes
     races_df.sort(key=sort_key)
 
     all_family_names = set()
     for race in races_df:
         all_family_names.update((race['givenName'] + ' ' + race['familyName']).unique())
 
-    # initialize dictionary
     family_points_dict = {name: [] for name in all_family_names}
-
-    # iterate over the races
     for race in races_df:
-        # add zero points for all family names for current race
         current_race_points = {name: 0.0 for name in all_family_names}
 
         for i in range(len(race)):
@@ -68,8 +61,6 @@ def bar_race(year):
             full_name = given_name + ' ' + family_name
             points = race.loc[i, 'points']
             current_race_points[full_name] += points
-
-        # add points from the current race to the total points
         for name in all_family_names:
             family_points_dict[name].append(current_race_points[name])
 
@@ -83,8 +74,6 @@ def bar_race(year):
         for key in family_points_dict:
 
             sorted_values = sorted(family_points_dict[key], reverse=True)
-
-            # Get the 4th highest value
             if len(sorted_values) >= races_comput:
                 threshold = sorted_values[races_comput - 1]
             else:
@@ -114,10 +103,10 @@ def bar_race(year):
     round = 1
     for i in range(len(races_df)):
         date = races_df[i]['raceDate'].min().strftime("%Y-%m-%d")
-        race_name = races_df[i]['raceName'].min().replace('Sprint','')
+        race_name = races_df[i]['raceName'].min().replace('Sprint','').replace('Grand Prix', 'GP')
         is_sprint = 'Sprint' if races_df[i]['raceType'].min() == 1 else 'Race'
 
-        event = f'Round {round} - {is_sprint} - {race_name} - {date}'
+        event = f'Round {round}: {race_name} - {is_sprint}'
         index.append(event)
 
         if is_sprint == 'Race':
@@ -129,14 +118,12 @@ def bar_race(year):
     for key in family_points_dict:
         family_points_dict[key].append(0.0)
 
-    # Create a sample DataFrame.
     df = pd.DataFrame(family_points_dict, index=index)
 
     filename = f'../MP4/F1 Championship - {races.description.season[0]} Season.mp4'
     title = f'F1 Championship - {races.description.season[0]} Season'
 
     figsize = (1920 / 200, 1080 / 200)
-    # Create a bar chart race, save as .mp4.
     bcr.bar_chart_race(
         df=df.cumsum(),
         filename=filename,
@@ -145,7 +132,7 @@ def bar_race(year):
         period_length=2000,  # 60fps
         orientation='h',
         sort='desc',
-        n_bars=10,
+        n_bars=8,
         fixed_order=False,
         fixed_max=True,
         steps_per_period=100,
@@ -153,26 +140,26 @@ def bar_race(year):
         label_bars=True,
         bar_size=.95,
         period_label={
-            'x': .95,
+            'x': .98,
             'y': .10,
             'ha': 'right',
             'va': 'center',
-            'size': 11
+            'size': 18
         },
         cmap='dark12',
         title=title,
-        title_size='',
-        bar_label_size=11,
-        tick_label_size=11,
+        title_size='xx-large',
+        bar_label_size=15,
+        tick_label_size=15,
         shared_fontdict={
-            'color': '.1'
+            'color': '.1',
+            'family': 'Fira Sans',
         },
         scale='linear',
         writer=None,
         fig=None,
         bar_kwargs={
-            'alpha': .7,
+            'alpha': .9,
         },
         filter_column_colors=True,
     )
-

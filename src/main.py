@@ -5,6 +5,7 @@ from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 
+from src.awards.awards import awards_2023
 from src.ergast_api.my_ergast import My_Ergast
 from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates
 
@@ -39,3 +40,5 @@ if __name__ == '__main__':
         except Exception as e:
             traceback.print_exc()
             # print(e)
+
+    # awards_2023()

@@ -1,5 +1,5 @@
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 from src.ergast_api.my_ergast import My_Ergast
 
 
@@ -201,12 +201,13 @@ def q3_appearances(year):
         print(f'{v} - {d}')
 
 
-def results_from_pole(driver, start=1950, end=2024):
-
+def results_from_pole(driver, start=1950, end=2024, grid=1):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
+    finish_positions = Counter()
+    winners = Counter()
     for race in r.content:
-        pole = race[race['grid'] == 1]
+        pole = race[race['grid'] == grid]
         pole = pole[pole['fullName'] == driver]
         if len(pole) == 1:
             status = pole['status'].values[0]
@@ -214,12 +215,19 @@ def results_from_pole(driver, start=1950, end=2024):
                 finish_pos = f'P{pole["position"].values[0]}'
             else:
                 finish_pos = 'DNF'
+            finish_positions[finish_pos] += 1
+            winner = race[race['position'] == 1]
+            winners[winner['fullName'].iloc[0]] += 1
+            print(f'{pole["year"].values[0]} {pole["raceName"].values[0]}: From P{grid} to {finish_pos}')
 
-            print(f'{pole["year"].values[0]} {pole["raceName"].values[0]}: From P1 to {finish_pos}')
+    for pos, count in sorted(finish_positions.items(), key=lambda x: x[1], reverse=True):
+        print(f'{pos}: {count} times')
+
+    for pos, count in sorted(winners.items(), key=lambda x: x[1], reverse=True):
+        print(f'{pos}: {count} times')
 
 
 def highest_qualy(team, start, end=2024):
-
     ergast = My_Ergast()
     q = ergast.get_qualy_results([i for i in range(start, end)])
     max_pos = 50
@@ -250,3 +258,32 @@ def last_result_grid_pos(driver, grid_pos):
                 print(f'{d_data["year"].iloc[0]} - {d_data["raceName"].iloc[0]}: From '
                       f'{d_data["grid"].iloc[0]} to {d_data["position"].iloc[0]}')
                 break
+
+
+def comebacks_in_circuit(circuit):
+    ergast = My_Ergast()
+    r = ergast.get_race_results([i for i in range(1950, 2023)])
+    comeback_dict = {}
+    for race in r.content:
+        if race["circuitRef"].iloc[0] == circuit:
+            race = race[~race['status'].str.contains('Did')].copy()
+            race.loc[:, 'ogGrid'] = race['grid']
+            race.loc[:, 'grid'] = race['grid'].replace(0, len(race))
+            race.loc[:, 'posChange'] = race['grid'] - race['position']
+            top_3 = sorted(set(race['posChange'].values), reverse=True)[:3]
+            for v in top_3:
+                comeback = race[race['posChange'] == v]
+                for i in range(len(comeback)):
+                    c_data = (f'{comeback["fullName"].iloc[i]}: From P{comeback["grid"].iloc[i]}'
+                              f' to P{comeback["position"].iloc[i]} ({comeback["year"].iloc[i]})//')
+                    if v in comeback_dict:
+                        comeback_dict[v] = comeback_dict[v] + c_data
+                    else:
+                        comeback_dict[v] = c_data
+
+    comeback_dict = dict(sorted(comeback_dict.items(), key=lambda item: item[0], reverse=True))
+    for key, value in comeback_dict.items():
+        value = value.split('//')
+        for v in value:
+            if v != '':
+                print(f'{key} places: {v}')

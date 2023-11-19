@@ -200,10 +200,14 @@ def telemetry_lap(session, d1, lap):
     d1_lap = None
     for i in session.laps.pick_driver(d1).pick_lap(lap).iterlaps():
         d1_lap = i[1]
-
     d1_tel = d1_lap.get_telemetry()
 
-    fig, ax = plt.subplots(nrows=3, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1]}, dpi=150)
+    # d1_tel = session.car_data['16'].add_distance()
+    # d1_tel = d1_tel[13300:13800]
+    # initial_value = d1_tel['Distance'].iloc[0]
+    # d1_tel['Distance'] = d1_tel['Distance'] - initial_value
+
+    fig, ax = plt.subplots(nrows=4, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1, 2]}, dpi=150)
 
     ax[0].plot(d1_tel['Distance'], d1_tel['Speed'],
                color='#FFA500')
@@ -221,6 +225,11 @@ def telemetry_lap(session, d1, lap):
     ax[2].set_xlabel('Distance')
     ax[2].set_ylabel('Brakes')
 
+    ax[3].plot(d1_tel['Distance'], d1_tel['RPM'],
+               color='#FFA500')
+    ax[3].set_xlabel('Distance')
+    ax[3].set_ylabel('RPM')
+
     ax[2].set_yticks([0, 1])  # Assuming the 'Brakes' data is normalized between 0 and 1
     ax[2].set_yticklabels(['OFF', 'ON'])
 
@@ -228,6 +237,7 @@ def telemetry_lap(session, d1, lap):
     ax[0].set_title(f'{d1} LAP {lap} IN {session.event.EventName}', font='Fira Sans', fontsize=18)
     ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
+    ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
 
     plt.tight_layout()
     plt.savefig(f'../PNGs/{d1} lap {lap}.png', dpi=500)
@@ -248,7 +258,6 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     plt.rcParams['axes.facecolor'] = 'black'
     plt.rcParams['figure.facecolor'] = 'black'
 
-    # Set the color of text, labels, and ticks to white
     plt.rcParams['text.color'] = 'white'
     plt.rcParams['axes.labelcolor'] = 'white'
     plt.rcParams['xtick.color'] = 'white'
@@ -267,7 +276,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
         d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
         d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap, lap)
+    delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap)
 
     final_value = ((d2_lap['LapTime'] - d1_lap['LapTime']).total_seconds())
 
@@ -365,13 +374,13 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     ax[3].set_xlabel('Distance')
     ax[3].set_ylabel('Gear')
 
-    ax[3].set_yticks([2, 3, 4, 5, 6, 7, 8])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[3].set_yticks([2, 3, 4, 5, 6, 7, 8])
     ax[3].set_yticklabels(['2', '3', '4', '5', '6', '7', '8'])
 
     ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
-    # Display the plot
+
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=450)
     plt.show()
@@ -460,7 +469,7 @@ def fastest_by_point(session, team_1, team_2, scope='Team'):
 
         lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, None)
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
 
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
 
@@ -676,7 +685,7 @@ def track_dominance(session, team_1, team_2):
 
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2, None)
+    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
 
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
 
