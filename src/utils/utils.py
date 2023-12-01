@@ -1,5 +1,6 @@
 import fastf1
 import numpy as np
+import matplotlib.colors as mcolors
 
 name_count = {}
 
@@ -27,7 +28,7 @@ def parse_args(args_input, function_map, session):
             elif value == 'None':
                 value = None
             elif value[0] == '[':
-                value = value.replace('[', '').replace(']','')
+                value = value.replace('[', '').replace(']', '')
                 list_values = value.split(',')
                 value = [val for val in list_values]
             else:
@@ -69,6 +70,28 @@ def load_session(year, gp, race_type):
     print(session.api_path)
     session.load()
     return session
+
+
+def rotate(xy, angle):
+    rot_mat = np.array([[np.cos(angle), np.sin(angle)],
+                        [-np.sin(angle), np.cos(angle)]])
+    return np.matmul(xy, rot_mat)
+
+
+def plot_turns(circuit_info, track_angle, plt):
+    offset_vector = [500, 0]
+    for _, corner in circuit_info.corners.iterrows():
+        txt = f"{corner['Number']}{corner['Letter']}"
+        offset_angle = corner['Angle'] / 180 * np.pi
+        offset_x, offset_y = rotate(offset_vector, angle=offset_angle)
+        text_x = corner['X'] + offset_x
+        text_y = corner['Y'] + offset_y
+        text_x, text_y = rotate([text_x, text_y], angle=track_angle)
+        track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
+        plt.scatter(text_x, text_y, color='grey', s=300)
+        plt.plot([track_x, text_x], [track_y, text_y], color='grey')
+        plt.text(text_x, text_y, txt,
+                 va='center_baseline', ha='center', size='large', color='white')
 
 
 def call_function_from_module(module_name, func_name, *args, **kwargs):
@@ -124,8 +147,6 @@ def get_quartiles(data):
 
 
 def delta_time(reference_lap, compare_lap):
-
-
     ref = reference_lap.get_car_data(interpolate_edges=True).add_distance()
     comp = compare_lap.get_car_data(interpolate_edges=True).add_distance()
 
@@ -142,3 +163,14 @@ def delta_time(reference_lap, compare_lap):
     delta = lap_time - ref['Time'].dt.total_seconds()
 
     return delta, ref, comp
+
+
+def darken_color(color, amount=0.5):
+
+    try:
+        c = mcolors.cnames[color]
+    except:
+        c = color
+    c = list(mcolors.to_rgb(c))
+    c = [max(0, i - i * amount) for i in c]
+    return c

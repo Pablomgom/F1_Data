@@ -7,10 +7,10 @@ from matplotlib import pyplot as plt
 
 from src.awards.awards import awards_2023
 from src.ergast_api.my_ergast import My_Ergast
-from src.general_analysis.my_ergast_funcs import compare_my_ergast_teammates
+from src.menu.menu import get_funcs
 
 from src.utils.utils import parse_args
-from src.variables.variables import get_funcs
+
 
 setup_mpl(misc_mpl_mods=False)
 fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
@@ -22,6 +22,7 @@ session = None
 previous_input = ""
 
 if __name__ == '__main__':
+
 
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
@@ -41,4 +42,3 @@ if __name__ == '__main__':
             traceback.print_exc()
             # print(e)
 
-    # awards_2023()

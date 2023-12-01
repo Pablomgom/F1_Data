@@ -108,14 +108,14 @@ def longest_stint(sessions):
                             else:
                                 longest_stints_details[t][d][
                                     'SESSION'] = f"{longest_stints_details[t][d]['SESSION']} - {s}"
-
-    # Output the longest stint information for each tyre
+    print('LONGEST STINTS')
     print(longest_stints_per_tyre, longest_stints_details)
 
 
 def gear_changes_max_RPM(sessions):
     g_changes = {}
     max_rpm = {}
+    top_speed = {}
     for s in sessions:
         drivers = s.laps['Driver'].unique()
         print(f'{s}')
@@ -124,19 +124,27 @@ def gear_changes_max_RPM(sessions):
                 d_laps = s.laps.pick_driver(d).get_telemetry()
                 changes = d_laps['nGear'].diff().ne(0).sum()
                 rpm = max(d_laps['RPM'])
+                speed = max(d_laps['Speed'])
                 if d in g_changes:
                     g_changes[d] = g_changes[d] + changes
                 else:
                     g_changes[d] = changes
                 if d not in max_rpm or (d in max_rpm and max_rpm[d]['rpm'] < rpm):
                     max_rpm[d] = {'rpm': rpm, 'session': str(s)}
+                if d not in top_speed or (d in top_speed and top_speed[d]['speed'] < speed):
+                    top_speed[d] = {'speed': speed, 'session': str(s)}
             except KeyError:
                 print(f'No telemetry for {s}')
 
     g_changes = dict(sorted(g_changes.items(), key=lambda item: item[1], reverse=True))
     max_rpm = dict(sorted(max_rpm.items(), key=lambda item: item[1]['rpm'], reverse=True))
+    top_speed = dict(sorted(top_speed.items(), key=lambda item: item[1]['speed'], reverse=True))
+    print('GEAR CHANGES')
     print(g_changes)
+    print('MAX RPM')
     print(max_rpm)
+    print('MAX SPEED')
+    print(top_speed)
 
 
 def pit_stops():
@@ -144,7 +152,9 @@ def pit_stops():
     pit = pit[pit['Year'] == 2023]
     more_time = pit.groupby('Driver')['Time'].sum().sort_values(ascending=False)
     more_stops = pit['Driver'].value_counts().sort_values(ascending=False)
+    print('MORE TIME IN THE PITS')
     print(more_time)
+    print('MORE STOPS')
     print(more_stops)
 
 
@@ -172,8 +182,9 @@ def off_tracks(sessions):
 
     counter = dict(sorted(counter.items(), key=lambda item: item[1], reverse=True))
     spins = dict(sorted(spins.items(), key=lambda item: item[1], reverse=True))
-
+    print('MORE OFF TRACKS')
     print(counter)
+    print('MORE SPINTS')
     print(spins)
 
 
@@ -186,21 +197,20 @@ def slowest_lap(sessions):
             d_laps = s.laps.pick_driver(d)
             for lap in d_laps.iterlaps():
                 if pd.isna(lap[1]['PitOutTime']) and pd.isna(lap[1]['PitInTime']):
-                    stat = str(lap[1].TrackStatus)
-                    if '3' not in stat and '4' not in stat and '5' not in stat and '6' not in stat and '7' not in stat:
-                        try:
-                            avg_speed = lap[1].telemetry['Speed'].mean()
-                            if d not in lap_dict or (d in lap_dict and lap_dict[d]['SPEED'] > avg_speed):
-                                lap_dict[d] = {'SPEED': avg_speed, 'SESSION': s}
-                            print(f'{d} - {avg_speed}')
-                        except KeyError:
-                            print('NO TEL')
-                    else:
-                        print('BAD TRACK STATUS')
-                else:
-                    print(f'{d} IN/OUT LAP')
+                    if not pd.isna(lap[1]['LapTime']):
+                        stat = str(lap[1].TrackStatus)
+                        if '3' not in stat and '4' not in stat and '5' not in stat and '6' not in stat and '7' not in stat:
+                            try:
+                                avg_speed = lap[1].telemetry['Speed'].mean()
+                                if d not in lap_dict or (d in lap_dict and lap_dict[d]['SPEED'] > avg_speed):
+                                    lap_dict[d] = {'SPEED': avg_speed, 'SESSION': s}
+                            except KeyError:
+                                print('NO TEL')
+                            except ValueError:
+                                print('0 TEL LENGHT')
 
     lap_dict = dict(sorted(lap_dict.items(), key=lambda item: item[1]['SPEED'], reverse=False))
+    print('SLOWEST LAP')
     print(lap_dict)
 
 
@@ -208,7 +218,7 @@ def race_pace_deviation(sessions):
     dev = {}
     for s in sessions:
         if s.name == 'Race':
-            drivers = s.laps['Driver'].unique()
+            drivers = s.results[s.results['Status'].astype(str).str.contains(r'Finished|\+', regex=True)]['Abbreviation'].values
             for d in drivers:
                 d_laps = s.laps.pick_driver(d).pick_wo_box()
                 d_laps = d_laps[~d_laps['TrackStatus'].astype(str).str.contains('[34567]')]
@@ -217,7 +227,9 @@ def race_pace_deviation(sessions):
                     dev[d] = {'DEVIATION': deviation, 'SESSION': s}
 
     dev = dict(sorted(dev.items(), key=lambda item: item[1]['DEVIATION'], reverse=False))
-    print(dev)
+    print('RACE PACE DEVIATION')
+    for k, v in dev.items():
+        print(f'{k} - {v}')
 
 
 def times_lapped(sessions):
@@ -248,6 +260,7 @@ def times_lapped(sessions):
                         lapped_count[d] = lapped_count[d] + l_lapped
 
     lapped_count = dict(sorted(lapped_count.items(), key=lambda item: item[1], reverse=True))
+    print('LAPS DONE WHILE LAPPED')
     print(lapped_count)
 
 
@@ -278,6 +291,7 @@ def laps_in_last_place(sessions):
 
 
     times_in_last = dict(sorted(times_in_last.items(), key=lambda item: item[1], reverse=True))
+    print('LAPS IN LAST PLACE')
     print(times_in_last)
 
 
@@ -285,6 +299,7 @@ def more_times_in_p13(sessions):
     times_p13 = {}
     for s in sessions:
         if 'Practice' in s.name:
+            print(s)
             practice_times = {}
             drivers = s.laps['Driver'].unique()
             for d in drivers:
@@ -292,15 +307,19 @@ def more_times_in_p13(sessions):
                 if not pd.isna(d_lap):
                     practice_times[d] = s.laps.pick_driver(d).pick_fastest()['LapTime']
             practice_times = dict(sorted(practice_times.items(), key=lambda item: item[1], reverse=False))
-            driver = list(practice_times.keys())[12]
+            if len(list(practice_times.keys())) >= 13:
+                driver = list(practice_times.keys())[12]
+            else:
+                driver = None
         else:
             driver = s.results[s.results['Position'] == 13]['Abbreviation'].iloc[0]
-        if driver not in times_p13:
+        if driver not in times_p13 and driver is not None:
             times_p13[driver] = 1
-        else:
+        elif driver in times_p13 and driver is not None:
             times_p13[driver] = times_p13[driver] + 1
 
     times_p13 = dict(sorted(times_p13.items(), key=lambda item: item[1], reverse=True))
+    print('MORE TIMES IN P13')
     print(times_p13)
 
 
@@ -309,29 +328,42 @@ def weather(sessions):
     for s in sessions:
         min_air = min(s.weather_data['AirTemp'][s.weather_data['AirTemp'] > 0])
         min_track = min(s.weather_data['TrackTemp'][s.weather_data['TrackTemp'] > 0])
-        temp[s] = {'AIR': min_air, 'TRACK': min_track}
+        min_humidity = min(s.weather_data['Humidity'][s.weather_data['Humidity'] > 0])
+        pressure = min(s.weather_data['Pressure'][s.weather_data['Pressure'] > 0])
+        wind_speed = min(s.weather_data['WindSpeed'][s.weather_data['WindSpeed'] > 0])
+        temp[s] = {'AIR': min_air, 'TRACK': min_track, 'HUM': min_humidity, 'PRE': pressure, 'WIN': wind_speed}
 
     temp = dict(sorted(temp.items(), key=lambda item: item[1]['AIR'], reverse=False))
+    print('AIR TEMP')
     print(temp)
     temp = dict(sorted(temp.items(), key=lambda item: item[1]['TRACK'], reverse=False))
+    print('TRACK TEMP')
+    print(temp)
+    temp = dict(sorted(temp.items(), key=lambda item: item[1]['HUM'], reverse=False))
+    print('min_humidity')
+    print(temp)
+    temp = dict(sorted(temp.items(), key=lambda item: item[1]['PRE'], reverse=False))
+    print('pressure')
+    print(temp)
+    temp = dict(sorted(temp.items(), key=lambda item: item[1]['WIN'], reverse=False))
+    print('wind_speed')
     print(temp)
 
 
 def awards_2023():
-    a = 1
     # sessions = get_all_sessions()
     # with open("awards/sessions.pkl", "wb") as file:
     #     pickle.dump(sessions, file)
-    with open("awards/sessions.pkl", "rb") as file:
-        sessions = pickle.load(file)
-    # gear_changes_max_RPM(sessions)
+    # with open("awards/sessions.pkl", "rb") as file:
+    #     sessions = pickle.load(file)
+    # # gear_changes_max_RPM(sessions)
     # laps(sessions)
-    # pit_stops()
-    # off_tracks(sessions)
-    # slowest_lap(sessions)
+    pit_stops()
+    # # off_tracks(sessions)
+    # # # slowest_lap(sessions)
     # race_pace_deviation(sessions)
-    # longest_stint(sessions)
-    # times_lapped(sessions)
-    # laps_in_last_place(sessions)
-    # more_times_in_p13(sessions)
+    # # longest_stint(sessions)
+    # # times_lapped(sessions)
+    # # laps_in_last_place(sessions)
+    # # more_times_in_p13(sessions)
     # weather(sessions)

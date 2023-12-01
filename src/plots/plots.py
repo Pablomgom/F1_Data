@@ -4,7 +4,7 @@ from matplotlib import patches
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 from matplotlib.font_manager import FontProperties
-import os
+import matplotlib.patheffects as path_effects
 
 
 def lighten_color(hex_color, factor=0.2):
@@ -23,7 +23,6 @@ def lighten_color(hex_color, factor=0.2):
 
 
 def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0):
-    """Create a rectangle path with rounded top."""
     if height >= 0:
         base_y = max(0, y)  # Ensure the starting y value is non-negative
         verts = [
@@ -82,15 +81,13 @@ def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0):
         patches.Path.CLOSEPOLY,
     ]
     path = patches.Path(verts, codes)
-    lighter_color = lighten_color(edgecolor, factor=0.3)
-    return patches.PathPatch(path, edgecolor=lighter_color)
+    lighter_color = lighten_color(edgecolor, factor=0.6)
+    return patches.PathPatch(path, edgecolor=lighter_color, linewidth=1.75)
 
 
 def round_stacked_bars(x, y, width, height, color):
     corner_radius = min(5 * width, height / 2)
 
-    # Calculate the starting point for the curves based on height
-    # Calculate the starting point for the curves based on height
     curve_start_y = y + height * 0.98 - corner_radius
     curve_end_x_left = x + width / 2
     curve_end_x_right = x + width / 2
@@ -165,7 +162,7 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
         i += 1
 
 
-def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate='default', ceil_values=False):
+def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate='default', ceil_values=False, round=0):
     for bar in bars:
         height = bar.get_height()
         if ceil_values:
@@ -175,20 +172,22 @@ def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate=
         else:
             y_offset = y_offset_annotate
         if height != 0:
-            plot_text = text_annotate_bars(height, text_annotate)
-            ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center', va='bottom',
+            plot_text = text_annotate_bars(height, text_annotate, round)
+            text = ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center', va='bottom',
                     font='Fira Sans', fontsize=annotate_fontsize)
+            text.set_path_effects([path_effects.withStroke(linewidth=1, foreground='black')])
         else:
             bar.set_visible(False)
 
 
-def text_annotate_bars(height, original_text):
+def text_annotate_bars(height, original_text, round):
+    height_formatted = f'{height:.{round}f}'
     if original_text == 'default':
-        return f'{height}'
+        return f"{height_formatted}"
     else:
         if height < 0:
             original_text = original_text.replace('+', '')
-        return original_text.replace('{height}', str(height))
+        return original_text.replace('{height}', str(height_formatted))
 
 
 def get_handels_labels(ax):

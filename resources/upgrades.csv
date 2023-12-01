@@ -1,446 +1,463 @@
-Team|Component|Reason|Race|Year
-Red Bull|Floor Edge|Performance|Bahrain|2023
-Red Bull|Front Wing|Performance|Bahrain|2023
-Red Bull|Coke/Engine Cover|Reliability|Bahrain|2023
-Ferrari|Front Suspension|Performance|Bahrain|2023
-Ferrari|Front Wing|Performance|Bahrain|2023
-Ferrari|Coke/Engine Cover|Performance|Bahrain|2023
-Mercedes|Front Wing Endplate|Performance|Bahrain|2023
-Mercedes|Rear Wing|Performance|Bahrain|2023
-Mercedes|Nose|Performance|Bahrain|2023
-Mercedes|Floor Edge|Performance|Bahrain|2023
-Mercedes|Sidepod Inlet|Performance|Bahrain|2023
-Mercedes|Front Suspension|Performance|Bahrain|2023
-Alpine|Front Wing|Performance|Bahrain|2023
-Alpine|Nose|Performance|Bahrain|2023
-Alpine|Front Suspension|Performance|Bahrain|2023
-Alpine|Front Corner|Performance|Bahrain|2023
-Alpine|Floor Body|Performance|Bahrain|2023
-Alpine|Coke/Engine Cover|Performance|Bahrain|2023
-Alpine|Rear Suspension|Performance|Bahrain|2023
-Alpine|Rear Corner|Performance|Bahrain|2023
-Alpine|Beam Wing|Performance|Bahrain|2023
-Alpine|Rear Wing|Performance|Bahrain|2023
-McLaren|Front Wing|Performance|Bahrain|2023
-McLaren|Floor Body|Performance|Bahrain|2023
-McLaren|Front Corner|Circuit Specific|Bahrain|2023
-McLaren|Sidepod Inlet|Performance|Bahrain|2023
-McLaren|Coke/Engine Cover|Performance|Bahrain|2023
-McLaren|Cooling Louvres|Performance|Bahrain|2023
-McLaren|Beam Wing|Performance|Bahrain|2023
-McLaren|Rear Corner|Circuit Specific|Bahrain|2023
-Alfa Romeo|Front Suspension|Performance|Bahrain|2023
-Alfa Romeo|Floor Body|Performance|Bahrain|2023
-Alfa Romeo|Halo|Performance|Bahrain|2023
-Alfa Romeo|Sidepod Inlet|Performance|Bahrain|2023
-Alfa Romeo|Coke/Engine Cover|Performance|Bahrain|2023
-Alfa Romeo|Rear Corner|Performance|Bahrain|2023
-Alfa Romeo|Rear Suspension|Performance|Bahrain|2023
-Alfa Romeo|Beam Wing|Performance|Bahrain|2023
-Aston Martin|Nose|Performance|Bahrain|2023
-Aston Martin|Front Wing|Performance|Bahrain|2023
-Aston Martin|Front Wing Endplate|Performance|Bahrain|2023
-Aston Martin|Front Suspension|Performance|Bahrain|2023
-Aston Martin|Floor Fences|Performance|Bahrain|2023
-Aston Martin|Floor Body|Performance|Bahrain|2023
-Aston Martin|Floor Edge|Performance|Bahrain|2023
-Aston Martin|Diffuser|Performance|Bahrain|2023
-Aston Martin|Sidepod Inlet|Performance|Bahrain|2023
-Aston Martin|Coke/Engine Cover|Performance|Bahrain|2023
-Aston Martin|Cooling Louvres|Circuit Specific|Bahrain|2023
-Aston Martin|Rear Suspension|Performance|Bahrain|2023
-Aston Martin|Rear Corner|Performance|Bahrain|2023
-Aston Martin|Beam Wing|Performance|Bahrain|2023
-Aston Martin|Rear Wing|Performance|Bahrain|2023
-Aston Martin|Rear Wing Endplate|Performance|Bahrain|2023
-Haas|Nose|Performance|Bahrain|2023
-Haas|Front Wing|Performance|Bahrain|2023
-Haas|Front Wing Endplate|Performance|Bahrain|2023
-Haas|Front Suspension|Performance|Bahrain|2023
-Haas|Floor Fences|Performance|Bahrain|2023
-Haas|Floor Body|Performance|Bahrain|2023
-Haas|Front Corner|Circuit Specific|Bahrain|2023
-Haas|Cooling Louvres|Circuit Specific|Bahrain|2023
-Haas|Diffuser|Performance|Bahrain|2023
-Haas|Rear Suspension|Performance|Bahrain|2023
-AlphaTauri|Nose|Performance|Bahrain|2023
-AlphaTauri|Front Wing|Performance|Bahrain|2023
-AlphaTauri|Front Suspension|Performance|Bahrain|2023
-AlphaTauri|Front Corner|Performance|Bahrain|2023
-AlphaTauri|Floor Body|Performance|Bahrain|2023
-AlphaTauri|Floor Edge|Performance|Bahrain|2023
-AlphaTauri|Diffuser|Performance|Bahrain|2023
-AlphaTauri|Sidepod Inlet|Performance|Bahrain|2023
-AlphaTauri|Coke/Engine Cover|Performance|Bahrain|2023
-AlphaTauri|Cooling Louvres|Performance|Bahrain|2023
-AlphaTauri|Rear Wing Endplate|Performance|Bahrain|2023
-Williams|Nose|Performance|Bahrain|2023
-Williams|Front Wing|Performance|Bahrain|2023
-Williams|Front Wing|Performance|Bahrain|2023
-Williams|Front Suspension|Performance|Bahrain|2023
-Williams|Front Corner|Performance|Bahrain|2023
-Williams|Coke/Engine Cover|Performance|Bahrain|2023
-Williams|Rear Wing|Performance|Bahrain|2023
-Williams|Beam Wing|Performance|Bahrain|2023
-Williams|Halo|Performance|Bahrain|2023
-Williams|Floor Fences|Performance|Bahrain|2023
-Williams|Rear Suspension|Performance|Bahrain|2023
-Williams|Rear Corner|Performance|Bahrain|2023
-Williams|Front Suspension|Performance|Bahrain|2023
-Williams|Floor Edge|Performance|Bahrain|2023
-Williams|Diffuser|Performance|Bahrain|2023
-Red Bull|Beam Wing|Circuit Specific|Jeddah|2023
-Red Bull|Rear Wing|Circuit Specific|Jeddah|2023
-Red Bull|Rear Wing Endplate|Circuit Specific|Jeddah|2023
-Ferrari|Front Wing Endplate|Performance|Jeddah|2023
-Ferrari|Floor Edge|Performance|Jeddah|2023
-Ferrari|Beam Wing|Circuit Specific|Jeddah|2023
-Mercedes|Rear Wing|Performance|Jeddah|2023
-Mercedes|Floor Fences|Performance|Jeddah|2023
-Alpine|Beam Wing|Performance|Jeddah|2023
-McLaren|Rear Wing|Circuit Specific|Jeddah|2023
-McLaren|Diffuser|Performance|Jeddah|2023
-Alfa Romeo|Front Wing|Circuit Specific|Jeddah|2023
-Alfa Romeo|Rear Wing|Circuit Specific|Jeddah|2023
-Aston Martin|Front Wing|Circuit Specific|Jeddah|2023
-Aston Martin|Rear Wing|Circuit Specific|Jeddah|2023
-Aston Martin|Beam Wing|Circuit Specific|Jeddah|2023
-Haas|Front Wing|Circuit Specific|Jeddah|2023
-Haas|Rear Wing|Circuit Specific|Jeddah|2023
-AlphaTauri|Rear Wing|Performance|Jeddah|2023
-Williams|Front Wing|Circuit Specific|Jeddah|2023
-Williams|Beam Wing|Circuit Specific|Jeddah|2023
-Williams|Rear Corner|Circuit Specific|Jeddah|2023
-Williams|Front Corner|Circuit Specific|Jeddah|2023
-Williams|Coke/Engine Cover|Circuit Specific|Jeddah|2023
-Red Bull|Front Wing Endplate|Performance|Australia|2023
-Red Bull|Front Wing|Performance|Australia|2023
-Red Bull|Rear Corner|Circuit Specific|Australia|2023
-McLaren|Coke/Engine Cover|Circuit Specific|Australia|2023
-McLaren|Diffuser|Performance|Australia|2023
-Alfa Romeo|Nose|Performance|Australia|2023
-Alfa Romeo|Front Wing|Performance|Australia|2023
-Alfa Romeo|Sidepod Inlet|Performance|Australia|2023
-AlphaTauri|Floor Body|Performance|Australia|2023
-AlphaTauri|Floor Fences|Performance|Australia|2023
-AlphaTauri|Floor Edge|Performance|Australia|2023
-AlphaTauri|Diffuser|Performance|Australia|2023
-Williams|Front Wing|Circuit Specific|Australia|2023
-Williams|Rear Wing Endplate|Performance|Australia|2023
-Red Bull|Sidepod Inlet|Circuit Specific|Baku|2023
-Red Bull|Coke/Engine Cover|Circuit Specific|Baku|2023
-Red Bull|Floor Edge|Performance|Baku|2023
-Red Bull|Floor Fences|Performance|Baku|2023
-Red Bull|Rear Corner|Circuit Specific|Baku|2023
-Ferrari|Rear Wing|Performance|Baku|2023
-Mercedes|Rear Wing Endplate|Performance|Baku|2023
-Mercedes|Front Corner|Circuit Specific|Baku|2023
-Mercedes|Rear Corner|Performance|Baku|2023
-Mercedes|Front Suspension|Performance|Baku|2023
-Alpine|Floor Body|Performance|Baku|2023
-Alpine|Front Suspension|Performance|Baku|2023
-Alpine|Rear Suspension|Performance|Baku|2023
-Alpine|Rear Wing|Circuit Specific|Baku|2023
-Alpine|Front Wing|Circuit Specific|Baku|2023
-McLaren|Floor Body|Performance|Baku|2023
-McLaren|Rear Wing|Circuit Specific|Baku|2023
-McLaren|Rear Wing|Circuit Specific|Baku|2023
-McLaren|Beam Wing|Circuit Specific|Baku|2023
-McLaren|Beam Wing|Circuit Specific|Baku|2023
-McLaren|Beam Wing|Circuit Specific|Baku|2023
-Alfa Romeo|Rear Wing|Circuit Specific|Baku|2023
-Alfa Romeo|Beam Wing|Circuit Specific|Baku|2023
-Alfa Romeo|Front Wing|Circuit Specific|Baku|2023
-Aston Martin|Rear Wing|Circuit Specific|Baku|2023
-Haas|Rear Wing|Circuit Specific|Baku|2023
-AlphaTauri|Front Wing|Circuit Specific|Baku|2023
-AlphaTauri|Coke/Engine Cover|Circuit Specific|Baku|2023
-AlphaTauri|Rear Wing|Circuit Specific|Baku|2023
-AlphaTauri|Beam Wing|Circuit Specific|Baku|2023
-AlphaTauri|Beam Wing|Circuit Specific|Baku|2023
-AlphaTauri|Rear Corner|Performance|Baku|2023
-Williams|Beam Wing|Circuit Specific|Baku|2023
-Williams|Nose|Performance|Baku|2023
-Ferrari|Floor Body|Performance|Miami|2023
-Alfa Romeo|Beam Wing|Circuit Specific|Miami|2023
-Aston Martin|Cooling Louvres|Circuit Specific|Miami|2023
-Haas|Floor Body|Performance|Miami|2023
-AlphaTauri|Front Wing|Performance|Miami|2023
-AlphaTauri|Sidepod Inlet|Performance|Miami|2023
-Red Bull|Rear Wing|Circuit Specific|Monaco|2023
-Red Bull|Front Suspension|Reliability|Monaco|2023
-Ferrari|Rear Corner|Performance|Monaco|2023
-Ferrari|Rear Wing|Circuit Specific|Monaco|2023
-Mercedes|Front Suspension|Performance|Monaco|2023
-Mercedes|Floor Fences|Performance|Monaco|2023
-Mercedes|Sidepod Inlet|Performance|Monaco|2023
-Mercedes|Coke/Engine Cover|Performance|Monaco|2023
-Mercedes|Rear Wing|Performance|Monaco|2023
-Mercedes|Rear Corner|Performance|Monaco|2023
-Alpine|Front Suspension|Performance|Monaco|2023
-Alpine|Sidepod Inlet|Performance|Monaco|2023
-Alpine|Floor Edge|Performance|Monaco|2023
-Alpine|Rear Wing|Circuit Specific|Monaco|2023
-Alpine|Beam Wing|Circuit Specific|Monaco|2023
-McLaren|Front Corner|Circuit Specific|Monaco|2023
-McLaren|Rear Corner|Performance|Monaco|2023
-McLaren|Rear Wing|Circuit Specific|Monaco|2023
-McLaren|Beam Wing|Circuit Specific|Monaco|2023
-Alfa Romeo|Coke/Engine Cover|Performance|Monaco|2023
-Alfa Romeo|Floor Edge|Performance|Monaco|2023
-Alfa Romeo|Floor Body|Performance|Monaco|2023
-Alfa Romeo|Rear Suspension|Performance|Monaco|2023
-Alfa Romeo|Rear Corner|Performance|Monaco|2023
-Alfa Romeo|Rear Wing|Circuit Specific|Monaco|2023
-Alfa Romeo|Beam Wing|Circuit Specific|Monaco|2023
-Alfa Romeo|Cooling Louvres|Circuit Specific|Monaco|2023
-Aston Martin|Front Suspension|Performance|Monaco|2023
-Aston Martin|Front Corner|Performance|Monaco|2023
-Aston Martin|Rear Suspension|Performance|Monaco|2023
-Aston Martin|Rear Corner|Circuit Specific|Monaco|2023
-Aston Martin|Rear Wing|Circuit Specific|Monaco|2023
-Haas|Front Wing|Performance|Monaco|2023
-Haas|Front Suspension|Performance|Monaco|2023
-AlphaTauri|Floor Body|Performance|Monaco|2023
-AlphaTauri|Floor Fences|Performance|Monaco|2023
-AlphaTauri|Floor Edge|Performance|Monaco|2023
-AlphaTauri|Diffuser|Performance|Monaco|2023
-AlphaTauri|Sidepod Inlet|Performance|Monaco|2023
-AlphaTauri|Coke/Engine Cover|Performance|Monaco|2023
-AlphaTauri|Front Suspension|Performance|Monaco|2023
-AlphaTauri|Rear Wing|Performance|Monaco|2023
-AlphaTauri|Rear Wing Endplate|Performance|Monaco|2023
-Williams|Rear Wing|Circuit Specific|Monaco|2023
-Williams|Beam Wing|Circuit Specific|Monaco|2023
-Williams|Front Suspension|Performance|Monaco|2023
-Williams|Front Suspension|Performance|Monaco|2023
-Williams|Front Corner|Circuit Specific|Monaco|2023
-Red Bull|Floor Edge|Performance|Spain|2023
-Red Bull|Diffuser|Performance|Spain|2023
-Ferrari|Rear Wing|Circuit Specific|Spain|2023
-Ferrari|Coke/Engine Cover|Performance|Spain|2023
-Ferrari|Floor Body/Edge|Performance|Spain|2023
-Mercedes|Sidepod Inlet|Performance|Spain|2023
-Mercedes|Diffuser|Performance|Spain|2023
-McLaren|Front Corner|Performance|Spain|2023
-Aston Martin|Front Wing|Performance|Spain|2023
-Aston Martin|Front Wing Endplate|Performance|Spain|2023
-Aston Martin|Nose|Performance|Spain|2023
-Aston Martin|Rear Wing Endplate|Performance|Spain|2023
-Aston Martin|Beam Wing|Performance|Spain|2023
-AlphaTauri|Rear Wing|Performance|Spain|2023
-AlphaTauri|Rear Wing Endplate|Performance|Spain|2023
-Williams|Front Wing|Circuit Specific|Spain|2023
-Williams|Coke/Engine Cover|Circuit Specific|Spain|2023
-Red Bull|Front Wing|Performance|Canada|2023
-Mercedes|Sidepod Inlet|Performance|Canada|2023
-Alpine|Rear Wing|Performance|Canada|2023
-Alpine|Rear Suspension|Performance|Canada|2023
-McLaren|Rear Wing|Performance|Canada|2023
-McLaren|Beam Wing|Performance|Canada|2023
-Alfa Romeo|Rear Corner|Circuit Specific|Canada|2023
-Aston Martin|Coke/Engine Cover|Performance|Canada|2023
-Aston Martin|Cooling Louvres|Circuit Specific|Canada|2023
-Aston Martin|Floor Body|Performance|Canada|2023
-Haas|Rear Wing|Circuit Specific|Canada|2023
-Haas|Cooling Louvres|Circuit Specific|Canada|2023
-Haas|Floor Edge|Performance|Canada|2023
-AlphaTauri|Front Wing|Circuit Specific|Canada|2023
-Williams|Floor Body|Performance|Canada|2023
-Williams|Coke/Engine Cover|Performance|Canada|2023
-Williams|Sidepod Inlet|Performance|Canada|2023
-Williams|Halo|Performance|Canada|2023
-Williams|Rear Suspension|Performance|Canada|2023
-Williams|Rear Corner|Performance|Canada|2023
-Williams|Rear Wing Endplate|Performance|Canada|2023
-Red Bull|Rear Suspension|Performance|Austria|2023
-Ferrari|Front Wing|Performance|Austria|2023
-Ferrari|Floor Body|Performance|Austria|2023
-McLaren|Sidepod Inlet|Performance|Austria|2023
-McLaren|Halo|Performance|Austria|2023
-McLaren|Floor Body|Performance|Austria|2023
-McLaren|Coke/Engine Cover|Performance|Austria|2023
-McLaren|Cooling Louvres|Performance|Austria|2023
-Haas|Nose|Reliability|Austria|2023
-AlphaTauri|Rear Wing|Performance|Austria|2023
-AlphaTauri|Beam Wing|Performance|Austria|2023
-AlphaTauri|Cooling Louvres|Circuit Specific|Austria|2023
-Williams|Floor Fences|Circuit Specific|Austria|2023
-Williams|Front Corner|Circuit Specific|Austria|2023
-Red Bull|Front Corner|Circuit Specific|Silverstone|2023
-Mercedes|Front Wing Endplate|Performance|Silverstone|2023
-Mercedes|Front Wing|Performance|Silverstone|2023
-McLaren|Front Wing|Performance|Silverstone|2023
-McLaren|Nose|Performance|Silverstone|2023
-McLaren|Rear Corner|Performance|Silverstone|2023
-McLaren|Rear Suspension|Performance|Silverstone|2023
-Aston Martin|Front Wing|Circuit Specific|Silverstone|2023
-Aston Martin|Rear Corner|Circuit Specific|Silverstone|2023
-Alpine|Front Wing|Performance|Silverstone|2023
-Alfa Romeo|Floor Body|Performance|Silverstone|2023
-Alfa Romeo|Floor Fences|Performance|Silverstone|2023
-Alfa Romeo|Diffuser|Performance|Silverstone|2023
-Alfa Romeo|Rear Corner|Performance|Silverstone|2023
-Alfa Romeo|Rear Suspension|Performance|Silverstone|2023
-Haas|Front Suspension|Performance|Silverstone|2023
-Haas|Front Corner|Performance|Silverstone|2023
-Haas|Beam Wing|Performance|Silverstone|2023
-Williams|Front Wing|Performance|Silverstone|2023
-Williams|Rear Wing|Circuit Specific|Silverstone|2023
-AlphaTauri|Floor Body|Performance|Silverstone|2023
-AlphaTauri|Floor Fences|Performance|Silverstone|2023
-AlphaTauri|Floor Edge|Performance|Silverstone|2023
-AlphaTauri|Diffuser|Performance|Silverstone|2023
-AlphaTauri|Coke/Engine Cover|Performance|Silverstone|2023
-AlphaTauri|Rear Suspension|Performance|Silverstone|2023
-AlphaTauri|Rear Wing|Performance|Silverstone|2023
-Red Bull|Front Corner|Reliability|Budapest|2023
-Red Bull|Rear Corner|Reliability|Budapest|2023
-Red Bull|Sidepod Inlet|Reliability|Budapest|2023
-Red Bull|Coke/Engine Cover|Reliability|Budapest|2023
-Red Bull|Floor Body|Performance|Budapest|2023
-Ferrari|Front Wing|Circuit Specific|Budapest|2023
-Mercedes|Front Suspension|Performance|Budapest|2023
-Mercedes|Front Wing|Performance|Budapest|2023
-Mercedes|Rear Wing|Circuit Specific|Budapest|2023
-Alpine|Front Wing|Circuit Specific|Budapest|2023
-Aston Martin|Coke/Engine Cover|Circuit Specific|Budapest|2023
-Haas|Floor Body|Performance|Budapest|2023
-AlphaTauri|Front Wing|Performance|Budapest|2023
-AlphaTauri|Nose|Performance|Budapest|2023
-AlphaTauri|Floor Body|Performance|Budapest|2023
-AlphaTauri|Rear Wing|Performance|Budapest|2023
-Red Bull|Coke/Engine Cover|Circuit Specific|Spa|2023
-Ferrari|Rear Wing|Performance|Spa|2023
-Mercedes|Sidepod Inlet|Reliability|Spa|2023
-Mercedes|Coke/Engine Cover|Performance|Spa|2023
-Mercedes|Floor Body|Performance|Spa|2023
-Mercedes|Rear Wing|Performance|Spa|2023
-Alpine|Front Wing|Circuit Specific|Spa|2023
-Alpine|Floor Body|Performance|Spa|2023
-McLaren|Beam Wing|Circuit Specific|Spa|2023
-McLaren|Rear Wing Endplate|Circuit Specific|Spa|2023
-McLaren|Rear Wing|Circuit Specific|Spa|2023
-Alfa Romeo|Front Wing|Circuit Specific|Spa|2023
-Alfa Romeo|Rear Wing|Circuit Specific|Spa|2023
-Alfa Romeo|Beam Wing|Circuit Specific|Spa|2023
-Aston Martin|Floor Edge|Performance|Spa|2023
-Aston Martin|Rear Wing|Circuit Specific|Spa|2023
-Aston Martin|Beam Wing|Circuit Specific|Spa|2023
-AlphaTauri|Rear Wing|Performance|Spa|2023
-Williams|Rear Corner|Circuit Specific|Spa|2023
-Williams|Front Wing|Circuit Specific|Spa|2023
-Red Bull|Beam Wing|Performance|Zandvoort|2023
-Mercedes|Floor Edge|Performance|Zandvoort|2023
-Mercedes|Sidepod Inlet|Performance|Zandvoort|2023
-Mercedes|Beam Wing|Performance|Zandvoort|2023
-McLaren|Rear Wing|Circuit Specific|Zandvoort|2023
-McLaren|Beam Wing|Circuit Specific|Zandvoort|2023
-Aston Martin|Floor Body|Performance|Zandvoort|2023
-Aston Martin|Floor Fences|Performance|Zandvoort|2023
-Aston Martin|Floor Edge|Performance|Zandvoort|2023
-Aston Martin|Diffuser|Performance|Zandvoort|2023
-Haas|Front Wing|Performance|Zandvoort|2023
-Haas|Nose|Performance|Zandvoort|2023
-Haas|Rear Corner|Circuit Specific|Zandvoort|2023
-AlphaTauri|Rear Wing Endplate|Performance|Zandvoort|2023
-Red Bull|Front Wing|Circuit Specific|Monza|2023
-Red Bull|Rear Wing|Circuit Specific|Monza|2023
-Ferrari|Front Wing|Circuit Specific|Monza|2023
-Ferrari|Rear Wing|Performance|Monza|2023
-Mercedes|Rear Wing|Performance|Monza|2023
-Mercedes|Rear Wing|Performance|Monza|2023
-Alpine|Beam Wing|Circuit Specific|Monza|2023
-McLaren|Front Wing|Circuit Specific|Monza|2023
-McLaren|Front Corner|Performance|Monza|2023
-McLaren|Rear Wing|Circuit Specific|Monza|2023
-McLaren|Rear Wing Endplate|Circuit Specific|Monza|2023
-McLaren|Rear Wing|Circuit Specific|Monza|2023
-McLaren|Rear Corner|Circuit Specific|Monza|2023
-Alfa Romeo|Rear Wing|Circuit Specific|Monza|2023
-Alfa Romeo|Front Corner|Performance|Monza|2023
-Aston Martin|Rear Wing|Circuit Specific|Monza|2023
-AlphaTauri|Front Wing|Circuit Specific|Monza|2023
-AlphaTauri|Beam Wing|Circuit Specific|Monza|2023
-AlphaTauri|Rear Corner|Performance|Monza|2023
-AlphaTauri|Other - Rear View Mirrors|Performance|Monza|2023
-Williams|Front Wing|Circuit Specific|Monza|2023
-Red Bull|Floor Edge|Performance|Singapore|2023
-Red Bull|Rear Wing Endplate|Performance|Singapore|2023
-Ferrari|Front Wing|Performance|Singapore|2023
-Mercedes|Front Corner|Circuit Specific|Singapore|2023
-Alpine|Sidepod Inlet|Performance|Singapore|2023
-Alpine|Cooling Louvres|Performance|Singapore|2023
-Alpine|Beam Wing|Circuit Specific|Singapore|2023
-McLaren|Front Wing Endplate|Performance|Singapore|2023
-McLaren|Sidepod Inlet|Performance|Singapore|2023
-McLaren|Halo|Performance|Singapore|2023
-McLaren|Floor Body|Performance|Singapore|2023
-McLaren|Coke/Engine Cover|Performance|Singapore|2023
-McLaren|Rear Corner|Performance|Singapore|2023
-McLaren|Rear Suspension|Performance|Singapore|2023
-McLaren|Rear Wing Endplate|Performance|Singapore|2023
-McLaren|Beam Wing|Circuit Specific|Singapore|2023
-Alfa Romeo|Floor Fences|Performance|Singapore|2023
-Alfa Romeo|Diffuser|Performance|Singapore|2023
-Alfa Romeo|Rear Corner|Performance|Singapore|2023
-Alfa Romeo|Front Wing|Performance|Singapore|2023
-Aston Martin|Rear Corner|Performance|Singapore|2023
-AlphaTauri|Floor Body|Performance|Singapore|2023
-AlphaTauri|Floor Edge|Performance|Singapore|2023
-AlphaTauri|Diffuser|Performance|Singapore|2023
-AlphaTauri|Sidepod Inlet|Circuit Specific|Singapore|2023
-AlphaTauri|Coke/Engine Cover|Performance|Singapore|2023
-AlphaTauri|Rear Suspension|Performance|Singapore|2023
-AlphaTauri|Rear Corner|Performance|Singapore|2023
-AlphaTauri|Other - rear View mirrors|Performance|Singapore|2023
-Williams|Front Wing|Circuit Specific|Singapore|2023
-Ferrari|Floor Body|Performance|Suzuka|2023
-Mercedes|Rear Wing|Performance|Suzuka|2023
-McLaren|Beam Wing|Circuit Specific|Suzuka|2023
-McLaren|Sidepod Inlet|Performance|Suzuka|2023
-Aston Martin|Front Corner|Circuit Specific|Suzuka|2023
-AlphaTauri|Rear Wing|Performance|Suzuka|2023
-AlphaTauri|Other - Rear View Mirror|Performance|Suzuka|2023
-Williams|Floor Fences|Performance|Suzuka|2023
-Alpine|Floor Body|Performance|Lusail|2023
-Alpine|Rear Corner|Performance|Lusail|2023
-Alpine|Cooling Louvres|Circuit Specific|Lusail|2023
-Alfa Romeo|Beam Wing|Performance|Lusail|2023
-AlphaTauri|Floor Edge|Performance|Lusail|2023
-Mercedes|Floor Body|Performance|COTA|2023
-Mercedes|Floor Edge|Performance|COTA|2023
-Alfa Romeo|Floor Edge|Performance|COTA|2023
-Aston Martin|Floor Edge|Performance|COTA|2023
-Aston Martin|Diffuser|Performance|COTA|2023
-Aston Martin|Coke/Engine Cover|Performance|COTA|2023
-Aston Martin|Beam Wing|Performance|COTA|2023
-Haas|Front Corner|Performance|COTA|2023
-Haas|Floor Body|Performance|COTA|2023
-Haas|Floor Edge|Performance|COTA|2023
-Haas|Sidepod Inlet|Performance|COTA|2023
-Haas|Coke/Engine Cover|Performance|COTA|2023
-Haas|Cooling Louvres|Circuit Specific|COTA|2023
-AlphaTauri|Floor Body|Performance|COTA|2023
-AlphaTauri|Floor Fences|Performance|COTA|2023
-AlphaTauri|Floor Edge|Performance|COTA|2023
-AlphaTauri|Coke/Engine Cover|Performance|COTA|2023
-AlphaTauri|Rear Corner|Performance|COTA|2023
-AlphaTauri|Other - Chassis|Performance|COTA|2023
-Red Bull|Cooling Louvres|Reliability|Mexico|2023
-Ferrari|Cooling Louvres|Circuit Specific|Mexico|2023
-Alpine|Cooling Louvres|Circuit Specific|Mexico|2023
-Alpine|Coke/Engine Cover|Circuit Specific|Mexico|2023
-McLaren|Coke/Engine Cover|Circuit Specific|Mexico|2023
-McLaren|Front Corner|Circuit Specific|Mexico|2023
-Alfa Romeo|Rear Corner|Performance|Mexico|2023
-Haas|Front Corner|Circuit Specific|Mexico|2023
-Haas|Cooling Louvres|Circuit Specific|Mexico|2023
-AlphaTauri|Front Corner|Circuit Specific|Mexico|2023
-AlphaTauri|Coke/Engine Cover|Circuit Specific|Mexico|2023
-Williams|Coke/Engine Cover|Circuit Specific|Mexico|2023
-Williams|Cooling Louvres|Circuit Specific|Mexico|2023
-Haas|Front Wing|Circuit Specific|Brazil|2023
+Team|Component|Reason|Race|Year|Round
+Red Bull|Floor Edge|Performance|Bahrain|2023|1
+Red Bull|Front Wing|Performance|Bahrain|2023|1
+Red Bull|Coke/Engine Cover|Reliability|Bahrain|2023|1
+Ferrari|Front Suspension|Performance|Bahrain|2023|1
+Ferrari|Front Wing|Performance|Bahrain|2023|1
+Ferrari|Coke/Engine Cover|Performance|Bahrain|2023|1
+Mercedes|Front Wing Endplate|Performance|Bahrain|2023|1
+Mercedes|Rear Wing|Performance|Bahrain|2023|1
+Mercedes|Nose|Performance|Bahrain|2023|1
+Mercedes|Floor Edge|Performance|Bahrain|2023|1
+Mercedes|Sidepod Inlet|Performance|Bahrain|2023|1
+Mercedes|Front Suspension|Performance|Bahrain|2023|1
+Alpine|Front Wing|Performance|Bahrain|2023|1
+Alpine|Nose|Performance|Bahrain|2023|1
+Alpine|Front Suspension|Performance|Bahrain|2023|1
+Alpine|Front Corner|Performance|Bahrain|2023|1
+Alpine|Floor Body|Performance|Bahrain|2023|1
+Alpine|Coke/Engine Cover|Performance|Bahrain|2023|1
+Alpine|Rear Suspension|Performance|Bahrain|2023|1
+Alpine|Rear Corner|Performance|Bahrain|2023|1
+Alpine|Beam Wing|Performance|Bahrain|2023|1
+Alpine|Rear Wing|Performance|Bahrain|2023|1
+McLaren|Front Wing|Performance|Bahrain|2023|1
+McLaren|Floor Body|Performance|Bahrain|2023|1
+McLaren|Front Corner|Circuit Specific|Bahrain|2023|1
+McLaren|Sidepod Inlet|Performance|Bahrain|2023|1
+McLaren|Coke/Engine Cover|Performance|Bahrain|2023|1
+McLaren|Cooling Louvres|Performance|Bahrain|2023|1
+McLaren|Beam Wing|Performance|Bahrain|2023|1
+McLaren|Rear Corner|Circuit Specific|Bahrain|2023|1
+Alfa Romeo|Front Suspension|Performance|Bahrain|2023|1
+Alfa Romeo|Floor Body|Performance|Bahrain|2023|1
+Alfa Romeo|Halo|Performance|Bahrain|2023|1
+Alfa Romeo|Sidepod Inlet|Performance|Bahrain|2023|1
+Alfa Romeo|Coke/Engine Cover|Performance|Bahrain|2023|1
+Alfa Romeo|Rear Corner|Performance|Bahrain|2023|1
+Alfa Romeo|Rear Suspension|Performance|Bahrain|2023|1
+Alfa Romeo|Beam Wing|Performance|Bahrain|2023|1
+Aston Martin|Nose|Performance|Bahrain|2023|1
+Aston Martin|Front Wing|Performance|Bahrain|2023|1
+Aston Martin|Front Wing Endplate|Performance|Bahrain|2023|1
+Aston Martin|Front Suspension|Performance|Bahrain|2023|1
+Aston Martin|Floor Fences|Performance|Bahrain|2023|1
+Aston Martin|Floor Body|Performance|Bahrain|2023|1
+Aston Martin|Floor Edge|Performance|Bahrain|2023|1
+Aston Martin|Diffuser|Performance|Bahrain|2023|1
+Aston Martin|Sidepod Inlet|Performance|Bahrain|2023|1
+Aston Martin|Coke/Engine Cover|Performance|Bahrain|2023|1
+Aston Martin|Cooling Louvres|Circuit Specific|Bahrain|2023|1
+Aston Martin|Rear Suspension|Performance|Bahrain|2023|1
+Aston Martin|Rear Corner|Performance|Bahrain|2023|1
+Aston Martin|Beam Wing|Performance|Bahrain|2023|1
+Aston Martin|Rear Wing|Performance|Bahrain|2023|1
+Aston Martin|Rear Wing Endplate|Performance|Bahrain|2023|1
+Haas|Nose|Performance|Bahrain|2023|1
+Haas|Front Wing|Performance|Bahrain|2023|1
+Haas|Front Wing Endplate|Performance|Bahrain|2023|1
+Haas|Front Suspension|Performance|Bahrain|2023|1
+Haas|Floor Fences|Performance|Bahrain|2023|1
+Haas|Floor Body|Performance|Bahrain|2023|1
+Haas|Front Corner|Circuit Specific|Bahrain|2023|1
+Haas|Cooling Louvres|Circuit Specific|Bahrain|2023|1
+Haas|Diffuser|Performance|Bahrain|2023|1
+Haas|Rear Suspension|Performance|Bahrain|2023|1
+AlphaTauri|Nose|Performance|Bahrain|2023|1
+AlphaTauri|Front Wing|Performance|Bahrain|2023|1
+AlphaTauri|Front Suspension|Performance|Bahrain|2023|1
+AlphaTauri|Front Corner|Performance|Bahrain|2023|1
+AlphaTauri|Floor Body|Performance|Bahrain|2023|1
+AlphaTauri|Floor Edge|Performance|Bahrain|2023|1
+AlphaTauri|Diffuser|Performance|Bahrain|2023|1
+AlphaTauri|Sidepod Inlet|Performance|Bahrain|2023|1
+AlphaTauri|Coke/Engine Cover|Performance|Bahrain|2023|1
+AlphaTauri|Cooling Louvres|Performance|Bahrain|2023|1
+AlphaTauri|Rear Wing Endplate|Performance|Bahrain|2023|1
+Williams|Nose|Performance|Bahrain|2023|1
+Williams|Front Wing|Performance|Bahrain|2023|1
+Williams|Front Wing|Performance|Bahrain|2023|1
+Williams|Front Suspension|Performance|Bahrain|2023|1
+Williams|Front Corner|Performance|Bahrain|2023|1
+Williams|Coke/Engine Cover|Performance|Bahrain|2023|1
+Williams|Rear Wing|Performance|Bahrain|2023|1
+Williams|Beam Wing|Performance|Bahrain|2023|1
+Williams|Halo|Performance|Bahrain|2023|1
+Williams|Floor Fences|Performance|Bahrain|2023|1
+Williams|Rear Suspension|Performance|Bahrain|2023|1
+Williams|Rear Corner|Performance|Bahrain|2023|1
+Williams|Front Suspension|Performance|Bahrain|2023|1
+Williams|Floor Edge|Performance|Bahrain|2023|1
+Williams|Diffuser|Performance|Bahrain|2023|1
+Red Bull|Beam Wing|Circuit Specific|Jeddah|2023|2
+Red Bull|Rear Wing|Circuit Specific|Jeddah|2023|2
+Red Bull|Rear Wing Endplate|Circuit Specific|Jeddah|2023|2
+Ferrari|Front Wing Endplate|Performance|Jeddah|2023|2
+Ferrari|Floor Edge|Performance|Jeddah|2023|2
+Ferrari|Beam Wing|Circuit Specific|Jeddah|2023|2
+Mercedes|Rear Wing|Performance|Jeddah|2023|2
+Mercedes|Floor Fences|Performance|Jeddah|2023|2
+Alpine|Beam Wing|Performance|Jeddah|2023|2
+McLaren|Rear Wing|Circuit Specific|Jeddah|2023|2
+McLaren|Diffuser|Performance|Jeddah|2023|2
+Alfa Romeo|Front Wing|Circuit Specific|Jeddah|2023|2
+Alfa Romeo|Rear Wing|Circuit Specific|Jeddah|2023|2
+Aston Martin|Front Wing|Circuit Specific|Jeddah|2023|2
+Aston Martin|Rear Wing|Circuit Specific|Jeddah|2023|2
+Aston Martin|Beam Wing|Circuit Specific|Jeddah|2023|2
+Haas|Front Wing|Circuit Specific|Jeddah|2023|2
+Haas|Rear Wing|Circuit Specific|Jeddah|2023|2
+AlphaTauri|Rear Wing|Performance|Jeddah|2023|2
+Williams|Front Wing|Circuit Specific|Jeddah|2023|2
+Williams|Beam Wing|Circuit Specific|Jeddah|2023|2
+Williams|Rear Corner|Circuit Specific|Jeddah|2023|2
+Williams|Front Corner|Circuit Specific|Jeddah|2023|2
+Williams|Coke/Engine Cover|Circuit Specific|Jeddah|2023|2
+Red Bull|Front Wing Endplate|Performance|Australia|2023|3
+Red Bull|Front Wing|Performance|Australia|2023|3
+Red Bull|Rear Corner|Circuit Specific|Australia|2023|3
+McLaren|Coke/Engine Cover|Circuit Specific|Australia|2023|3
+McLaren|Diffuser|Performance|Australia|2023|3
+Alfa Romeo|Nose|Performance|Australia|2023|3
+Alfa Romeo|Front Wing|Performance|Australia|2023|3
+Alfa Romeo|Sidepod Inlet|Performance|Australia|2023|3
+AlphaTauri|Floor Body|Performance|Australia|2023|3
+AlphaTauri|Floor Fences|Performance|Australia|2023|3
+AlphaTauri|Floor Edge|Performance|Australia|2023|3
+AlphaTauri|Diffuser|Performance|Australia|2023|3
+Williams|Front Wing|Circuit Specific|Australia|2023|3
+Williams|Rear Wing Endplate|Performance|Australia|2023|3
+Red Bull|Sidepod Inlet|Circuit Specific|Baku|2023|4
+Red Bull|Coke/Engine Cover|Circuit Specific|Baku|2023|4
+Red Bull|Floor Edge|Performance|Baku|2023|4
+Red Bull|Floor Fences|Performance|Baku|2023|4
+Red Bull|Rear Corner|Circuit Specific|Baku|2023|4
+Ferrari|Rear Wing|Performance|Baku|2023|4
+Mercedes|Rear Wing Endplate|Performance|Baku|2023|4
+Mercedes|Front Corner|Circuit Specific|Baku|2023|4
+Mercedes|Rear Corner|Performance|Baku|2023|4
+Mercedes|Front Suspension|Performance|Baku|2023|4
+Alpine|Floor Body|Performance|Baku|2023|4
+Alpine|Front Suspension|Performance|Baku|2023|4
+Alpine|Rear Suspension|Performance|Baku|2023|4
+Alpine|Rear Wing|Circuit Specific|Baku|2023|4
+Alpine|Front Wing|Circuit Specific|Baku|2023|4
+McLaren|Floor Body|Performance|Baku|2023|4
+McLaren|Rear Wing|Circuit Specific|Baku|2023|4
+McLaren|Rear Wing|Circuit Specific|Baku|2023|4
+McLaren|Beam Wing|Circuit Specific|Baku|2023|4
+McLaren|Beam Wing|Circuit Specific|Baku|2023|4
+McLaren|Beam Wing|Circuit Specific|Baku|2023|4
+Alfa Romeo|Rear Wing|Circuit Specific|Baku|2023|4
+Alfa Romeo|Beam Wing|Circuit Specific|Baku|2023|4
+Alfa Romeo|Front Wing|Circuit Specific|Baku|2023|4
+Aston Martin|Rear Wing|Circuit Specific|Baku|2023|4
+Haas|Rear Wing|Circuit Specific|Baku|2023|4
+AlphaTauri|Front Wing|Circuit Specific|Baku|2023|4
+AlphaTauri|Coke/Engine Cover|Circuit Specific|Baku|2023|4
+AlphaTauri|Rear Wing|Circuit Specific|Baku|2023|4
+AlphaTauri|Beam Wing|Circuit Specific|Baku|2023|4
+AlphaTauri|Beam Wing|Circuit Specific|Baku|2023|4
+AlphaTauri|Rear Corner|Performance|Baku|2023|4
+Williams|Beam Wing|Circuit Specific|Baku|2023|4
+Williams|Nose|Performance|Baku|2023|4
+Ferrari|Floor Body|Performance|Miami|2023|5
+Alfa Romeo|Beam Wing|Circuit Specific|Miami|2023|5
+Aston Martin|Cooling Louvres|Circuit Specific|Miami|2023|5
+Haas|Floor Body|Performance|Miami|2023|5
+AlphaTauri|Front Wing|Performance|Miami|2023|5
+AlphaTauri|Sidepod Inlet|Performance|Miami|2023|5
+Red Bull|Rear Wing|Circuit Specific|Monaco|2023|6
+Red Bull|Front Suspension|Reliability|Monaco|2023|6
+Ferrari|Rear Corner|Performance|Monaco|2023|6
+Ferrari|Rear Wing|Circuit Specific|Monaco|2023|6
+Mercedes|Front Suspension|Performance|Monaco|2023|6
+Mercedes|Floor Fences|Performance|Monaco|2023|6
+Mercedes|Sidepod Inlet|Performance|Monaco|2023|6
+Mercedes|Coke/Engine Cover|Performance|Monaco|2023|6
+Mercedes|Rear Wing|Performance|Monaco|2023|6
+Mercedes|Rear Corner|Performance|Monaco|2023|6
+Alpine|Front Suspension|Performance|Monaco|2023|6
+Alpine|Sidepod Inlet|Performance|Monaco|2023|6
+Alpine|Floor Edge|Performance|Monaco|2023|6
+Alpine|Rear Wing|Circuit Specific|Monaco|2023|6
+Alpine|Beam Wing|Circuit Specific|Monaco|2023|6
+McLaren|Front Corner|Circuit Specific|Monaco|2023|6
+McLaren|Rear Corner|Performance|Monaco|2023|6
+McLaren|Rear Wing|Circuit Specific|Monaco|2023|6
+McLaren|Beam Wing|Circuit Specific|Monaco|2023|6
+Alfa Romeo|Coke/Engine Cover|Performance|Monaco|2023|6
+Alfa Romeo|Floor Edge|Performance|Monaco|2023|6
+Alfa Romeo|Floor Body|Performance|Monaco|2023|6
+Alfa Romeo|Rear Suspension|Performance|Monaco|2023|6
+Alfa Romeo|Rear Corner|Performance|Monaco|2023|6
+Alfa Romeo|Rear Wing|Circuit Specific|Monaco|2023|6
+Alfa Romeo|Beam Wing|Circuit Specific|Monaco|2023|6
+Alfa Romeo|Cooling Louvres|Circuit Specific|Monaco|2023|6
+Aston Martin|Front Suspension|Performance|Monaco|2023|6
+Aston Martin|Front Corner|Performance|Monaco|2023|6
+Aston Martin|Rear Suspension|Performance|Monaco|2023|6
+Aston Martin|Rear Corner|Circuit Specific|Monaco|2023|6
+Aston Martin|Rear Wing|Circuit Specific|Monaco|2023|6
+Haas|Front Wing|Performance|Monaco|2023|6
+Haas|Front Suspension|Performance|Monaco|2023|6
+AlphaTauri|Floor Body|Performance|Monaco|2023|6
+AlphaTauri|Floor Fences|Performance|Monaco|2023|6
+AlphaTauri|Floor Edge|Performance|Monaco|2023|6
+AlphaTauri|Diffuser|Performance|Monaco|2023|6
+AlphaTauri|Sidepod Inlet|Performance|Monaco|2023|6
+AlphaTauri|Coke/Engine Cover|Performance|Monaco|2023|6
+AlphaTauri|Front Suspension|Performance|Monaco|2023|6
+AlphaTauri|Rear Wing|Performance|Monaco|2023|6
+AlphaTauri|Rear Wing Endplate|Performance|Monaco|2023|6
+Williams|Rear Wing|Circuit Specific|Monaco|2023|6
+Williams|Beam Wing|Circuit Specific|Monaco|2023|6
+Williams|Front Suspension|Performance|Monaco|2023|6
+Williams|Front Suspension|Performance|Monaco|2023|6
+Williams|Front Corner|Circuit Specific|Monaco|2023|6
+Red Bull|Floor Edge|Performance|Spain|2023|7
+Red Bull|Diffuser|Performance|Spain|2023|7
+Ferrari|Rear Wing|Circuit Specific|Spain|2023|7
+Ferrari|Coke/Engine Cover|Performance|Spain|2023|7
+Ferrari|Floor Body/Edge|Performance|Spain|2023|7
+Mercedes|Sidepod Inlet|Performance|Spain|2023|7
+Mercedes|Diffuser|Performance|Spain|2023|7
+McLaren|Front Corner|Performance|Spain|2023|7
+Aston Martin|Front Wing|Performance|Spain|2023|7
+Aston Martin|Front Wing Endplate|Performance|Spain|2023|7
+Aston Martin|Nose|Performance|Spain|2023|7
+Aston Martin|Rear Wing Endplate|Performance|Spain|2023|7
+Aston Martin|Beam Wing|Performance|Spain|2023|7
+AlphaTauri|Rear Wing|Performance|Spain|2023|7
+AlphaTauri|Rear Wing Endplate|Performance|Spain|2023|7
+Williams|Front Wing|Circuit Specific|Spain|2023|7
+Williams|Coke/Engine Cover|Circuit Specific|Spain|2023|7
+Red Bull|Front Wing|Performance|Canada|2023|8
+Mercedes|Sidepod Inlet|Performance|Canada|2023|8
+Alpine|Rear Wing|Performance|Canada|2023|8
+Alpine|Rear Suspension|Performance|Canada|2023|8
+McLaren|Rear Wing|Performance|Canada|2023|8
+McLaren|Beam Wing|Performance|Canada|2023|8
+Alfa Romeo|Rear Corner|Circuit Specific|Canada|2023|8
+Aston Martin|Coke/Engine Cover|Performance|Canada|2023|8
+Aston Martin|Cooling Louvres|Circuit Specific|Canada|2023|8
+Aston Martin|Floor Body|Performance|Canada|2023|8
+Haas|Rear Wing|Circuit Specific|Canada|2023|8
+Haas|Cooling Louvres|Circuit Specific|Canada|2023|8
+Haas|Floor Edge|Performance|Canada|2023|8
+AlphaTauri|Front Wing|Circuit Specific|Canada|2023|8
+Williams|Floor Body|Performance|Canada|2023|8
+Williams|Coke/Engine Cover|Performance|Canada|2023|8
+Williams|Sidepod Inlet|Performance|Canada|2023|8
+Williams|Halo|Performance|Canada|2023|8
+Williams|Rear Suspension|Performance|Canada|2023|8
+Williams|Rear Corner|Performance|Canada|2023|8
+Williams|Rear Wing Endplate|Performance|Canada|2023|8
+Red Bull|Rear Suspension|Performance|Austria|2023|9
+Ferrari|Front Wing|Performance|Austria|2023|9
+Ferrari|Floor Body|Performance|Austria|2023|9
+McLaren|Sidepod Inlet|Performance|Austria|2023|9
+McLaren|Halo|Performance|Austria|2023|9
+McLaren|Floor Body|Performance|Austria|2023|9
+McLaren|Coke/Engine Cover|Performance|Austria|2023|9
+McLaren|Cooling Louvres|Performance|Austria|2023|9
+Haas|Nose|Reliability|Austria|2023|9
+AlphaTauri|Rear Wing|Performance|Austria|2023|9
+AlphaTauri|Beam Wing|Performance|Austria|2023|9
+AlphaTauri|Cooling Louvres|Circuit Specific|Austria|2023|9
+Williams|Floor Fences|Circuit Specific|Austria|2023|9
+Williams|Front Corner|Circuit Specific|Austria|2023|9
+Red Bull|Front Corner|Circuit Specific|Silverstone|2023|10
+Mercedes|Front Wing Endplate|Performance|Silverstone|2023|10
+Mercedes|Front Wing|Performance|Silverstone|2023|10
+McLaren|Front Wing|Performance|Silverstone|2023|10
+McLaren|Nose|Performance|Silverstone|2023|10
+McLaren|Rear Corner|Performance|Silverstone|2023|10
+McLaren|Rear Suspension|Performance|Silverstone|2023|10
+Aston Martin|Front Wing|Circuit Specific|Silverstone|2023|10
+Aston Martin|Rear Corner|Circuit Specific|Silverstone|2023|10
+Alpine|Front Wing|Performance|Silverstone|2023|10
+Alfa Romeo|Floor Body|Performance|Silverstone|2023|10
+Alfa Romeo|Floor Fences|Performance|Silverstone|2023|10
+Alfa Romeo|Diffuser|Performance|Silverstone|2023|10
+Alfa Romeo|Rear Corner|Performance|Silverstone|2023|10
+Alfa Romeo|Rear Suspension|Performance|Silverstone|2023|10
+Haas|Front Suspension|Performance|Silverstone|2023|10
+Haas|Front Corner|Performance|Silverstone|2023|10
+Haas|Beam Wing|Performance|Silverstone|2023|10
+Williams|Front Wing|Performance|Silverstone|2023|10
+Williams|Rear Wing|Circuit Specific|Silverstone|2023|10
+AlphaTauri|Floor Body|Performance|Silverstone|2023|10
+AlphaTauri|Floor Fences|Performance|Silverstone|2023|10
+AlphaTauri|Floor Edge|Performance|Silverstone|2023|10
+AlphaTauri|Diffuser|Performance|Silverstone|2023|10
+AlphaTauri|Coke/Engine Cover|Performance|Silverstone|2023|10
+AlphaTauri|Rear Suspension|Performance|Silverstone|2023|10
+AlphaTauri|Rear Wing|Performance|Silverstone|2023|10
+Red Bull|Front Corner|Reliability|Budapest|2023|11
+Red Bull|Rear Corner|Reliability|Budapest|2023|11
+Red Bull|Sidepod Inlet|Reliability|Budapest|2023|11
+Red Bull|Coke/Engine Cover|Reliability|Budapest|2023|11
+Red Bull|Floor Body|Performance|Budapest|2023|11
+Ferrari|Front Wing|Circuit Specific|Budapest|2023|11
+Mercedes|Front Suspension|Performance|Budapest|2023|11
+Mercedes|Front Wing|Performance|Budapest|2023|11
+Mercedes|Rear Wing|Circuit Specific|Budapest|2023|11
+Alpine|Front Wing|Circuit Specific|Budapest|2023|11
+Aston Martin|Coke/Engine Cover|Circuit Specific|Budapest|2023|11
+Haas|Floor Body|Performance|Budapest|2023|11
+AlphaTauri|Front Wing|Performance|Budapest|2023|11
+AlphaTauri|Nose|Performance|Budapest|2023|11
+AlphaTauri|Floor Body|Performance|Budapest|2023|11
+AlphaTauri|Rear Wing|Performance|Budapest|2023|11
+Red Bull|Coke/Engine Cover|Circuit Specific|Spa|2023|12
+Ferrari|Rear Wing|Performance|Spa|2023|12
+Mercedes|Sidepod Inlet|Reliability|Spa|2023|12
+Mercedes|Coke/Engine Cover|Performance|Spa|2023|12
+Mercedes|Floor Body|Performance|Spa|2023|12
+Mercedes|Rear Wing|Performance|Spa|2023|12
+Alpine|Front Wing|Circuit Specific|Spa|2023|12
+Alpine|Floor Body|Performance|Spa|2023|12
+McLaren|Beam Wing|Circuit Specific|Spa|2023|12
+McLaren|Rear Wing Endplate|Circuit Specific|Spa|2023|12
+McLaren|Rear Wing|Circuit Specific|Spa|2023|12
+Alfa Romeo|Front Wing|Circuit Specific|Spa|2023|12
+Alfa Romeo|Rear Wing|Circuit Specific|Spa|2023|12
+Alfa Romeo|Beam Wing|Circuit Specific|Spa|2023|12
+Aston Martin|Floor Edge|Performance|Spa|2023|12
+Aston Martin|Rear Wing|Circuit Specific|Spa|2023|12
+Aston Martin|Beam Wing|Circuit Specific|Spa|2023|12
+AlphaTauri|Rear Wing|Performance|Spa|2023|12
+Williams|Rear Corner|Circuit Specific|Spa|2023|12
+Williams|Front Wing|Circuit Specific|Spa|2023|12
+Red Bull|Beam Wing|Performance|Zandvoort|2023|13
+Mercedes|Floor Edge|Performance|Zandvoort|2023|13
+Mercedes|Sidepod Inlet|Performance|Zandvoort|2023|13
+Mercedes|Beam Wing|Performance|Zandvoort|2023|13
+McLaren|Rear Wing|Circuit Specific|Zandvoort|2023|13
+McLaren|Beam Wing|Circuit Specific|Zandvoort|2023|13
+Aston Martin|Floor Body|Performance|Zandvoort|2023|13
+Aston Martin|Floor Fences|Performance|Zandvoort|2023|13
+Aston Martin|Floor Edge|Performance|Zandvoort|2023|13
+Aston Martin|Diffuser|Performance|Zandvoort|2023|13
+Haas|Front Wing|Performance|Zandvoort|2023|13
+Haas|Nose|Performance|Zandvoort|2023|13
+Haas|Rear Corner|Circuit Specific|Zandvoort|2023|13
+AlphaTauri|Rear Wing Endplate|Performance|Zandvoort|2023|13
+Red Bull|Front Wing|Circuit Specific|Monza|2023|14
+Red Bull|Rear Wing|Circuit Specific|Monza|2023|14
+Ferrari|Front Wing|Circuit Specific|Monza|2023|14
+Ferrari|Rear Wing|Performance|Monza|2023|14
+Mercedes|Rear Wing|Performance|Monza|2023|14
+Mercedes|Rear Wing|Performance|Monza|2023|14
+Alpine|Beam Wing|Circuit Specific|Monza|2023|14
+McLaren|Front Wing|Circuit Specific|Monza|2023|14
+McLaren|Front Corner|Performance|Monza|2023|14
+McLaren|Rear Wing|Circuit Specific|Monza|2023|14
+McLaren|Rear Wing Endplate|Circuit Specific|Monza|2023|14
+McLaren|Rear Wing|Circuit Specific|Monza|2023|14
+McLaren|Rear Corner|Circuit Specific|Monza|2023|14
+Alfa Romeo|Rear Wing|Circuit Specific|Monza|2023|14
+Alfa Romeo|Front Corner|Performance|Monza|2023|14
+Aston Martin|Rear Wing|Circuit Specific|Monza|2023|14
+AlphaTauri|Front Wing|Circuit Specific|Monza|2023|14
+AlphaTauri|Beam Wing|Circuit Specific|Monza|2023|14
+AlphaTauri|Rear Corner|Performance|Monza|2023|14
+AlphaTauri|Other - Rear View Mirrors|Performance|Monza|2023|14
+Williams|Front Wing|Circuit Specific|Monza|2023|14
+Red Bull|Floor Edge|Performance|Singapore|2023|15
+Red Bull|Rear Wing Endplate|Performance|Singapore|2023|15
+Ferrari|Front Wing|Performance|Singapore|2023|15
+Mercedes|Front Corner|Circuit Specific|Singapore|2023|15
+Alpine|Sidepod Inlet|Performance|Singapore|2023|15
+Alpine|Cooling Louvres|Performance|Singapore|2023|15
+Alpine|Beam Wing|Circuit Specific|Singapore|2023|15
+McLaren|Front Wing Endplate|Performance|Singapore|2023|15
+McLaren|Sidepod Inlet|Performance|Singapore|2023|15
+McLaren|Halo|Performance|Singapore|2023|15
+McLaren|Floor Body|Performance|Singapore|2023|15
+McLaren|Coke/Engine Cover|Performance|Singapore|2023|15
+McLaren|Rear Corner|Performance|Singapore|2023|15
+McLaren|Rear Suspension|Performance|Singapore|2023|15
+McLaren|Rear Wing Endplate|Performance|Singapore|2023|15
+McLaren|Beam Wing|Circuit Specific|Singapore|2023|15
+Alfa Romeo|Floor Fences|Performance|Singapore|2023|15
+Alfa Romeo|Diffuser|Performance|Singapore|2023|15
+Alfa Romeo|Rear Corner|Performance|Singapore|2023|15
+Alfa Romeo|Front Wing|Performance|Singapore|2023|15
+Aston Martin|Rear Corner|Performance|Singapore|2023|15
+AlphaTauri|Floor Body|Performance|Singapore|2023|15
+AlphaTauri|Floor Edge|Performance|Singapore|2023|15
+AlphaTauri|Diffuser|Performance|Singapore|2023|15
+AlphaTauri|Sidepod Inlet|Circuit Specific|Singapore|2023|15
+AlphaTauri|Coke/Engine Cover|Performance|Singapore|2023|15
+AlphaTauri|Rear Suspension|Performance|Singapore|2023|15
+AlphaTauri|Rear Corner|Performance|Singapore|2023|15
+AlphaTauri|Other - rear View mirrors|Performance|Singapore|2023|15
+Williams|Front Wing|Circuit Specific|Singapore|2023|15
+Ferrari|Floor Body|Performance|Suzuka|2023|16
+Mercedes|Rear Wing|Performance|Suzuka|2023|16
+McLaren|Beam Wing|Circuit Specific|Suzuka|2023|16
+McLaren|Sidepod Inlet|Performance|Suzuka|2023|16
+Aston Martin|Front Corner|Circuit Specific|Suzuka|2023|16
+AlphaTauri|Rear Wing|Performance|Suzuka|2023|16
+AlphaTauri|Other - Rear View Mirror|Performance|Suzuka|2023|16
+Williams|Floor Fences|Performance|Suzuka|2023|16
+Alpine|Floor Body|Performance|Lusail|2023|17
+Alpine|Rear Corner|Performance|Lusail|2023|17
+Alpine|Cooling Louvres|Circuit Specific|Lusail|2023|17
+Alfa Romeo|Beam Wing|Performance|Lusail|2023|17
+AlphaTauri|Floor Edge|Performance|Lusail|2023|17
+Mercedes|Floor Body|Performance|COTA|2023|18
+Mercedes|Floor Edge|Performance|COTA|2023|18
+Alfa Romeo|Floor Edge|Performance|COTA|2023|18
+Aston Martin|Floor Edge|Performance|COTA|2023|18
+Aston Martin|Diffuser|Performance|COTA|2023|18
+Aston Martin|Coke/Engine Cover|Performance|COTA|2023|18
+Aston Martin|Beam Wing|Performance|COTA|2023|18
+Haas|Front Corner|Performance|COTA|2023|18
+Haas|Floor Body|Performance|COTA|2023|18
+Haas|Floor Edge|Performance|COTA|2023|18
+Haas|Sidepod Inlet|Performance|COTA|2023|18
+Haas|Coke/Engine Cover|Performance|COTA|2023|18
+Haas|Cooling Louvres|Circuit Specific|COTA|2023|18
+AlphaTauri|Floor Body|Performance|COTA|2023|18
+AlphaTauri|Floor Fences|Performance|COTA|2023|18
+AlphaTauri|Floor Edge|Performance|COTA|2023|18
+AlphaTauri|Coke/Engine Cover|Performance|COTA|2023|18
+AlphaTauri|Rear Corner|Performance|COTA|2023|18
+AlphaTauri|Other - Chassis|Performance|COTA|2023|18
+Red Bull|Cooling Louvres|Reliability|Mexico|2023|19
+Ferrari|Cooling Louvres|Circuit Specific|Mexico|2023|19
+Alpine|Cooling Louvres|Circuit Specific|Mexico|2023|19
+Alpine|Coke/Engine Cover|Circuit Specific|Mexico|2023|19
+McLaren|Coke/Engine Cover|Circuit Specific|Mexico|2023|19
+McLaren|Front Corner|Circuit Specific|Mexico|2023|19
+Alfa Romeo|Rear Corner|Performance|Mexico|2023|19
+Haas|Front Corner|Circuit Specific|Mexico|2023|19
+Haas|Cooling Louvres|Circuit Specific|Mexico|2023|19
+AlphaTauri|Front Corner|Circuit Specific|Mexico|2023|19
+AlphaTauri|Coke/Engine Cover|Circuit Specific|Mexico|2023|19
+Williams|Coke/Engine Cover|Circuit Specific|Mexico|2023|19
+Williams|Cooling Louvres|Circuit Specific|Mexico|2023|19
+Haas|Front Wing|Circuit Specific|Brazil|2023|20
+Alpine|Beam Wing|Circuit Specific|Vegas|2023|21
+Alpine|Front Wing|Circuit Specific|Vegas|2023|21
+Alpine|Rear Corner|Circuit Specific|Vegas|2023|21
+McLaren|Beam Wing|Circuit Specific|Vegas|2023|21
+McLaren|Rear Wing|Circuit Specific|Vegas|2023|21
+Aston Martin|Front Wing|Circuit Specific|Vegas|2023|21
+Aston Martin|Coke/Engine Cover|Circuit Specific|Vegas|2023|21
+Alfa Romeo|Front Wing Endplate|Performance|Abu Dhabi|2023|22
+Alfa Romeo|Front Wing|Performance|Abu Dhabi|2023|22
+AlphaTauri|Floor Body|Performance|Abu Dhabi|2023|22
+AlphaTauri|Floor Fences|Performance|Abu Dhabi|2023|22
+AlphaTauri|Floor Edge|Performance|Abu Dhabi|2023|22
+Aston Martin|Beam Wing|Performance|Abu Dhabi|2023|22
+Aston Martin|Rear Wing|Performance|Abu Dhabi|2023|22
+Aston Martin|Rear Wing Endplate|Performance|Abu Dhabi|2023|22
+
+
 
 
 

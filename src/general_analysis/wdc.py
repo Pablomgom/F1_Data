@@ -324,8 +324,6 @@ def team_wdc_history(team, color='papaya'):
             renamed_team = 'McLaren-Ford'
         if i == 1969 and team == 'McLaren':
             renamed_team = 'BRM'
-        if i == 1971:
-            a = 1
         standings = ergast.get_constructor_standings(season=i, limit=1000)
         if len(standings.content) > 0:
             team_data = standings.content[0][standings.content[0]['constructorName'] == renamed_team]
@@ -345,23 +343,11 @@ def team_wdc_history(team, color='papaya'):
 
     plt.grid(True, which='both', linestyle='--', alpha=0.5)
 
-    start_year = None
-    for i in range(len(positions)):
-        # Mark the start of a period where position becomes 1
-        if positions[i] == 1 and (i == 0 or positions[i - 1] != 1):
-            start_year = years[i]
-        # Mark the end of a period where position changes from 1 to something else
-        elif positions[i] != 1 and (i > 0 and positions[i - 1] == 1):
-            end_year = years[i - 1]
-            if start_year == end_year:
-                plt.annotate(f'{start_year}', (end_year, 1), textcoords="offset points",
-                             xytext=(0, 10), ha='center', fontsize=11)
-            else:
-                plt.annotate(f'{start_year}-{end_year}', (start_year + ((end_year - start_year) / 2), 1),
-                             textcoords="offset points", xytext=(0, 10), fontsize=11,
-                             ha='center')
-            start_year = None
+    for year, position in zip(years, positions):
+        if position == 1:
+            print(f'{year}')
 
+    plt.title(f'{team.upper()} HISTORICAL CONSTRUCTOR POSITIONS', font='Fira Sans', fontsize=18)
     plt.xlabel('Year', fontsize=20)
     plt.ylabel('Constructors position', fontsize=20)
 
@@ -369,5 +355,5 @@ def team_wdc_history(team, color='papaya'):
     plt.yticks(fontsize=16)
 
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{team} history.png', dpi=400)
+    plt.savefig(f'../PNGs/{team} history.png', dpi=450)
     plt.show()
