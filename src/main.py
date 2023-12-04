@@ -1,6 +1,8 @@
 import sys
 import fastf1
 import traceback
+
+import pandas as pd
 from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
@@ -13,6 +15,9 @@ from src.utils.utils import parse_args
 
 
 setup_mpl(misc_mpl_mods=False)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.width', None)
 fastf1.ergast.interface.BASE_URL = 'http://ergast.com/api/f1'
 plt.rcParams["font.family"] = "Fira Sans"
 fastf1.Cache.enable_cache('../cache')
@@ -41,4 +46,3 @@ if __name__ == '__main__':
         except Exception as e:
             traceback.print_exc()
             # print(e)
-

@@ -1,0 +1,1264 @@
+Lap,Position,Overtaker,Overtaken,Live,Turn,Year,Race
+2,18,Gasly,Magnussen,,4,2023,Bahrain
+3,19,De Vries,Magnussen,,11,2023,Bahrain
+4,10,Ocon,Norris,,1,2023,Bahrain
+4,11,Albon,Norris,,4,2023,Bahrain
+4,14,Tsunoda,Hulkenberg,,1,2023,Bahrain
+5,8,Stroll,Bottas,Yes,1,2023,Bahrain
+11,13,Piastri,Hulkenberg,Yes,1,2023,Bahrain
+11,14,Zhou,Hulkenberg,,11,2023,Bahrain
+13,5,Alonso,Russell,Yes,4,2023,Bahrain
+13,12,Albon,Ocon,,2,2023,Bahrain
+13,18,De Vries,Zhou,,1,2023,Bahrain
+13,19,Hulkenberg,Zhou,,4,2023,Bahrain
+14,8,Bottas,Magnussen,Yes,1,2023,Bahrain
+14,18,Zhou,Hulkenberg,,1,2023,Bahrain
+14,18,Hulkenberg,Zhou,,4,2023,Bahrain
+15,9,Russell,Magnussen,Yes,1,2023,Bahrain
+17,6,Alonso,Bottas,Yes,4,2023,Bahrain
+18,7,Russell,Bottas,Yes,4,2023,Bahrain
+18,15,Zhou,Hulkenberg,,4,2023,Bahrain
+20,8,Stroll,Bottas,Yes,1,2023,Bahrain
+23,18,Norris,Ocon,Yes,4,2023,Bahrain
+25,14,Zhou,De Vries,,4,2023,Bahrain
+26,2,Perez,Leclerc,Yes,1,2023,Bahrain
+27,15,Gasly,Tsunoda,,2,2023,Bahrain
+32,7,Stroll,Russell,Yes,4,2023,Bahrain
+32,16,Magnussen,Ocon,,9,2023,Bahrain
+37,5,Alonso,Hamilton,Yes,4,2023,Bahrain
+37,5,Hamilton,Alonso,Yes,4,2023,Bahrain
+38,5,Alonso,Hamilton,Yes,10,2023,Bahrain
+42,9,Gasly,Albon,Yes,1,2023,Bahrain
+42,11,Tsunoda,De Vries,Yes,4,2023,Bahrain
+42,12,Tsunoda,Zhou,Replay,1,2023,Bahrain
+43,12,Zhou,De Vries,,1,2023,Bahrain
+44,13,Sargeant,De Vries,,1,2023,Bahrain
+45,3,Alonso,Sainz,Yes,11,2023,Bahrain
+47,12,Sargeant,Zhou,,4,2023,Bahrain
+51,14,Magnussen,De Vries,Yes,1,2023,Bahrain
+2,17,Sargeant,De Vries,,13,2023,Jeddah
+4,1,Perez,Alonso,Yes,1,2023,Jeddah
+4,12,Verstappen,Hulkenberg,,4,2023,Jeddah
+5,11,Verstappen,Magnussen,,1,2023,Jeddah
+6,12,Hulkenberg,Magnussen,,1,2023,Jeddah
+7,8,Leclerc,Gasly,Yes,1,2023,Jeddah
+8,10,Verstappen,Zhou,Yes,1,2023,Jeddah
+8,14,Albon,Bottas,,1,2023,Jeddah
+8,16,De Vries,Sargeant,,2,2023,Jeddah
+9,7,Leclerc,Hamilton,Yes,1,2023,Jeddah
+9,9,Verstappen,Gasly,Yes,27,2023,Jeddah
+12,8,Verstappen,Hamilton,Yes,1,2023,Jeddah
+12,16,Hulkenberg,Zhou,,27,2023,Jeddah
+13,6,Leclerc,Ocon,Yes,1,2023,Jeddah
+13,16,Zhou,Hulkenberg,,1,2023,Jeddah
+14,7,Verstappen,Ocon,Yes,1,2023,Jeddah
+21,12,Hulkenberg,Albon,,1,2023,Jeddah
+21,14,Sargeant,De Vries,,1,2023,Jeddah
+21,16,Zhou,Piastri,,1,2023,Jeddah
+22,5,Hamilton,Sainz,Yes,4,2023,Jeddah
+22,18,Norris,Bottas,,27,2023,Jeddah
+23,3,Verstappen,Russell,Yes,27,2023,Jeddah
+23,15,Zhou,De Vries,,1,2023,Jeddah
+24,8,Ocon,Tsunoda,,1,2023,Jeddah
+25,2,Verstappen,Alonso,Yes,1,2023,Jeddah
+25,9,Gasly,Tsunoda,,1,2023,Jeddah
+25,17,Norris,Piastri,,1,2023,Jeddah
+38,13,Zhou,Sargeant,Yes,1,2023,Jeddah
+41,14,De Vries,Sargeant,Yes,27,2023,Jeddah
+44,16,Piastri,Norris,Replay,27,2023,Jeddah
+45,16,Norris,Piastri,Yes,1,2023,Jeddah
+46,10,Magnussen,Tsunoda,,27,2023,Jeddah
+46,10,Tsunoda,Magnussen,Finish Line,27,2023,Jeddah
+46,10,Magnussen,Tsunoda,Yes,1,2023,Jeddah
+48,16,Piastri,Norris,Yes,1,2023,Jeddah
+50,15,Piastri,Sargeant,,1,2023,Jeddah
+4,17,Perez,Bottas,,9,2023,Australia
+6,16,Perez,Zhou,,9,2023,Australia
+11,9,Sainz,Norris,Yes,3,2023,Australia
+12,1,Verstappen,Hamilton,Yes,9,2023,Australia
+12,8,Sainz,Tsunoda,,3,2023,Australia
+13,4,Russell,Gasly,Yes,11,2023,Australia
+13,15,Perez,Sargeant,Replay,11,2023,Australia
+14,7,Sainz,Hulkenberg,,3,2023,Australia
+14,9,Norris,Tsunoda,,9,2023,Australia
+15,6,Sainz,Stroll,Yes,3,2023,Australia
+15,14,Perez,Magnussen,Yes,9,2023,Australia
+16,12,Ocon,Zhou,,9,2023,Australia
+16,13,Perez,Zhou,Yes,11,2023,Australia
+20,16,De Vries,Bottas,,11,2023,Australia
+21,11,Perez,Ocon,Yes,9,2023,Australia
+22,10,Perez,Piastri,Replay,9,2023,Australia
+23,9,Perez,Tsunoda,Yes,9,2023,Australia
+25,4,Sainz,Gasly,Yes,3,2023,Australia
+26,11,Ocon,Piastri,Yes,9,2023,Australia
+27,10,Ocon,Tsunoda,Yes,9,2023,Australia
+27,16,Bottas,De Vries,,4,2023,Australia
+29,11,Piastri,Tsunoda,Yes,9,2023,Australia
+35,12,Zhou,Tsunoda,,1,2023,Australia
+35,13,Magnussen,Tsunoda,Yes,9,2023,Australia
+35,15,Bottas,Sargeant,,3,2023,Australia
+36,12,Magnussen,Zhou,Replay,11,2023,Australia
+43,8,Perez,Norris,Yes,9,2023,Australia
+44,7,Perez,Hulkenberg,Yes,11,2023,Australia
+51,8,Norris,Hulkenberg,Yes,12,2023,Australia
+6,3,Verstappen,Russell,Yes,1,2023,Baku-Sprint
+6,6,Alonso,Hamilton,Yes,2,2023,Baku-Sprint
+6,9,Stroll,Norris,,3,2023,Baku-Sprint
+8,1,Perez,Leclerc,Yes,1,2023,Baku-Sprint
+8,10,Piastri,Norris,Replay,Finish Line,2023,Baku-Sprint
+10,11,Hulkenberg,Norris,Replay,3,2023,Baku-Sprint
+10,12,Magnussen,Norris,Replay,4,2023,Baku-Sprint
+10,13,Bottas,Norris,,17,2023,Baku-Sprint
+10,14,Zhou,Norris,,18,2023,Baku-Sprint
+10,15,Gasly,Norris,,18,2023,Baku-Sprint
+10,13,Zhou,Bottas,Yes,Finish Line,2023,Baku-Sprint
+10,14,Gasly,Bottas,Yes,Finish Line,2023,Baku-Sprint
+11,16,Ocon,De Vries,Yes,1,2023,Baku-Sprint
+11,11,Magnussen,Hulkenberg,Replay,3,2023,Baku-Sprint
+12,8,Stroll,Albon,Yes,1,2023,Baku-Sprint
+12,17,De Vries,Ocon,,1,2023,Baku-Sprint
+13,12,Zhou,Hulkenberg,Replay,1,2023,Baku-Sprint
+13,13,Gasly,Hulkenberg,,2,2023,Baku-Sprint
+14,15,De Vries,Bottas,Yes,1,2023,Baku-Sprint
+14,14,De Vries,Hulkenberg,Yes,Finish Line,2023,Baku-Sprint
+3,1,Verstappen,Leclerc,Yes,1,2023,Baku
+6,2,Perez,Leclerc,Yes,1,2023,Baku
+14,2,Verstappen,Leclerc,Yes,3,2023,Baku
+14,4,Alonso,Sainz,Yes,4,2023,Baku
+14,6,Stroll,Russell,Yes,2,2023,Baku
+14,8,Hamilton,Ocon,Yes,2,2023,Baku
+14,9,Hamilton,Hulkenberg,Background,1,2023,Baku
+14,12,Piastri,Tsunoda,,1,2023,Baku
+14,12,Tsunoda,Piastri,,5,2023,Baku
+14,14,Albon,Zhou,,1,2023,Baku
+14,15,Gasly,Zhou,,2,2023,Baku
+15,7,Hamilton,Russell,Yes,1,2023,Baku
+17,16,Magnussen,Zhou,Replay,1,2023,Baku
+17,16,Zhou,Magnussen,Replay,1,2023,Baku
+18,16,Magnussen,Zhou,Background,1,2023,Baku
+19,6,Hamilton,Stroll,Yes,Finish Line,2023,Baku
+32,18,Gasly,Bottas,Yes,1,2023,Baku
+43,16,Gasly,Sargeant,Replay,1,2023,Baku
+45,10,Norris,Hulkenberg,Yes,7,2023,Baku
+46,11,Tsunoda,Hulkenberg,Yes,Finish Line,2023,Baku
+48,12,Piastri,Hulkenberg,Yes,1,2023,Baku
+48,13,Albon,Hulkenberg,Yes,Finish Line,2023,Baku
+49,14,Magnussen,Hulkenberg,Yes,1,2023,Baku
+2,8,Verstappen,Bottas,Background,11,2023,Miami
+3,6,Magnussen,Leclerc,Yes,11,2023,Miami
+3,6,Leclerc,Magnussen,,17,2023,Miami
+4,7,Magnussen,Leclerc,Yes,1,2023,Miami
+4,6,Verstappen,Magnussen,Yes,1,2023,Miami
+4,7,Verstappen,Leclerc,Yes,1,2023,Miami
+5,9,Ocon,Bottas,,11,2023,Miami
+7,10,Hulkenberg,Bottas,Replay,1,2023,Miami
+7,10,Bottas,Hulkenberg,Replay,1,2023,Miami
+8,5,Verstappen,Russell,Yes,17,2023,Miami
+9,4,Verstappen,Gasly,Yes,17,2023,Miami
+10,5,Russell,Gasly,Yes,1,2023,Miami
+13,7,Leclerc,Magnussen,Yes,1,2023,Miami
+13,7,Magnussen,Leclerc,Yes,2,2023,Miami
+13,18,Norris,Piastri,,1,2023,Miami
+14,3,Verstappen,Sainz,Yes,11,2023,Miami
+15,2,Verstappen,Alonso,Yes,11,2023,Miami
+15,9,Hulkenberg,Bottas,Background (R),11,2023,Miami
+15,11,Hamilton,Albon,Replay,11,2023,Miami
+19,10,Stroll,Zhou,Background,1,2023,Miami
+20,6,Sainz,Hamilton,Yes,1,2023,Miami
+20,11,Russell,Zhou,,17,2023,Miami
+21,5,Sainz,Hulkenberg,Yes,1,2023,Miami
+21,8,Tsunoda,Albon,,17,2023,Miami
+22,3,Perez,Ocon,Yes,1,2023,Miami
+22,11,Gasly,Zhou,,11,2023,Miami
+23,6,Hamilton,Hulkenberg,Yes,11,2023,Miami
+24,9,Russell,Stroll,Yes,1,2023,Miami
+24,12,Magnussen,Zhou,Yes,17,2023,Miami
+25,10,Gasly,Stroll,Yes,11,2023,Miami
+26,8,Russell,Tsunoda,Replay,11,2023,Miami
+27,4,Alonso,Sainz,Yes,11,2023,Miami
+27,13,Leclerc,Zhou,,11,2023,Miami
+27,16,Albon,Norris,,11,2023,Miami
+28,7,Russell,Hulkenberg,Yes,11,2023,Miami
+29,3,Alonso,Ocon,Yes,11,2023,Miami
+29,18,De Vries,Piastri,,1,2023,Miami
+29,18,Piastri,De Vries,,1,2023,Miami
+30,4,Sainz,Ocon,Yes,11,2023,Miami
+30,18,De Vries,Piastri,,11,2023,Miami
+33,4,Ocon,Sainz,,11,2023,Miami
+33,8,Tsunoda,Hulkenberg,,8,2023,Miami
+34,4,Sainz,Ocon,Yes,11,2023,Miami
+36,5,Russell,Ocon,Yes,1,2023,Miami
+36,11,Leclerc,Magnussen,Yes,17,2023,Miami
+37,4,Russell,Sainz,Yes,11,2023,Miami
+37,10,Magnussen,Leclerc,Yes,1,2023,Miami
+37,15,Hulkenberg,Norris,,1,2023,Miami
+38,9,Leclerc,Magnussen,Yes,1,2023,Miami
+39,11,Hamilton,Bottas,Yes,18,2023,Miami
+46,8,Hamilton,Magnussen,,11,2023,Miami
+47,9,Ocon,Magnussen,,11,2023,Miami
+47,12,Tsunoda,Albon,,17,2023,Miami
+47,14,Stroll,Hulkenberg,,17,2023,Miami
+48,1,Verstappen,Perez,Yes,1,2023,Miami
+48,16,Zhou,Norris,,11,2023,Miami
+49,13,Stroll,Albon,Yes,1,2023,Miami
+50,11,Tsunoda,Bottas,Yes,17,2023,Miami
+51,12,Stroll,Bottas,Yes,17,2023,Miami
+53,6,Leclerc,Gasly,Yes,1,2023,Miami
+53,7,Hamilton,Gasly,Yes,11,2023,Miami
+54,6,Hamilton,Leclerc,Yes,11,2023,Miami
+17,15,Magnussen,Sargeant,Yes,Mirabeau,2023,Monaco
+17,16,Stroll,Sargeant,Yes,Rascasse,2023,Monaco
+17,17,Perez,Sargeant,Yes,A. Noghes,2023,Monaco
+18,13,Bottas,Albon,Replay,Leows,2023,Monaco
+19,17,Hulkenberg,Sargeant,Yes,N. Chicane,2023,Monaco
+19,18,Hulkenberg,Zhou,Replay,Beau Rivage,2023,Monaco
+33,15,Stroll,Perez,Replay,N. Chicane,2023,Monaco
+53,15,Bottas,Perez,,Leows,2023,Monaco
+53,16,Stroll,Perez,,Porties,2023,Monaco
+54,14,Bottas,Hulkenberg,,Tunnel,2023,Monaco
+55,12,Bottas,Magnussen,,Casino,2023,Monaco
+55,13,Bottas,De Vries,,St Devote,2023,Monaco
+55,13,De Vries,Magnussen,,Casino,2023,Monaco
+55,14,Zhou,Magnussen,,Finish Line,2023,Monaco
+55,15,Albon,Magnussen,,Finish Line,2023,Monaco
+56,16,Perez,Magnussen,,St Devote,2023,Monaco
+56,17,Hulkenberg,Magnussen,Yes,Portier,2023,Monaco
+58,10,Norris,Piastri,,Rascasse,2023,Monaco
+67,9,Norris,Tsunoda,Replay,St Devote,2023,Monaco
+68,10,Piastri,Tsunoda,Yes,St Devote,2023,Monaco
+69,13,Zhou,Tsunoda,Background,St Devote,2023,Monaco
+69,14,Albon,Tsunoda,Background,St Devote,2023,Monaco
+2,10,Perez,Piastri,Yes,1,2023,Spain
+3,11,Tsunoda,Piastri,,1,2023,Spain
+5,8,Zhou,Hulkenberg,Yes,1,2023,Spain
+5,18,Leclerc,Sargeant,,1,2023,Spain
+6,9,Perez,Hulkenberg,Yes,1,2023,Spain
+7,6,Russell,Alonso,Yes,1,2023,Spain
+7,10,Tsunoda,Hulkenberg,,1,2023,Spain
+7,16,Leclerc,Albon,Replay,1,2023,Spain
+8,3,Hamilton,Stroll,Yes,1,2023,Spain
+8,11,Piastri,Hulkenberg,Yes,1,2023,Spain
+9,8,Perez,Zhou,Yes,1,2023,Spain
+10,11,Gasly,Magnussen,Replay,1,2023,Spain
+10,17,Hulkenberg,Bottas,,1,2023,Spain
+11,5,Russell,Ocon,Yes,1,2023,Spain
+11,14,Hulkenberg,Tsunoda,Replay,1,2023,Spain
+11,15,Hulkenberg,Zhou,Replay,1,2023,Spain
+11,15,Zhou,Tsunoda,Yes,4,2023,Spain
+11,18,De Vries,Magnussen,,1,2023,Spain
+12,18,Magnussen,De Vries,,1,2023,Spain
+14,15,Tsunoda,Zhou,Yes,4,2023,Spain
+14,17,Magnussen,Bottas,,1,2023,Spain
+15,11,Stroll,Sargeant,Yes,10,2023,Spain
+15,14,Tsunoda,Hulkenberg,Yes,1,2023,Spain
+15,18,De Vries,Bottas,,1,2023,Spain
+16,10,Stroll,Albon,,12,2023,Spain
+16,11,Ocon,Sargeant,,10,2023,Spain
+16,15,Zhou,Hulkenberg,Yes,1,2023,Spain
+17,11,Tsunoda,Sargeant,,7,2023,Spain
+19,6,Sainz,Gasly,Yes,1,2023,Spain
+19,13,Piastri,Magnussen,,10,2023,Spain
+19,14,Piastri,De Vries,Yes,1,2023,Spain
+20,15,Leclerc,Gasly,Yes,1,2023,Spain
+20,16,Leclerc,Bottas,Replay,1,2023,Spain
+21,9,Alonso,Zhou,Yes,1,2023,Spain
+21,11,Piastri,Hulkenberg,Yes,1,2023,Spain
+21,15,Gasly,Leclerc,,1,2023,Spain
+23,14,Gasly,De Vries,Yes,1,2023,Spain
+24,13,Gasly,Magnussen,Yes,1,2023,Spain
+26,13,Leclerc,De Vries,Yes,1,2023,Spain
+28,2,Hamilton,Sainz,Replay,1,2023,Spain
+28,4,Russell,Stroll,,1,2023,Spain
+31,8,Perez,Alonso,Yes,1,2023,Spain
+31,17,Hulkenberg,Sargeant,,1,2023,Spain
+32,16,Hulkenberg,Albon,Replay,1,2023,Spain
+33,7,Perez,Tsunoda,Replay,1,2023,Spain
+34,5,Perez,Ocon,Yes,1,2023,Spain
+34,15,Hulkenberg,Bottas,,1,2023,Spain
+35,3,Russell,Sainz,Yes,1,2023,Spain
+35,18,Magnussen,Sargeant,,1,2023,Spain
+39,11,Ocon,Tsunoda,Yes,1,2023,Spain
+39,15,Magnussen,Bottas,Yes,1,2023,Spain
+41,16,De Vries,Norris,Yes,1,2023,Spain
+42,15,De Vries,Magnussen,Yes,1,2023,Spain
+43,11,Zhou,Hulkenberg,Yes,1,2023,Spain
+48,9,Alonso,Zhou,Yes,1,2023,Spain
+48,11,Gasly,Piastri,,1,2023,Spain
+48,18,Magnussen,Sargeant,,1,2023,Spain
+49,8,Alonso,Tsunoda,Yes,1,2023,Spain
+51,7,Alonso,Ocon,Yes,1,2023,Spain
+51,12,Leclerc,Piastri,Yes,1,2023,Spain
+53,4,Perez,Sainz,Yes,1,2023,Spain
+53,19,Norris,Bottas,,1,2023,Spain
+55,18,Norris,Sargeant,,1,2023,Spain
+61,19,Bottas,Sargeant,,1,2023,Spain
+64,17,Norris,Magnussen,,1,2023,Spain
+7,6,Piastri,Hulkenberg,Replay,1,2023,Canada
+10,13,Stroll,Gasly,,13,2023,Canada
+11,7,Norris,Hulkenberg,Yes,13,2023,Canada
+17,10,Norris,Piastri,Replay,10,2023,Canada
+19,11,Albon,Piastri,Yes,Finish Line,2023,Canada
+20,8,Bottas,Magnussen,Yes,13,2023,Canada
+21,9,Norris,Magnussen,Yes,1,2023,Canada
+22,2,Alonso,Hamilton,Yes,13,2023,Canada
+22,11,Piastri,Albon,Replay,Finish Line,2023,Canada
+24,10,Piastri,Magnussen,Yes,Finish Line,2023,Canada
+28,11,Albon,Magnussen,Yes,Finish Line,2023,Canada
+34,12,Tsunoda,Magnussen,Background,13,2023,Canada
+35,12,Russell,Magnussen,Yes,2,2023,Canada
+35,13,Russell,De Vries,Yes,2,2023,Canada
+39,6,Perez,Albon,Yes,13,2023,Canada
+43,13,Gasly,Hulkenberg,Yes,13,2023,Canada
+44,18,Magnussen,De Vries,Replay,13,2023,Canada
+48,15,Tsunoda,Hulkenberg,Replay,13,2023,Canada
+63,9,Norris,Bottas,Yes,10,2023,Canada
+70,10,Stroll,Bottas,Yes,Finish Line,2023,Canada
+2,11,Russell,Magnussen,Yes,4,2023,Austria-Sprint
+2,11,Magnussen,Russell,Yes,7,2023,Austria-Sprint
+2,18,Sargeant,Zhou,,6,2023,Austria-Sprint
+9,11,Russell,Magnussen,Yes,4,2023,Austria-Sprint
+10,12,Hamilton,Magnussen,Yes,3,2023,Austria-Sprint
+10,12,Magnussen,Hamilton,Yes,4,2023,Austria-Sprint
+10,12,Hamilton,Magnussen,Yes,6,2023,Austria-Sprint
+12,2,Perez,Hulkenberg,Yes,6,2023,Austria-Sprint
+13,3,Sainz,Hulkenberg,Yes,4,2023,Austria-Sprint
+13,16,Piastri,De Vries,,3,2023,Austria-Sprint
+14,8,Leclerc,Ocon,Yes,4,2023,Austria-Sprint
+14,8,Ocon,Leclerc,Yes,6,2023,Austria-Sprint
+14,17,Sargeant,De Vries,,3,2023,Austria-Sprint
+15,9,Norris,Leclerc,Yes,10,2023,Austria-Sprint
+17,4,Stroll,Hulkenberg,Yes,3,2023,Austria-Sprint
+18,14,Russell,Hamilton,Yes,4,2023,Austria-Sprint
+18,16,Piastri,Magnussen,,6,2023,Austria-Sprint
+19,12,Russell,Bottas,Yes,1,2023,Austria-Sprint
+19,13,Hamilton,Leclerc,Yes,4,2023,Austria-Sprint
+19,16,Magnussen,Tsunoda,,4,2023,Austria-Sprint
+20,8,Hulkenberg,Gasly,Yes,1,2023,Austria-Sprint
+20,11,Hamilton,Bottas,Yes,3,2023,Austria-Sprint
+20,11,Albon,Hamilton,Yes,4,2023,Austria-Sprint
+20,12,Hamilton,Albon,Yes,3,2023,Austria-Sprint
+20,12,Albon,Bottas,Yes,3,2023,Austria-Sprint
+20,13,Leclerc,Bottas,Yes,7,2023,Austria-Sprint
+20,14,Piastri,Bottas,Yes,10,2023,Austria-Sprint
+21,9,Russell,Gasly,Replay,3,2023,Austria-Sprint
+21,11,Hamilton,Albon,Yes,4,2023,Austria-Sprint
+21,15,Magnussen,Bottas,,9,2023,Austria-Sprint
+22,13,Piastri,Albon,Yes,4,2023,Austria-Sprint
+22,14,Piastri,Leclerc,,3,2023,Austria-Sprint
+23,7,Hulkenberg,Norris,Yes,6,2023,Austria-Sprint
+23,10,Hamilton,Gasly,,4,2023,Austria-Sprint
+23,11,Piastri,Gasly,,10,2023,Austria-Sprint
+23,12,Leclerc,Gasly,,10,2023,Austria-Sprint
+23,13,Leclerc,Albon,Yes,1,2023,Austria-Sprint
+23,16,Tsunoda,Bottas,,3,2023,Austria-Sprint
+23,17,Sargeant,Bottas,,3,2023,Austria-Sprint
+23,18,De Vries,Bottas,,3,2023,Austria-Sprint
+24,6,Hulkenberg,Ocon,Yes,1,2023,Austria-Sprint
+24,9,Russell,Norris,,3,2023,Austria-Sprint
+24,13,Albon,Gasly,,3,2023,Austria-Sprint
+24,14,Magnussen,Gasly,,9,2023,Austria-Sprint
+24,17,De Vries,Sargeant,,7,2023,Austria-Sprint
+24,19,Zhou,Bottas,,1,2023,Austria-Sprint
+4,17,Tsunoda,Bottas,Background,4,2023,Austria
+4,18,Tsunoda,De Vries,Background,3,2023,Austria
+5,12,Perez,Ocon,Replay,3,2023,Austria
+10,11,Perez,Russell,Yes,4,2023,Austria
+11,8,Gasly,Hulkenberg,Replay,3,2023,Austria
+12,9,Perez,Albon,Replay,3,2023,Austria
+16,10,Magnussen,Gasly,Background,1,2023,Austria
+16,10,Gasly,Magnussen,Yes,1,2023,Austria
+16,10,Magnussen,Gasly,Yes,3,2023,Austria
+16,9,Magnussen,Bottas,Yes,4,2023,Austria
+16,10,Gasly,Bottas,Yes,4,2023,Austria
+16,12,Russell,Albon,Yes,4,2023,Austria
+16,15,Stroll,Piastri,,4,2023,Austria
+17,5,Sainz,Norris,Yes,3,2023,Austria
+17,9,Gasly,Magnussen,Replay,3,2023,Austria
+17,11,Russell,Bottas,Replay,3,2023,Austria
+17,12,Albon,Bottas,,9,2023,Austria
+18,8,Gasly,Tsunoda,Yes,4,2023,Austria
+18,10,Russell,Magnussen,Yes,4,2023,Austria
+18,13,Ocon,Bottas,,3,2023,Austria
+19,4,Sainz,Hamilton,Yes,4,2023,Austria
+19,11,Albon,Magnussen,,3,2023,Austria
+19,11,Magnussen,Albon,,4,2023,Austria
+19,14,Stroll,Bottas,,3,2023,Austria
+20,3,Sainz,Perez,Yes,4,2023,Austria
+20,9,Russell,Tsunoda,,3,2023,Austria
+20,11,Albon,Magnussen,,3,2023,Austria
+20,12,Ocon,Magnussen,Yes,6,2023,Austria
+20,15,Piastri,Bottas,,3,2023,Austria
+21,10,Albon,Tsunoda,Replay,3,2023,Austria
+21,11,Ocon,Tsunoda,,4,2023,Austria
+21,13,Stroll,Magnussen,Replay,3,2023,Austria
+22,12,Stroll,Tsunoda,,6,2023,Austria
+22,14,Piastri,Magnussen,Replay,3,2023,Austria
+24,18,Bottas,Piastri,,3,2023,Austria
+24,18,Piastri,Bottas,,4,2023,Austria
+25,13,Sargeant,Magnussen,,3,2023,Austria
+25,18,Bottas,Piastri,,4,2023,Austria
+26,2,Verstappen,Sainz,Yes,3,2023,Austria
+26,10,Perez,Ocon,Yes,4,2023,Austria
+27,9,Perez,Albon,Yes,3,2023,Austria
+27,14,Zhou,Magnussen,Replay,3,2023,Austria
+28,4,Norris,Hamilton,Yes,4,2023,Austria
+30,8,Perez,Russell,Yes,3,2023,Austria
+34,7,Perez,Gasly,Replay,3,2023,Austria
+34,15,De Vries,Magnussen,Replay,4,2023,Austria
+35,1,Verstappen,Leclerc,Yes,3,2023,Austria
+42,4,Perez,Alonso,Yes,3,2023,Austria
+43,9,Russell,Sargeant,Replay,3,2023,Austria
+44,6,Norris,Gasly,Yes,3,2023,Austria
+44,13,Sargeant,Zhou,,4,2023,Austria
+46,4,Sainz,Norris,Yes,4,2023,Austria
+55,11,Stroll,Ocon,,3,2023,Austria
+56,4,Perez,Norris,Yes,4,2023,Austria
+59,3,Perez,Sainz,Yes,3,2023,Austria
+59,3,Sainz,Perez,Yes,4,2023,Austria
+61,3,Perez,Sainz,Yes,4,2023,Austria
+63,10,Stroll,Albon,Yes,4,2023,Austria
+64,16,Bottas,Magnussen,Yes,3,2023,Austria
+64,16,Magnussen,Bottas,Yes,6,2023,Austria
+66,16,Bottas,Magnussen,Yes,3,2023,Austria
+66,17,Tsunoda,Magnussen,Yes,4,2023,Austria
+68,18,Piastri,Magnussen,,3,2023,Austria
+2,15,Perez,Sargeant,,Loop,2023,Silverstone
+2,18,Zhou,Bottas,,Brooklands,2023,Silverstone
+5,1,Verstappen,Norris,Yes,Brooklands,2023,Silverstone
+5,14,Perez,Hulkenberg,Replay,Loop,2023,Silverstone
+6,13,Perez,Tsunoda,,Stowe,2023,Silverstone
+6,15,Sargeant,Hulkenberg,,Stowe,2023,Silverstone
+7,7,Hamilton,Alonso,Yes,Brooklands,2023,Silverstone
+12,11,Perez,Stroll,Yes,Stowe,2023,Silverstone
+14,13,Sargeant,Tsunoda,,Brooklands,2023,Silverstone
+16,10,Perez,Albon,Replay,Stowe,2023,Silverstone
+25,11,Leclerc,Stroll,Yes,Stowe,2023,Silverstone
+30,10,Sainz,Stroll,Yes,Brooklands,2023,Silverstone
+31,5,Piastri,Gasly,Yes,Stowe,2023,Silverstone
+31,8,Russell,Leclerc,Yes,Luffield,2023,Silverstone
+39,11,Stroll,Gasly,Replay,Stowe,2023,Silverstone
+39,16,Hulkenberg,De Vries,,Brooklands,2023,Silverstone
+41,15,Hulkenberg,Tsunoda,,Copse,2023,Silverstone
+43,7,Perez,Sainz,Yes,Club,2023,Silverstone
+44,8,Albon,Sainz,Yes,Abbey,2023,Silverstone
+44,9,Leclerc,Sainz,Yes,Loop,2023,Silverstone
+44,11,Gasly,Stroll,Yes,Luffield,2023,Silverstone
+44,17,Zhou,De Vries,,Stowe,2023,Silverstone
+45,10,Gasly,Sainz,Yes,Luffield,2023,Silverstone
+45,10,Sainz,Gasly,Yes,Copse,2023,Silverstone
+46,6,Perez,Alonso,Yes,Stowe,2023,Silverstone
+51,15,Zhou,Tsunoda,,Stowe,2023,Silverstone
+2,13,Russell,Magnussen,Yes,1,2023,Hungary
+8,7,Perez,Alonso,Yes,1,2023,Hungary
+20,9,Leclerc,Stroll,Yes,2,2023,Hungary
+22,10,Alonso,Bottas,Yes,1,2023,Hungary
+27,6,Perez,Sainz,Yes,1,2023,Hungary
+28,5,Perez,Russell,Yes,3,2023,Hungary
+30,13,Russell,Hulkenberg,Yes,1,2023,Hungary
+31,12,Russell,Albon,Yes,1,2023,Hungary
+35,9,Russell,Bottas,Yes,1,2023,Hungary
+36,14,Stroll,Magnussen,Yes,1,2023,Hungary
+38,15,Albon,Magnussen,Yes,1,2023,Hungary
+40,14,Ricciardo,Magnussen,,1,2023,Hungary
+43,10,Stroll,Tsunoda,Yes,1,2023,Hungary
+47,4,Perez,Piastri,Yes,1,2023,Hungary
+57,4,Hamilton,Piastri,Yes,1,2023,Hungary
+65,7,Russell,Sainz,Yes,1,2023,Hungary
+1,10,Piastri,Zhou,,Stavelot,2023,Spa-Sprint
+2,15,Hulkenberg,Alonso,,Les Combes,2023,Spa-Sprint
+6,1,Verstappen,Piastri,Yes,Les Combes,2023,Spa-Sprint
+7,4,Hamilton,Perez,Yes,La Source,2023,Spa-Sprint
+7,5,Sainz,Perez,Yes,Eau Rouge,2023,Spa-Sprint
+7,6,Leclerc,Perez,Yes,Les Combes,2023,Spa-Sprint
+7,11,Russell,Stroll,,La Source,2023,Spa-Sprint
+7,15,Sargeant,Perez,Yes,Blanchimont,2023,Spa-Sprint
+8,16,Magnussen,Perez,,Les Combes,2023,-Sprint
+9,9,Russell,Ocon,Yes,La Source,2023,Spa-Sprint
+10,8,Russell,Ricciardo,Yes,La Source,2023,Spa-Sprint
+10,16,Zhou,Hulkenberg,,Bus Stop,2023,Spa-Sprint
+11,9,Ocon,Ricciardo,,Blanchimont,2023,Spa-Sprint
+2,9,Albon,Stroll,Yes,Les Combes,2023,Spa
+3,7,Tsunoda,Norris,,Les Combes,2023,Spa
+3,12,Ocon,Bottas,,Les Combes,2023,Spa
+3,14,Sargeant,Zhou,,Les Combes,2023,Spa
+4,5,Alonso,Sainz,Yes,Les Combes,2023,Spa
+4,8,Albon,Norris,Yes,Les Combes,2023,Spa
+4,9,Stroll,Norris,Yes,Bus Stop,2023,Spa
+4,13,Sargeant,Bottas,,Les Combes,2023,Spa
+5,6,Tsunoda,Sainz,Yes,Les Combes,2023,Spa
+5,7,Albon,Sainz,Yes,Bus Stop,2023,Spa
+5,10,Russell,Norris,Yes,La Source,2023,Spa
+5,14,Gasly,Zhou,,Les Combes,2023,Spa
+6,3,Verstappen,Hamilton,Yes,Les Combes,2023,Spa
+6,8,Stroll,Sainz,Yes,Fagnes,2023,Spa
+6,9,Russell,Sainz,Yes,Bus Stop,2023,Spa
+6,18,Magnussen,Ricciardo,,Les Combes,2023,Spa
+7,10,Sargeant,Sainz,Yes,Blanchimont,2023,Spa
+7,11,Gasly,Sainz,Yes,Bus Stop,2023,Spa
+7,15,Magnussen,Norris,,Les Combes,2023,Spa
+8,13,Ocon,Norris,Yes,Les Combes,2023,Spa
+8,13,Albon,Ocon,Yes,Les Combes,2023,Spa
+8,14,Albon,Ocon,Yes,Les Combes,2023,Spa
+9,2,Verstappen,Leclerc,Yes,Les Combes,2023,Spa
+9,11,Albon,Magnussen,,Les Combes,2023,Spa
+10,10,Albon,Tsunoda,Yes,Les Combes,2023,Spa
+10,12,Ocon,Magnussen,Yes,Les Combes,2023,Spa
+10,14,Ricciardo,Norris,Yes,Les Combes,2023,Spa
+11,8,Hulkenberg,Alonso,Yes,Les Combes,2023,Spa
+11,10,Tsunoda,Albon,Yes,Les Combes,2023,Spa
+11,17,Zhou,Sainz,,Les Combes,2023,Spa
+12,8,Alonso,Hulkenberg,Yes,Les Combes,2023,Spa
+14,14,Bottas,Norris,Yes,Les Combes,2023,Spa
+15,6,Alonso,Russell,Yes,Bus Stop,2023,Spa
+15,7,Alonso,Gasly,Background,Les Combes,2023,Spa
+16,5,Alonso,Stroll,,Les Combes,2023,Spa
+16,10,Ocon,Albon,,Fagnes,2023,Spa
+16,15,Zhou,Norris,,Les Combes,2023,Spa
+16,17,Sargeant,Sainz,,Les Combes,2023,Spa
+16,18,Hulkenberg,Sainz,,Les Combes,2023,Spa
+17,1,Verstappen,Perez,Yes,Les Combes,2023,Spa
+17,6,Russell,Stroll,Yes,Les Combes,2023,Spa
+18,16,Hulkenberg,Sargeant,,Les Combes,2023,Spa
+19,7,Gasly,Stroll,Yes,Les Combes,2023,Spa
+19,18,Norris,Sainz,,Fagnes,2023,Spa
+20,8,Tsunoda,Stroll,Yes,La Source,2023,Spa
+22,9,Albon,Ocon,,Les Combes,2023,Spa
+22,12,Bottas,Ricciardo,Yes,Les Combes,2023,Spa
+22,13,Zhou,Ricciardo,,Bus Stop,2023,Spa
+22,14,Hulkenberg,Ricciardo,,Bus Stop,2023,Spa
+22,15,Norris,Sargeant,Yes,9,2023,Spa
+23,6,Tsunoda,Gasly,Yes,Les Combes,2023,Spa
+23,12,Hulkenberg,Zhou,Replay,Les Combes,2023,Spa
+23,13,Norris,Zhou,Yes,Fagnes,2023,Spa
+23,15,Sargeant,Russell,,Les Combes,2023,Spa
+23,15,Russell,Sargeant,Yes,Stavelot,2023,Spa
+24,10,Russell,Zhou,Yes,Les Combes,2023,Spa
+24,18,Ricciardo,Sainz,,Bus Stop,2023,Spa
+25,7,Russell,Norris,Yes,Les Combes,2023,Spa
+25,16,Ricciardo,Hulkenberg,Yes,Les Combes,2023,Spa
+26,15,Hulkenberg,Ricciardo,Replay,Les Combes,2023,Spa
+29,4,Hamilton,Alonso,Yes,La Source,2023,Spa
+29,11,Ocon,Gasly,,Les Combes,2023,Spa
+30,10,Ocon,Albon,,Fagnes,2023,Spa
+32,11,Gasly,Albon,Yes,Stavelot,2023,Spa
+33,17,Zhou,Sargeant,,Les Combes,2023,Spa
+38,9,Ocon,Tsunoda,Yes,Les Combes,2023,Spa
+39,15,Zhou,Ricciardo,Yes,Les Combes,2023,Spa
+40,16,Albon,Ricciardo,Yes,La Source,2023,Spa
+40,14,Zhou,Hulkenberg,Yes,Les Combes,2023,Spa
+40,15,Albon,Hulkenberg,Yes,Blanchimont,2023,Spa
+41,8,Ocon,Stroll,Replay,Les Combes,2023,Spa
+42,13,Zhou,Magnussen,Yes,Les Combes,2023,Spa
+42,14,Albon,Magnussen,Yes,Bus Stop,2023,Spa
+42,16,Ricciardo,Hulkenberg,Yes,La Source,2023,Spa
+43,17,Sargeant,Hulkenberg,,Les Combes,2023,Spa
+2,2,Alonso,Norris,Yes,5,2023,Zandvoort
+2,11,Ocon,Hamilton,,Tarzan,2023,Zandvoort
+2,11,Perez,Ocon,,14,2023,Zandvoort
+2,13,Perez,Hamilton,,13,2023,Zandvoort
+2,14,Perez,Sargeant,,13,2023,Zandvoort
+3,1,Russell,Norris,Yes,Tarzan,2023,Zandvoort
+3,1,Perez,Russell,Yes,9,2023,Zandvoort
+3,2,Perez,Norris,Yes,Scheivlak,2023,Zandvoort
+3,3,Perez,Albon,Yes,Scheivlak,2023,Zandvoort
+3,3,Zhou,Norris,,13,2023,Zandvoort
+3,4,Zhou,Albon,,12,2023,Zandvoort
+3,4,Perez,Piastri,Background,4,2023,Zandvoort
+3,4,Gasly,Norris,Yes,14,2023,Zandvoort
+3,5,Verstappen,Norris,Yes,14,2023,Zandvoort
+3,5,Zhou,Piastri,,11,2023,Zandvoort
+3,5,Gasly,Albon,Yes,13,2023,Zandvoort
+3,5,Perez,Stroll,,Tarzan,2023,Zandvoort
+3,6,Verstappen,Albon,Yes,13,2023,Zandvoort
+3,6,Zhou,Stroll,,9,2023,Zandvoort
+3,6,Gasly,Piastri,,12,2023,Zandvoort
+3,6,Perez,Bottas,,Tarzan,2023,Zandvoort
+3,7,Leclerc,Albon,,Finish Line,2023,Zandvoort
+3,7,Zhou,Bottas,,8,2023,Zandvoort
+3,7,Gasly,Stroll,,10,2023,Zandvoort
+3,7,Verstappen,Piastri,Background,12,2023,Zandvoort
+3,7,Perez,Hulkenberg,,Tarzan,2023,Zandvoort
+3,8,Leclerc,Piastri,,13,2023,Zandvoort
+3,8,Alonso,Albon,Background,Finish Line,2023,Zandvoort
+3,8,Zhou,Hulkenberg,,8,2023,Zandvoort
+3,8,Gasly,Bottas,,9,2023,Zandvoort
+3,8,Verstappen,Stroll,Background,10,2023,Zandvoort
+3,9,Verstappen,Bottas,,10,2023,Zandvoort
+3,9,Alonso,Piastri,,14,2023,Zandvoort
+3,9,Gasly,Hulkenberg,,8,2023,Zandvoort
+3,9,Leclerc,Stroll,Yes,11,2023,Zandvoort
+3,9,Zhou,Hamilton,,3,2023,Zandvoort
+3,10,Verstappen,Hulkenberg,,9,2023,Zandvoort
+3,10,Gasly,Hamilton,,4,2023,Zandvoort
+3,10,Zhou,Sargeant,,3,2023,Zandvoort
+3,10,Leclerc,Bottas,Background,10,2023,Zandvoort
+3,10,Alonso,Stroll,Yes,11,2023,Zandvoort
+3,11,Gasly,Sargeant,,4,2023,Zandvoort
+3,11,Alonso,Bottas,Yes,10,2023,Zandvoort
+3,11,Leclerc,Hulkenberg,,10,2023,Zandvoort
+3,11,Verstappen,Hamilton,,5,2023,Zandvoort
+3,11,Tsunoda,Stroll,,12,2023,Zandvoort
+3,12,Verstappen,Sargeant,,5,2023,Zandvoort
+3,12,Leclerc,Hamilton,,Schievlak,2023,Zandvoort
+3,12,Alonso,Hulkenberg,Background,10,2023,Zandvoort
+3,12,Tsunoda,Bottas,,11,2023,Zandvoort
+3,12,Sainz,Stroll,,13,2023,Zandvoort
+3,13,Leclerc,Sargeant,,Schievlak,2023,Zandvoort
+3,13,Magnussen,Stroll,,14,2023,Zandvoort
+3,13,Alonso,Hamilton,,Schievlak,2023,Zandvoort
+3,13,Sainz,Bottas,,13,2023,Zandvoort
+3,13,Tsunoda,Hulkenberg,,11,2023,Zandvoort
+3,14,Alonso,Sargeant,,Schievlak,2023,Zandvoort
+3,14,Tsunoda,Hamilton,,8,2023,Zandvoort
+3,14,Magnussen,Bottas,,13,2023,Zandvoort
+3,14,Sainz,Hulkenberg,,12,2023,Zandvoort
+3,15,Magnussen,Hulkenberg,,13,2023,Zandvoort
+3,15,Tsunoda,Sargeant,,8,2023,Zandvoort
+3,15,Sainz,Hamilton,,10,2023,Zandvoort
+3,16,Sainz,Sargeant,,9,2023,Zandvoort
+3,16,Magnussen,Hamilton,,10,2023,Zandvoort
+3,17,Magnussen,Sargeant,,10,2023,Zandvoort
+3,17,Ocon,Hamilton,,14,2023,Zandvoort
+3,18,Lawson,Hamilton,,14,2023,Zandvoort
+3,18,Ocon,Sargeant,,13,2023,Zandvoort
+3,19,Lawson,Sargeant,,14,2023,Zandvoort
+4,2,Zhou,Russell,,2,2023,Zandvoort
+4,3,Gasly,Russell,,3,2023,Zandvoort
+4,4,Verstappen,Russell,,3,2023,Zandvoort
+4,5,Leclerc,Russell,,5,2023,Zandvoort
+4,6,Alonso,Russell,,5,2023,Zandvoort
+4,7,Sainz,Russell,,9,2023,Zandvoort
+4,8,Tsunoda,Russell,,10,2023,Zandvoort
+4,8,Sainz,Tsunoda,,5,2023,Zandvoort
+4,8,Tsunoda,Albon,,3,2023,Zandvoort
+4,9,Sainz,Albon,,3,2023,Zandvoort
+4,9,Magnussen,Russell,,11,2023,Zandvoort
+4,9,Tsunoda,Piastri,,Tarzan,2023,Zandvoort
+4,10,Sainz,Piastri,,2,2023,Zandvoort
+4,10,Magnussen,Albon,,Schievlak,2023,Zandvoort
+4,11,Ocon,Albon,,11,2023,Zandvoort
+4,11,Magnussen,Piastri,,4,2023,Zandvoort
+4,12,Ocon,Piastri,,10,2023,Zandvoort
+4,12,Lawson,Albon,,12,2023,Zandvoort
+4,13,Lawson,Piastri,,11,2023,Zandvoort
+4,13,Ocon,Stroll,,Schievlak,2023,Zandvoort
+4,14,Ocon,Bottas,,6,2023,Zandvoort
+4,14,Lawson,Stroll,,9,2023,Zandvoort
+4,15,Norris,Stroll,,13,2023,Zandvoort
+4,15,Ocon,Hulkenberg,,5,2023,Zandvoort
+4,15,Lawson,Bottas,,Schievlak,2023,Zandvoort
+4,16,Lawson,Hulkenberg,,6,2023,Zandvoort
+4,16,Norris,Bottas,,11,2023,Zandvoort
+4,17,Norris,Hulkenberg,,11,2023,Zandvoort
+4,18,Norris,Sargeant,,Schievlak,2023,Zandvoort
+4,19,Hamilton,Sargeant,,13,2023,Zandvoort
+5,12,Norris,Albon,,3,2023,Zandvoort
+5,13,Hamilton,Albon,,14,2023,Zandvoort
+5,13,Norris,Piastri,Replay,Tarzan,2023,Zandvoort
+5,14,Hamilton,Piastri,,14,2023,Zandvoort
+5,15,Hamilton,Bottas,,10,2023,Zandvoort
+5,16,Hamilton,Hulkenberg,,9,2023,Zandvoort
+5,16,Russell,Bottas,,12,2023,Zandvoort
+5,17,Russell,Hulkenberg,,10,2023,Zandvoort
+5,19,Stroll,Sargeant,,13,2023,Zandvoort
+6,3,Verstappen,Gasly,Yes,3,2023,Zandvoort
+6,5,Alonso,Leclerc,Yes,10,2023,Zandvoort
+6,14,Russell,Albon,,9,2023,Zandvoort
+6,15,Russell,Piastri,,8,2023,Zandvoort
+6,18,Stroll,Hulkenberg,,14,2023,Zandvoort
+7,2,Verstappen,Zhou,Yes,3,2023,Zandvoort
+7,18,Stroll,Hulkenberg,,Tarzan,2023,Zandvoort
+7,18,Hulkenberg,Stroll,,13,2023,Zandvoort
+9,11,Norris,Lawson,,,2023,Zandvoort
+10,13,Piastri,Albon,,11,2023,Zandvoort
+10,13,Albon,Russell,,9,2023,Zandvoort
+10,14,Piastri,Russell,,9,2023,Zandvoort
+11,5,Alonso,Zhou,Yes,3,2023,Zandvoort
+12,5,Sainz,Zhou,,Tarzan,2023,Zandvoort
+12,8,Piastri,Tsunoda,,Finish Line,2023,Zandvoort
+12,9,Piastri,Ocon,,Tarzan,2023,Zandvoort
+15,7,Piastri,Magnussen,,Tarzan,2023,Zandvoort
+15,7,Magnussen,Piastri,,Tarzan,2023,Zandvoort
+15,9,Ocon,Tsunoda,Replay,Tarzan,2023,Zandvoort
+15,10,Albon,Tsunoda,,Tarzan,2023,Zandvoort
+16,8,Albon,Ocon,,Tarzan,2023,Zandvoort
+22,14,Bottas,Piastri,,10,2023,Zandvoort
+23,7,Albon,Magnussen,Replay,Tarzan,2023,Zandvoort
+24,8,Ocon,Magnussen,Replay,Tarzan,2023,Zandvoort
+25,6,Albon,Zhou,,Tarzan,2023,Zandvoort
+25,14,Piastri,Bottas,Yes,Tarzan,2023,Zandvoort
+25,18,Stroll,Lawson,,Tarzan,2023,Zandvoort
+26,12,Hamilton,Leclerc,Yes,Tarzan,2023,Zandvoort
+26,13,Piastri,Leclerc,Yes,3,2023,Zandvoort
+27,7,Ocon,Zhou,,Tarzan,2023,Zandvoort
+27,9,Tsunoda,Magnussen,,Tarzan,2023,Zandvoort
+27,15,Hulkenberg,Bottas,,Tarzan,2023,Zandvoort
+28,10,Norris,Magnussen,Yes,Tarzan,2023,Zandvoort
+29,11,Hamilton,Magnussen,Yes,Tarzan,2023,Zandvoort
+30,12,Piastri,Magnussen,Yes,Tarzan,2023,Zandvoort
+30,14,Hulkenberg,Leclerc,,Tarzan,2023,Zandvoort
+31,8,Tsunoda,Zhou,Yes,Tarzan,2023,Zandvoort
+32,9,Norris,Zhou,Yes,Tarzan,2023,Zandvoort
+33,10,Hamilton,Zhou,Yes,Tarzan,2023,Zandvoort
+34,11,Piastri,Zhou,Replay,Tarzan,2023,Zandvoort
+34,16,Russell,Bottas,,2,2023,Zandvoort
+35,15,Russell,Leclerc,Replay,10,2023,Zandvoort
+38,14,Bottas,Leclerc,Replay,Tarzan,2023,Zandvoort
+40,15,Lawson,Leclerc,Yes,11,2023,Zandvoort
+41,12,Russell,Hulkenberg,Replay,11,2023,Zandvoort
+41,15,Leclerc,Lawson,Yes,Tarzan,2023,Zandvoort
+41,15,Lawson,Leclerc,,10,2023,Zandvoort
+42,17,Stroll,Magnussen,,Tarzan,2023,Zandvoort
+45,12,Ocon,Bottas,Replay,Tarzan,2023,Zandvoort
+45,13,Norris,Bottas,,11,2023,Zandvoort
+45,15,Zhou,Lawson,,Tarzan,2023,Zandvoort
+46,6,Sainz,Piastri,,Tarzan,2023,Zandvoort
+46,9,Albon,Hulkenberg,,Tarzan,2023,Zandvoort
+47,9,Ocon,Hulkenberg,,11,2023,Zandvoort
+48,4,Sainz,Tsunoda,Yes,Tarzan,2023,Zandvoort
+48,10,Norris,Hulkenberg,Replay,Tarzan,2023,Zandvoort
+48,13,Piastri,Zhou,Replay,Tarzan,2023,Zandvoort
+49,4,Alonso,Tsunoda,,11,2023,Zandvoort
+50,5,Gasly,Tsunoda,Yes,10,2023,Zandvoort
+52,3,Alonso,Sainz,Yes,Tarzan,2023,Zandvoort
+52,6,Russell,Tsunoda,Replay,Tarzan,2023,Zandvoort
+52,7,Albon,Tsunoda,Yes,Timing Line,2023,Zandvoort
+53,8,Ocon,Tsunoda,Yes,Tarzan,2023,Zandvoort
+55,9,Norris,Tsunoda,Yes,Tarzan,2023,Zandvoort
+55,10,Hamilton,Tsunoda,Yes,Tarzan,2023,Zandvoort
+55,11,Piastri,Tsunoda,,Timing Line,2023,Zandvoort
+56,6,Albon,Russell,Yes,Tarzan,2023,Zandvoort
+56,9,Hamilton,Norris,Replay,Tarzan,2023,Zandvoort
+56,15,Hulkenberg,Magnussen,,Tarzan,2023,Zandvoort
+58,8,Hamilton,Ocon,Replay,Tarzan,2023,Zandvoort
+60,4,Gasly,Sainz,Yes,Tarzan,2023,Zandvoort
+61,3,Perez,Albon,,12,2023,Zandvoort
+62,8,Russell,Albon,Yes,5,2023,Zandvoort
+67,7,Russell,Norris,Yes,5,2023,Zandvoort
+67,7,Norris,Russell,Replay,12,2023,Zandvoort
+67,11,Stroll,Tsunoda,,11,2023,Zandvoort
+67,12,Hulkenberg,Tsunoda,,13,2023,Zandvoort
+67,14,Lawson,Bottas,,5,2023,Zandvoort
+68,15,Magnussen,Bottas,,5,2023,Zandvoort
+2,6,Albon,Piastri,Yes,Roggia,2023,Monza
+4,18,Stroll,Magnussen,,1,2023,Monza
+8,10,Alonso,Hulkenberg,Replay,1,2023,Monza
+12,11,Lawson,Hulkenberg,,1,2023,Monza
+15,1,Verstappen,Sainz,Yes,Roggia,2023,Monza
+16,4,Perez,Russell,Yes,1,2023,Monza
+20,8,Sainz,Bottas,,Ascari,2023,Monza
+21,9,Russell,Bottas,,Ascari,2023,Monza
+23,9,Albon,Ocon,,1,2023,Monza
+24,9,Norris,Ocon,,Ascari,2023,Monza
+24,10,Piastri,Ocon,,Parabolica,2023,Monza
+25,1,Verstappen,Hamilton,Yes,1,2023,Monza
+27,2,Sainz,Hamilton,Yes,Ascari,2023,Monza
+27,3,Leclerc,Hamilton,Yes,Parabolica,2023,Monza
+29,9,Hamilton,Alonso,Yes,1,2023,Monza
+32,3,Perez,Leclerc,Yes,1,2023,Monza
+33,13,Bottas,Hulkenberg,,Ascari,2023,Monza
+33,17,Ocon,Magnussen,Replay,1,2023,Monza
+38,12,Stroll,Hulkenberg,,1,2023,Monza
+43,10,Bottas,Sargeant,,1,2023,Monza
+44,12,Lawson,Stroll,,Parabolica,2023,Monza
+45,7,Hamilton,Norris,Yes,1,2023,Monza
+45,13,Piastri,Stroll,,Roggia,2023,Monza
+46,2,Perez,Sainz,Yes,1,2023,Monza
+47,3,Leclerc,Sainz,Yes,1,2023,Monza
+47,3,Sainz,Leclerc,Yes,Roggia,2023,Monza
+47,6,Hamilton,Albon,Replay,1,2023,Monza
+50,11,Piastri,Sargeant,,Ascari,2023,Monza
+50,14,Zhou,Stroll,,1,2023,Monza
+50,15,Gasly,Stroll,,Ascari,2023,Monza
+51,12,Lawson,Sargeant,,1,2023,Monza
+2,9,Verstappen,Hulkenberg,Replay,13,2023,Singapore
+6,8,Verstappen,Magnussen,Yes,14,2023,Singapore
+23,2,Russell,Verstappen,Yes,16,2023,Singapore
+23,4,Norris,Perez,Yes,16,2023,Singapore
+23,6,Hamilton,Leclerc,Replay,7,2023,Singapore
+23,10,Magnussen,Bottas,,14,2023,Singapore
+23,11,Gasly,Bottas,,14,2023,Singapore
+23,12,Piastri,Bottas,,18,2023,Singapore
+24,3,Norris,Verstappen,Yes,14,2023,Singapore
+24,5,Hamilton,Perez,Yes,7,2023,Singapore
+24,13,Lawson,Bottas,,1,2023,Singapore
+24,14,Hulkenberg,Bottas,,3,2023,Singapore
+24,15,Albon,Bottas,,7,2023,Singapore
+27,4,Hamilton,Verstappen,Yes,7,2023,Singapore
+28,5,Leclerc,Verstappen,Yes,7,2023,Singapore
+35,10,Magnussen,Gasly,,3,2023,Singapore
+36,14,Albon,Magnussen,Yes,9,2023,Singapore
+37,7,Alonso,Perez,Yes,7,2023,Singapore
+37,7,Perez,Alonso,Yes,7,2023,Singapore
+37,8,Ocon,Alonso,Yes,10,2023,Singapore
+39,7,Ocon,Perez,Yes,9,2023,Singapore
+39,8,Alonso,Perez,Yes,14,2023,Singapore
+39,9,Gasly,Perez,Yes,16,2023,Singapore
+43,13,Verstappen,Magnussen,,7,2023,Singapore
+43,15,Perez,Sargeant,,7,2023,Singapore
+47,10,Verstappen,Zhou,Yes,13,2023,Singapore
+48,9,Verstappen,Hulkenberg,Yes,14,2023,Singapore
+50,8,Verstappen,Lawson,Yes,16,2023,Singapore
+52,11,Albon,Zhou,,7,2023,Singapore
+52,12,Perez,Zhou,,13,2023,Singapore
+53,3,Russell,Leclerc,Yes,16,2023,Singapore
+53,10,Albon,Hulkenberg,,7,2023,Singapore
+53,11,Perez,Hulkenberg,,7,2023,Singapore
+54,4,Hamilton,Leclerc,Yes,7,2023,Singapore
+54,7,Verstappen,Piastri,Yes,14,2023,Singapore
+57,6,Verstappen,Gasly,Yes,14,2023,Singapore
+59,12,Magnussen,Zhou,,5,2023,Singapore
+59,13,Albon,Zhou,,7,2023,Singapore
+60,9,Perez,Lawson,,8,2023,Singapore
+60,11,Magnussen,Hulkenberg,,1,2023,Singapore
+60,12,Albon,Hulkenberg,,3,2023,Singapore
+61,13,Zhou,Hulkenberg,,13,2023,Singapore
+5,7,Russell,Hamilton,Yes,Chicane,2023,Japan
+5,17,Perez,Albon,,Chicane,2023,Japan
+6,7,Hamilton,Russell,Yes,1,2023,Japan
+7,16,Perez,Zhou,Yes,Chicane,2023,Japan
+11,11,Ocon,Magnussen,Yes,1,2023,Japan
+13,11,Alonso,Albon,,10,2023,Japan
+15,7,Piastri,Gasly,Yes,Chicane,2023,Japan
+18,6,Norris,Ocon,,Chicane,2023,Japan
+18,13,Stroll,Hulkenberg,Yes,1,2023,Japan
+19,1,Verstappen,Russell,Yes,10,2023,Japan
+19,5,Leclerc,Ocon,Yes,Spoon,2023,Japan
+19,6,Leclerc,Alonso,Yes,1,2023,Japan
+20,7,Sainz,Alonso,Yes,Spoon,2023,Japan
+20,14,Gasly,Zhou,,1,2023,Japan
+21,6,Sainz,Ocon,Yes,1,2023,Japan
+21,8,Hamilton,Alonso,Yes,130r,2023,Japan
+22,7,Hamilton,Ocon,Yes,1,2023,Japan
+23,11,Gasly,Lawson,Replay,1,2023,Japan
+24,11,Gasly,Tsunoda,,1,2023,Japan
+25,7,Russell,Ocon,,130r,2023,Japan
+25,8,Russell,Alonso,Yes,Spoon,2023,Japan
+27,11,Alonso,Zhou,Replay,10,2023,Japan
+29,9,Alonso,Tsunoda,Yes,Spoon,2023,Japan
+30,13,Lawson,Magnussen,Yes,1,2023,Japan
+36,10,Gasly,Hulkenberg,Yes,1,2023,Japan
+38,3,Norris,Russell,Yes,1,2023,Japan
+42,3,Piastri,Russell,Yes,1,2023,Japan
+45,4,Leclerc,Russell,Yes,1,2023,Japan
+50,6,Sainz,Russell,Yes,1,2023,Japan
+3,1,Russell,Piastri,Yes,6,2023,Qatar-Sprint
+3,7,Ocon,Alonso,Replay,7,2023,Qatar-Sprint
+3,10,Gasly,Perez,,1,2023,Qatar-Sprint
+3,13,Stroll,Bottas,,3,2023,Qatar-Sprint
+3,16,Albon,Magnussen,,3,2023,Qatar-Sprint
+3,16,Magnussen,Albon,,4,2023,Qatar-Sprint
+7,7,Alonso,Ocon,Replay,1,2023,Qatar-Sprint
+7,17,Tsunoda,Albon,,1,2023,Qatar-Sprint
+9,4,Verstappen,Leclerc,Yes,1,2023,Qatar-Sprint
+9,10,Perez,Gasly,Replay,2,2023,Qatar-Sprint
+9,17,Albon,Tsunoda,,1,2023,Qatar-Sprint
+10,3,Verstappen,Sainz,Yes,1,2023,Qatar-Sprint
+10,11,Hamilton,Gasly,Replay,1,2023,Qatar-Sprint
+10,16,Albon,Magnussen,,1,2023,Qatar-Sprint
+11,1,Piastri,Russell,Yes,1,2023,Qatar-Sprint
+11,5,Norris,Leclerc,Yes,1,2023,Qatar-Sprint
+11,9,Perez,Hulkenberg,Replay,2,2023,Qatar-Sprint
+11,13,Bottas,Stroll,,1,2023,Qatar-Sprint
+15,5,Leclerc,Norris,Yes,1,2023,Qatar-Sprint
+15,8,Gasly,Hamilton,,2,2023,Qatar-Sprint
+16,2,Verstappen,Russell,Yes,1,2023,Qatar-Sprint
+16,10,Albon,Bottas,,1,2023,Qatar-Sprint
+17,5,Norris,Leclerc,Yes,1,2023,Qatar-Sprint
+17,4,Norris,Sainz,Yes,4,2023,Qatar-Sprint
+17,8,Hamilton,Gasly,Replay,6,2023,Qatar-Sprint
+18,7,Hamilton,Alonso,Yes,1,2023,Qatar-Sprint
+18,9,Albon,Gasly,Background,1,2023,Qatar-Sprint
+19,3,Norris,Russell,Yes,1,2023,Qatar-Sprint
+19,5,Hamilton,Sainz,,7,2023,Qatar-Sprint
+19,6,Hamilton,Leclerc,,1,2023,Qatar-Sprint
+19,8,Albon,Alonso,,1,2023,Qatar-Sprint
+6,8,Hulkenberg,Tsunoda,Yes,2,2023,Qatar
+6,13,Russell,Perez,Yes,4,2023,Qatar
+8,12,Russell,Zhou,Replay,6,2023,Qatar
+8,16,Stroll,Magnussen,,1,2023,Qatar
+9,10,Russell,Sargeant,Yes,1,2023,Qatar
+12,6,Russell,Albon,,6,2023,Qatar
+13,3,Russell,Hulkenberg,Replay,1,2023,Qatar
+13,14,Alonso,Leclerc,Replay,4,2023,Qatar
+14,9,Piastri,Lawson,Yes,1,2023,Qatar
+15,3,Perez,Zhou,Replay,1,2023,Qatar
+15,7,Piastri,Magnussen,Replay,1,2023,Qatar
+15,9,Alonso,Lawson,Yes,1,2023,Qatar
+16,8,Alonso,Magnussen,Yes,1,2023,Qatar
+16,10,Leclerc,Lawson,Yes,1,2023,Qatar
+16,11,Norris,Lawson,Yes,1,2023,Qatar
+17,6,Piastri,Stroll,Replay,1,2023,Qatar
+17,9,Leclerc,Magnussen,Yes,1,2023,Qatar
+17,10,Norris,Magnussen,Yes,1,2023,Qatar
+17,12,Ocon,Lawson,,1,2023,Qatar
+18,5,Piastri,Bottas,Yes,1,2023,Qatar
+18,10,Ocon,Magnussen,,1,2023,Qatar
+18,12,Gasly,Lawson,,1,2023,Qatar
+19,6,Norris,Leclerc,Yes,1,2023,Qatar
+19,9,Gasly,Magnussen,,1,2023,Qatar
+19,10,Russell,Magnussen,Replay,6,2023,Qatar
+19,11,Russell,Lawson,,1,2023,Qatar
+20,3,Alonso,Bottas,Yes,1,2023,Qatar
+20,14,Perez,Albon,Yes,1,2023,Qatar
+21,5,Norris,Stroll,Yes,1,2023,Qatar
+21,11,Perez,Tsunoda,,1,2023,Qatar
+23,7,Russell,Gasly,Yes,1,2023,Qatar
+26,9,Zhou,Sargeant,Yes,1,2023,Qatar
+26,13,Stroll,Leclerc,Yes,1,2023,Qatar
+29,4,Piastri,Albon,Yes,1,2023,Qatar
+30,6,Norris,Zhou,Yes,1,2023,Qatar
+31,10,Leclerc,Stroll,Yes,2,2023,Qatar
+32,5,Alonso,Zhou,,1,2023,Qatar
+32,14,Tsunoda,Albon,Yes,4,2023,Qatar
+33,6,Leclerc,Alonso,Yes,4,2023,Qatar
+33,7,Leclerc,Bottas,Yes,1,2023,Qatar
+35,4,Russell,Zhou,Yes,1,2023,Qatar
+35,14,Albon,Tsunoda,Yes,1,2023,Qatar
+36,8,Ocon,Stroll,Yes,2,2023,Qatar
+37,9,Gasly,Stroll,Replay,10,2023,Qatar
+38,7,Ocon,Bottas,Replay,1,2023,Qatar
+39,14,Zhou,Tsunoda,Yes,1,2023,Qatar
+45,16,Hulkenberg,Lawson,,1,2023,Qatar
+53,10,Perez,Gasly,Yes,1,2023,Qatar
+3,6,Perez,Piastri,Yes,13,2023,COTA-Sprint
+5,8,Gasly,Piastri,Replay,1,2023,COTA-Sprint
+6,9,Albon,Piastri,Replay,12,2023,COTA-Sprint
+6,14,Alonso,Magnussen,,12,2023,COTA-Sprint
+7,4,Norris,Sainz,Replay,12,2023,COTA-Sprint
+7,4,Sainz,Norris,Yes,13,2023,COTA-Sprint
+7,15,Hulkenberg,Magnussen,,12,2023,COTA-Sprint
+9,12,Stroll,Ricciardo,,12,2023,COTA-Sprint
+9,16,Tsunoda,Magnussen,,1,2023,COTA-Sprint
+9,16,Magnussen,Tsunoda,,1,2023,COTA-Sprint
+9,16,Tsunoda,Magnussen,,12,2023,COTA-Sprint
+10,4,Norris,Sainz,Yes,12,2023,COTA-Sprint
+11,5,Perez,Sainz,Yes,12,2023,COTA-Sprint
+12,15,Tsunoda,Hulkenberg,,12,2023,COTA-Sprint
+14,6,Russell,Sainz,Yes,1,2023,COTA-Sprint
+14,6,Sainz,Russell,Yes,2,2023,COTA-Sprint
+14,12,Ricciardo,Stroll,Replay,1,2023,COTA-Sprint
+14,18,Bottas,Magnussen,,12,2023,COTA-Sprint
+2,11,Tsunoda,Zhou,,1,2023,COTA
+2,14,Bottas,Albon,,11,2023,COTA
+2,14,Albon,Bottas,,12,2023,COTA
+3,7,Russell,Ocon,Yes,11,2023,COTA
+3,8,Perez,Ocon,Yes,12,2023,COTA
+4,3,Hamilton,Sainz,Yes,12,2023,COTA
+5,4,Verstappen,Sainz,Yes,12,2023,COTA
+6,2,Hamilton,Leclerc,Yes,12,2023,COTA
+6,18,Stroll,Hulkenberg,,12,2023,COTA
+7,16,Alonso,Sargeant,Replay,12,2023,COTA
+11,3,Verstappen,Leclerc,Yes,15,2023,COTA
+13,17,Sargeant,Magnussen,Yes,12,2023,COTA
+18,10,Perez,Stroll,Yes,12,2023,COTA
+19,12,Gasly,Hulkenberg,Replay,12,2023,COTA
+20,6,Sainz,Ricciardo,Replay,1,2023,COTA
+21,2,Norris,Russell,Yes,12,2023,COTA
+21,7,Perez,Ricciardo,,1,2023,COTA
+21,14,Alonso,Sargeant,,12,2023,COTA
+21,16,Stroll,Magnussen,,12,2023,COTA
+22,13,Alonso,Bottas,,12,2023,COTA
+23,10,Alonso,Zhou,Replay,12,2023,COTA
+23,11,Alonso,Albon,,1,2023,COTA
+24,17,Hulkenberg,Magnussen,,1,2023,COTA
+25,11,Albon,Zhou,Yes,12,2023,COTA
+25,15,Stroll,Ricciardo,,12,2023,COTA
+26,14,Stroll,Sargeant,,12,2023,COTA
+27,13,Stroll,Zhou,,11,2023,COTA
+27,14,Sargeant,Zhou,,12,2023,COTA
+28,1,Verstappen,Norris,Yes,1,2023,COTA
+28,12,Stroll,Bottas,,12,2023,COTA
+30,13,Hulkenberg,Ricciardo,Yes,12,2023,COTA
+31,12,Hulkenberg,Sargeant,Replay,12,2023,COTA
+34,16,Sargeant,Zhou,,12,2023,COTA
+37,14,Hulkenberg,Bottas,,12,2023,COTA
+38,5,Sainz,Russell,Yes,12,2023,COTA
+38,15,Sargeant,Bottas,,12,2023,COTA
+39,1,Verstappen,Leclerc,Yes,1,2023,COTA
+39,2,Norris,Leclerc,Yes,12,2023,COTA
+42,12,Albon,Ricciardo,Yes,2,2023,COTA
+43,3,Hamilton,Leclerc,Yes,12,2023,COTA
+44,9,Alonso,Tsunoda,Replay,12,2023,COTA
+45,13,Hulkenberg,Ricciardo,Yes,1,2023,COTA
+45,14,Sargeant,Ricciardo,Yes,12,2023,COTA
+47,10,Stroll,Tsunoda,Yes,12,2023,COTA
+49,2,Hamilton,Norris,Yes,1,2023,COTA
+52,12,Sargeant,Hulkenberg,,12,2023,COTA
+2,14,Tsunoda,Alonso,,4,2023,Mexico
+3,15,Norris,Alonso,Replay,1,2023,Mexico
+3,18,Stroll,Ocon,,1,2023,Mexico
+7,16,Sargeant,Alonso,,1,2023,Mexico
+11,4,Hamilton,Ricciardo,Yes,1,2023,Mexico
+15,10,Albon,Zhou,Yes,1,2023,Mexico
+22,6,Verstappen,Russell,Yes,1,2023,Mexico
+22,16,Norris,Ocon,,4,2023,Mexico
+23,5,Verstappen,Piastri,Yes,1,2023,Mexico
+23,14,Norris,Alonso,Yes,1,2023,Mexico
+23,16,Tsunoda,Ocon,Background,1,2023,Mexico
+24,14,Tsunoda,Alonso,Replay,1,2023,Mexico
+25,3,Verstappen,Ricciardo,Pip,1,2023,Mexico
+26,11,Norris,Stroll,Replay,1,2023,Mexico
+27,8,Piastri,Bottas,Yes,4,2023,Mexico
+28,7,Piastri,Albon,Yes,1,2023,Mexico
+28,9,Russell,Bottas,Background,1,2023,Mexico
+28,18,Magnussen,Sargeant,,1,2023,Mexico
+29,2,Verstappen,Sainz,Yes,1,2023,Mexico
+29,7,Russell,Albon,Yes,1,2023,Mexico
+29,9,Norris,Bottas,Yes,4,2023,Mexico
+30,12,Tsunoda,Stroll,Yes,1,2023,Mexico
+30,13,Hulkenberg,Ocon,,1,2023,Mexico
+30,15,Gasly,Zhou,Replay,1,2023,Mexico
+31,8,Norris,Albon,Yes,1,2023,Mexico
+32,13,Zhou,Ocon,,1,2023,Mexico
+32,15,Sargeant,Magnussen,,1,2023,Mexico
+37,15,Stroll,Zhou,,4,2023,Mexico
+39,7,Tsunoda,Piastri,,4,2023,Mexico
+39,7,Piastri,Tsunoda,,4,2023,Mexico
+40,2,Hamilton,Leclerc,Yes,1,2023,Mexico
+41,13,Norris,Bottas,Replay,1,2023,Mexico
+41,17,Sargeant,Alonso,,1,2023,Mexico
+43,16,Sargeant,Zhou,,4,2023,Mexico
+45,12,Norris,Gasly,Yes,1,2023,Mexico
+46,11,Norris,Ocon,Yes,1,2023,Mexico
+46,17,Alonso,Zhou,,1,2023,Mexico
+47,10,Norris,Hulkenberg,Yes,1,2023,Mexico
+49,8,Norris,Albon,Yes,4,2023,Mexico
+60,6,Norris,Ricciardo,Yes,4,2023,Mexico
+66,10,Ocon,Hulkenberg,Replay,1,2023,Mexico
+66,11,Gasly,Hulkenberg,,12,2023,Mexico
+66,13,Stroll,Bottas,Replay,14,2023,Mexico
+67,5,Norris,Russell,Yes,7,2023,Mexico
+67,13,Sargeant,Bottas,,1,2023,Mexico
+67,14,Tsunoda,Bottas,,1,2023,Mexico
+70,12,Sargeant,Hulkenberg,,7,2023,Mexico
+71,12,Tsunoda,Hulkenberg,,7,2023,Mexico
+4,4,Perez,Hamilton,Yes,1,2023,Brazil-Sprint
+4,13,Alonso,Hulkenberg,,4,2023,Brazil-Sprint
+5,2,Norris,Russell,Yes,1,2023,Brazil-Sprint
+6,14,Ocon,Hulkenberg,Yes,1,2023,Brazil-Sprint
+6,12,Alonso,Magnussen,Yes,4,2023,Brazil-Sprint
+6,15,Stroll,Hulkenberg,,4,2023,Brazil-Sprint
+7,17,Albon,Bottas,,4,2023,Brazil-Sprint
+8,3,Perez,Russell,Yes,1,2023,Brazil-Sprint
+8,3,Russell,Perez,Yes,4,2023,Brazil-Sprint
+8,13,Ocon,Magnussen,,1,2023,Brazil-Sprint
+8,14,Stroll,Magnussen,,Finish Line,2023,Brazil-Sprint
+9,16,Albon,Hulkenberg,,1,2023,Brazil-Sprint
+10,3,Perez,Russell,Yes,1,2023,Brazil-Sprint
+10,15,Albon,Magnussen,,1,2023,Brazil-Sprint
+12,8,Ricciardo,Sainz,Yes,1,2023,Brazil-Sprint
+12,8,Sainz,Ricciardo,Yes,4,2023,Brazil-Sprint
+13,13,Stroll,Ocon,Background,4,2023,Brazil-Sprint
+14,8,Ricciardo,Sainz,Yes,1,2023,Brazil-Sprint
+14,8,Sainz,Ricciardo,Yes,4,2023,Brazil-Sprint
+14,9,Piastri,Ricciardo,Yes,7,2023,Brazil-Sprint
+14,11,Alonso,Gasly,Yes,12,2023,Brazil-Sprint
+14,11,Gasly,Alonso,Yes,Finish Line,2023,Brazil-Sprint
+15,11,Alonso,Gasly,Yes,4,2023,Brazil-Sprint
+15,16,Hulkenberg,Magnussen,,1,2023,Brazil-Sprint
+15,17,Bottas,Magnussen,,3,2023,Brazil-Sprint
+15,17,Magnussen,Bottas,,4,2023,Brazil-Sprint
+18,12,Stroll,Ocon,Yes,3,2023,Brazil-Sprint
+21,5,Leclerc,Hamilton,Yes,1,2023,Brazil-Sprint
+21,6,Tsunoda,Hamilton,Yes,Finish Line,2023,Brazil-Sprint
+21,9,Ricciardo,Piastri,Yes,Finish Line,2023,Brazil-Sprint
+21,16,Magnussen,Hulkenberg,,1,2023,Brazil-Sprint
+23,18,Zhou,Bottas,,1,2023,Brazil-Sprint
+23,17,Zhou,Hulkenberg,,13,2023,Brazil-Sprint
+24,10,Alonso,Piastri,Yes,1,2023,Brazil-Sprint
+24,10,Piastri,Alonso,Yes,1,2023,Brazil-Sprint
+9,16,Ricciardo,Piastri,,Finish Line,2023,Brazil
+10,12,Bottas,Hulkenberg,Replay,Finish Line,2023,Brazil
+13,10,Tsunoda,Ocon,,1,2023,Brazil
+13,13,Zhou,Hulkenberg,,1,2023,Brazil
+13,14,Sargeant,Hulkenberg,,Finish Line,2023,Brazil
+14,5,Perez,Russell,Yes,1,2023,Brazil
+18,4,Perez,Hamilton,Yes,1,2023,Brazil
+23,7,Perez,Hamilton,Yes,4,2023,Brazil
+24,9,Stroll,Russell,Yes,Finish Line,2023,Brazil
+26,8,Stroll,Hamilton,,Finish Line,2023,Brazil
+28,8,Sainz,Ocon,Replay,1,2023,Brazil
+29,11,Gasly,Sargeant,Replay,Finish Line,2023,Brazil
+32,9,Gasly,Bottas,Yes,1,2023,Brazil
+34,7,Sainz,Russell,Yes,Finish Line,2023,Brazil
+34,11,Tsunoda,Sargeant,,1,2023,Brazil
+36,10,Tsunoda,Bottas,Yes,4,2023,Brazil
+37,6,Sainz,Hamilton,Yes,4,2023,Brazil
+38,13,Ocon,Hulkenberg,Replay,1,2023,Brazil
+43,8,Gasly,Russell,Yes,1,2023,Brazil
+48,6,Perez,Tsunoda,Yes,1,2023,Brazil
+48,8,Hamilton,Ocon,Yes,1,2023,Brazil
+50,8,Gasly,Hamilton,Yes,1,2023,Brazil
+54,11,Ocon,Sargeant,,1,2023,Brazil
+70,3,Perez,Alonso,Yes,1,2023,Brazil
+71,3,Alonso,Perez,Yes,4,2023,Brazil
+7,10,Piastri,Tsunoda,Yes,1,2023,Vegas
+7,13,Zhou,Ricciardo,Yes,5,2023,Vegas
+7,17,Alonso,Sainz,,1,2023,Vegas
+7,17,Sainz,Alonso,Yes,5,2023,Vegas
+7,17,Alonso,Sainz,,17,2023,Vegas
+8,9,Piastri,Hulkenberg,Yes,5,2023,Vegas
+8,11,Hamilton,Tsunoda,Yes,3,2023,Vegas
+9,7,Ocon,Magnussen,Yes,14,2023,Vegas
+10,8,Piastri,Magnussen,Yes,1,2023,Vegas
+10,8,Magnussen,Piastri,Yes,5,2023,Vegas
+10,8,Piastri,Magnussen,Replay,14,2023,Vegas
+10,10,Hamilton,Hulkenberg,Replay,14,2023,Vegas
+10,11,Zhou,Tsunoda,,1,2023,Vegas
+10,12,Ricciardo,Tsunoda,,14,2023,Vegas
+10,14,Perez,Stroll,,17,2023,Vegas
+11,9,Hamilton,Magnussen,Replay,14,2023,Vegas
+11,11,Zhou,Hulkenberg,,14,2023,Vegas
+11,13,Perez,Ricciardo,,17,2023,Vegas
+11,16,Sainz,Alonso,Yes,5,2023,Vegas
+12,12,Perez,Hulkenberg,Yes,14,2023,Vegas
+12,14,Stroll,Ricciardo,,14,2023,Vegas
+13,14,Sainz,Ricciardo,Yes,5,2023,Vegas
+13,15,Alonso,Ricciardo,Yes,14,2023,Vegas
+14,6,Ocon,Sargeant,Yes,7,2023,Vegas
+14,7,Piastri,Sargeant,Yes,14,2023,Vegas
+14,8,Hamilton,Sargeant,Yes,17,2023,Vegas
+14,10,Zhou,Magnussen,,14,2023,Vegas
+14,10,Magnussen,Zhou,,14,2023,Vegas
+14,11,Perez,Zhou,Replay,14,2023,Vegas
+15,10,Stroll,Zhou,,14,2023,Vegas
+16,1,Leclerc,Verstappen,Yes,14,2023,Vegas
+16,4,Ocon,Albon,Replay,14,2023,Vegas
+16,6,Hamilton,Piastri,Replay,14,2023,Vegas
+16,10,Sainz,Zhou,,5,2023,Vegas
+17,15,Sargeant,Piastri,,5,2023,Vegas
+18,2,Perez,Ocon,Yes,14,2023,Vegas
+18,6,Alonso,Zhou,,14,2023,Vegas
+18,13,Piastri,Sargeant,,14,2023,Vegas
+18,18,Hamilton,Ricciardo,,14,2023,Vegas
+19,7,Russell,Zhou,Yes,14,2023,Vegas
+19,12,Piastri,Bottas,,14,2023,Vegas
+20,8,Verstappen,Zhou,Yes,10,2023,Vegas
+20,13,Sargeant,Bottas,,14,2023,Vegas
+21,14,Magnussen,Bottas,,5,2023,Vegas
+21,17,Hamilton,Tsunoda,,14,2023,Vegas
+22,5,Russell,Alonso,Yes,14,2023,Vegas
+22,10,Piastri,Albon,,5,2023,Vegas
+22,15,Hulkenberg,Bottas,,14,2023,Vegas
+23,6,Verstappen,Alonso,Yes,1,2023,Vegas
+24,4,Russell,Sainz,Yes,14,2023,Vegas
+24,5,Verstappen,Sainz,Yes,14,2023,Vegas
+24,8,Gasly,Zhou,,14,2023,Vegas
+24,11,Ocon,Albon,,14,2023,Vegas
+25,2,Leclerc,Stroll,Yes,14,2023,Vegas
+25,4,Verstappen,Russell,Yes,12,2023,Vegas
+25,9,Piastri,Zhou,,5,2023,Vegas
+25,10,Ocon,Zhou,,14,2023,Vegas
+29,3,Piastri,Gasly,Yes,5,2023,Vegas
+29,7,Albon,Stroll,,1,2023,Vegas
+29,11,Alonso,Sargeant,Yes,1,2023,Vegas
+29,12,Zhou,Sargeant,,5,2023,Vegas
+29,15,Hulkenberg,Ricciardo,Yes,3,2023,Vegas
+30,16,Hamilton,Ricciardo,,3,2023,Vegas
+31,4,Verstappen,Gasly,PiP,14,2023,Vegas
+31,15,Hamilton,Hulkenberg,,5,2023,Vegas
+32,1,Perez,Leclerc,Yes,14,2023,Vegas
+33,3,Verstappen,Piastri,Yes,14,2023,Vegas
+33,14,Hamilton,Magnussen,,14,2023,Vegas
+34,5,Ocon,Gasly,Yes,1,2023,Vegas
+34,5,Gasly,Ocon,Yes,3,2023,Vegas
+34,5,Ocon,Gasly,Yes,5,2023,Vegas
+34,13,Hamilton,Sargeant,,5,2023,Vegas
+35,1,Leclerc,Perez,Yes,14,2023,Vegas
+35,7,Stroll,Albon,,14,2023,Vegas
+36,2,Verstappen,Perez,Yes,14,2023,Vegas
+36,18,Tsunoda,Bottas,,14,2023,Vegas
+37,1,Verstappen,Leclerc,Yes,14,2023,Vegas
+37,12,Hamilton,Zhou,,14,2023,Vegas
+39,8,Russell,Albon,Yes,14,2023,Vegas
+40,9,Sainz,Albon,Yes,5,2023,Vegas
+40,10,Alonso,Albon,Yes,5,2023,Vegas
+40,11,Hamilton,Albon,Yes,9,2023,Vegas
+40,14,Magnussen,Sargeant,,7,2023,Vegas
+41,6,Stroll,Gasly,Replay,14,2023,Vegas
+42,15,Hulkenberg,Sargeant,,9,2023,Vegas
+43,7,Russell,Gasly,,14,2023,Vegas
+44,7,Sainz,Gasly,,5,2023,Vegas
+44,8,Alonso,Gasly,Yes,5,2023,Vegas
+44,9,Hamilton,Gasly,Yes,17,2023,Vegas
+44,11,Albon,Piastri,,5,2023,Vegas
+44,11,Piastri,Albon,,14,2023,Vegas
+45,16,Ricciardo,Sargeant,,14,2023,Vegas
+46,8,Hamilton,Alonso,Yes,14,2023,Vegas
+46,13,Magnussen,Zhou,,14,2023,Vegas
+48,5,Russell,Stroll,Yes,14,2023,Vegas
+48,10,Piastri,Gasly,,14,2023,Vegas
+49,14,Ricciardo,Zhou,,14,2023,Vegas
+50,2,Leclerc,Perez,Yes,14,2023,Vegas
+50,4,Russell,Ocon,Replay,14,2023,Vegas
+2,13,Sainz,Hulkenberg,,9,2023,Abu Dhabi
+2,17,Zhou,Albon,,7,2023,Abu Dhabi
+3,9,Perez,Hamilton,Yes,6,2023,Abu Dhabi
+4,3,Norris,Piastri,Replay,6,2023,Abu Dhabi
+11,4,Russell,Piastri,Yes,9,2023,Abu Dhabi
+12,8,Perez,Gasly,Yes,9,2023,Abu Dhabi
+15,12,Russell,Sargeant,,12,2023,Abu Dhabi
+16,9,Russell,Albon,Yes,9,2023,Abu Dhabi
+17,16,Hulkenberg,Magnussen,,6,2023,Abu Dhabi
+18,6,Russell,Piastri,Yes,6,2023,Abu Dhabi
+18,15,Gasly,Hulkenberg,Replay,6,2023,Abu Dhabi
+19,3,Verstappen,Sainz,Yes,6,2023,Abu Dhabi
+19,7,Norris,Bottas,,6,2023,Abu Dhabi
+20,8,Piastri,Bottas,Yes,6,2023,Abu Dhabi
+20,9,Alonso,Bottas,Yes,6,2023,Abu Dhabi
+20,11,Perez,Ricciardo,,6,2023,Abu Dhabi
+21,2,Verstappen,Stroll,Yes,9,2023,Abu Dhabi
+21,4,Leclerc,Sainz,Yes,6,2023,Abu Dhabi
+21,10,Perez,Bottas,,6,2023,Abu Dhabi
+22,5,Russell,Sainz,Yes,6,2023,Abu Dhabi
+22,11,Ricciardo,Bottas,Yes,6,2023,Abu Dhabi
+22,17,Zhou,Magnussen,,9,2023,Abu Dhabi
+23,4,Norris,Sainz,Yes,6,2023,Abu Dhabi
+23,10,Hamilton,Bottas,,6,2023,Abu Dhabi
+23,11,Tsunoda,Bottas,Yes,9,2023,Abu Dhabi
+23,14,Stroll,Gasly,,9,2023,Abu Dhabi
+24,11,Ocon,Bottas,Yes,6,2023,Abu Dhabi
+25,6,Perez,Alonso,Yes,6,2023,Abu Dhabi
+25,8,Hamilton,Ricciardo,Replay,6,2023,Abu Dhabi
+25,12,Stroll,Bottas,,6,2023,Abu Dhabi
+26,11,Stroll,Ocon,,9,2023,Abu Dhabi
+26,13,Gasly,Bottas,Replay,6,2023,Abu Dhabi
+26,17,Albon,Zhou,,9,2023,Abu Dhabi
+27,15,Sainz,Hulkenberg,Yes,6,2023,Abu Dhabi
+28,5,Perez,Piastri,Yes,6,2023,Abu Dhabi
+28,14,Sainz,Bottas,Yes,6,2023,Abu Dhabi
+29,10,Stroll,Ricciardo,Yes,6,2023,Abu Dhabi
+36,7,Russell,Stroll,Yes,6,2023,Abu Dhabi
+37,6,Norris,Stroll,Yes,6,2023,Abu Dhabi
+37,11,Hamilton,Alonso,Yes,6,2023,Abu Dhabi
+37,15,Ricciardo,Sargeant,,6,2023,Abu Dhabi
+37,15,Sargeant,Ricciardo,,9,2023,Abu Dhabi
+38,3,Leclerc,Tsunoda,Yes,6,2023,Abu Dhabi
+38,11,Alonso,Hamilton,Replay,6,2023,Abu Dhabi
+39,4,Russell,Tsunoda,Yes,6,2023,Abu Dhabi
+39,8,Piastri,Sainz,Yes,6,2023,Abu Dhabi
+39,9,Piastri,Ocon,Yes,6,2023,Abu Dhabi
+39,9,Sainz,Ocon,Yes,7,2023,Abu Dhabi
+39,14,Ricciardo,Sargeant,Replay,9,2023,Abu Dhabi
+40,15,Gasly,Sargeant,Replay,1,2023,Abu Dhabi
+40,19,Zhou,Magnussen,,9,2023,Abu Dhabi
+42,5,Norris,Tsunoda,Yes,6,2023,Abu Dhabi
+42,10,Alonso,Ocon,Yes,9,2023,Abu Dhabi
+43,10,Hamilton,Ocon,Yes,6,2023,Abu Dhabi
+44,5,Perez,Tsunoda,Yes,6,2023,Abu Dhabi
+45,16,Albon,Zhou,,9,2023,Abu Dhabi
+46,8,Alonso,Sainz,Yes,5,2023,Abu Dhabi
+47,9,Hamilton,Sainz,Yes,9,2023,Abu Dhabi
+47,19,Sargeant,Magnussen,,6,2023,Abu Dhabi
+48,4,Perez,Norris,Yes,6,2023,Abu Dhabi
+48,6,Piastri,Tsunoda,Replay,6,2023,Abu Dhabi
+49,15,Albon,Hulkenberg,Yes,6,2023,Abu Dhabi
+50,11,Stroll,Ocon,Yes,6,2023,Abu Dhabi
+50,18,Sargeant,Bottas,,6,2023,Abu Dhabi
+52,12,Ricciardo,Ocon,Replay,9,2023,Abu Dhabi
+54,3,Perez,Russell,Yes,9,2023,Abu Dhabi
+56,7,Alonso,Tsunoda,Replay,9,2023,Abu Dhabi
+57,17,Sargeant,Zhou,,9,2023,Abu Dhabi
+58,8,Hamilton,Tsunoda,Replay,9,2023,Abu Dhabi
+58,8,Tsunoda,Hamilton,Replay,9,2023,Abu Dhabi

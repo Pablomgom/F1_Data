@@ -1,12 +1,17 @@
+from src.analysis.data_analysis import *
+from src.analysis.drivers import *
+from src.analysis.history import *
+from src.analysis.overtakes import *
+from src.analysis.pit_stops import *
+from src.analysis.teams import *
+from src.analysis.upgrades import *
 from src.elo.elo import elo_execution
-from src.general_analysis.ergast import *
-from src.general_analysis.my_ergast_funcs import *
-from src.general_analysis.qualy import *
-from src.general_analysis.race import *
-from src.general_analysis.bar_race import *
-from src.general_analysis.session import *
-from src.general_analysis.wdc import *
-from src.onetime_analysis.onetime_analysis import *
+from src.analysis.ergast import *
+from src.sessions.qualy import *
+from src.sessions.race import *
+from src.analysis.bar_race import *
+from src.sessions.session import *
+from src.analysis.wdc import *
 from src.utils.utils import *
 
 
@@ -42,7 +47,6 @@ def get_funcs():
         'plot_overtakes': plot_overtakes,
         'get_historical_race_days': get_historical_race_days,
         'wins_and_poles_circuit': wins_and_poles_circuit,
-        'get_pit_stops_ergast': get_pit_stops_ergast,
         'compare_drivers_season': compare_drivers_season,
         'qualy_results_ergast': qualy_results_ergast,
         'get_position_changes': get_position_changes,
@@ -76,10 +80,12 @@ def get_funcs():
         'teams_diff_session': teams_diff_session,
         'air_track_temps': air_track_temps,
         'comebacks_in_circuit': comebacks_in_circuit,
-        'fp_results': fp_results,
+        'session_results': session_results,
         'driver_grid_positions': driver_grid_positions,
         'laps_led': laps_led,
         'points_percentage_diff': points_percentage_diff,
+        'fastest_pit_stop_by_team': fastest_pit_stop_by_team,
+        'predict_race_pace': predict_race_pace,
         'help': help
     }
 

@@ -174,3 +174,25 @@ def darken_color(color, amount=0.5):
     c = list(mcolors.to_rgb(c))
     c = [max(0, i - i * amount) for i in c]
     return c
+
+
+def find_nearest_non_repeating(array1, array2):
+    used_indices = set()  # To keep track of used indices from array2
+    nearest_values = []   # To store the nearest values for each element in array1
+
+    for value in array1:
+        nearest = None
+        nearest_dist = float('inf')
+
+        for i, value2 in enumerate(array2):
+            if i not in used_indices:
+                dist = abs(value - value2)
+                if dist < nearest_dist:
+                    nearest_dist = dist
+                    nearest = value2
+                    nearest_index = i
+
+        nearest_values.append(nearest)
+        used_indices.add(nearest_index)  # Mark this index as used
+
+    return nearest_values

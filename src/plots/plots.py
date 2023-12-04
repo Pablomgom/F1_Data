@@ -19,10 +19,13 @@ def lighten_color(hex_color, factor=0.2):
     g = int(g + (255 - g) * factor)
     b = int(b + (255 - b) * factor)
 
+    if "#{:02X}{:02X}{:02X}".format(r, g, b) == '#FFFFFF':
+        return '#FF7C7C'
+
     return "#{:02X}{:02X}{:02X}".format(r, g, b)
 
 
-def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0):
+def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0, linewidth=1.75):
     if height >= 0:
         base_y = max(0, y)  # Ensure the starting y value is non-negative
         verts = [
@@ -82,7 +85,7 @@ def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0):
     ]
     path = patches.Path(verts, codes)
     lighter_color = lighten_color(edgecolor, factor=0.6)
-    return patches.PathPatch(path, edgecolor=lighter_color, linewidth=1.75)
+    return patches.PathPatch(path, edgecolor=lighter_color, linewidth=linewidth)
 
 
 def round_stacked_bars(x, y, width, height, color):
@@ -136,7 +139,7 @@ def stacked_bars(bars, ax, color):
         ax.add_patch(rounded_box)
 
 
-def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0, corner_radius=0.1):
+def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0, corner_radius=0.1, linewidth=1.75):
     for bar in bars:
         bar.set_visible(False)
 
@@ -146,7 +149,7 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
         height = bar.get_height()
         x, y = bar.get_xy()
         width = bar.get_width()
-        if height > 0 and color_1 is not None:
+        if height >= 0 and color_1 is not None:
             color = color_1
         elif height < 0 and color_2 is not None:
             color = color_2
@@ -156,28 +159,49 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
             color = colors[i]
 
         if height != 0:
-            rounded_box = rounded_top_rect(x, y, width, height, corner_radius, color, y_offset=y_offset_rounded)
+            rounded_box = rounded_top_rect(x, y, width, height, corner_radius, color,
+                                           y_offset=y_offset_rounded, linewidth=linewidth)
             rounded_box.set_facecolor(color)
             ax.add_patch(rounded_box)
         i += 1
 
 
-def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate='default', ceil_values=False, round=0):
+def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate='default', ceil_values=False, round=0,
+                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0):
+    i = 0
     for bar in bars:
         height = bar.get_height()
         if ceil_values:
             height = math.ceil(height)
+        if y_negative_offset == 'height':
+            y_negative_offset_value = -height
+        else:
+            y_negative_offset_value = -y_negative_offset
         if height < 0:
-            y_offset = -y_offset_annotate - 0.04
+            if negative_offset != 0:
+                y_offset = -negative_offset - y_negative_offset_value
+            else:
+                y_offset = -y_offset_annotate - y_negative_offset_value
         else:
             y_offset = y_offset_annotate
-        if height != 0:
-            plot_text = text_annotate_bars(height, text_annotate, round)
-            text = ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center', va='bottom',
-                    font='Fira Sans', fontsize=annotate_fontsize)
+        if type(text_annotate) == list:
+            text = text_annotate[i]
+        else:
+            text = text_annotate
+        if height != 0 or annotate_zero:
+            plot_text = text_annotate_bars(height, text, round)
+            if negative_offset != 0 and height < 0:
+                text = ax.text(bar.get_x() + bar.get_width() / 2, y_offset, plot_text, ha='center',
+                               va='bottom',
+                               font='Fira Sans', fontsize=annotate_fontsize)
+            else:
+                text = ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center',
+                               va='bottom',
+                               font='Fira Sans', fontsize=annotate_fontsize)
             text.set_path_effects([path_effects.withStroke(linewidth=1, foreground='black')])
         else:
             bar.set_visible(False)
+        i += 1
 
 
 def text_annotate_bars(height, original_text, round):

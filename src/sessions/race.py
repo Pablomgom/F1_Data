@@ -1,28 +1,15 @@
-import re
-import statistics
-
-from adjustText import adjust_text
-from matplotlib.font_manager import FontProperties
-
-from src.plots.plots import round_bars, annotate_bars, get_font_properties, lighten_color
-from src.exceptions import race_same_team_exceptions, qualy_exceptions, race_diff_team_exceptions
+from src.plots.plots import get_font_properties
 import fastf1
-import pandas as pd
 from fastf1.ergast import Ergast
-from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
 from fastf1 import plotting
 
-from matplotlib import pyplot as plt, patches, image as mpimg, ticker, patheffects
+from matplotlib import pyplot as plt, ticker, patheffects
 import seaborn as sns
 import numpy as np
 
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 
-
-
-from src.utils.utils import darken_color
 from src.variables.driver_colors import driver_colors_2023
 from src.variables.team_colors import team_colors_2023
 

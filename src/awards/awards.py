@@ -148,7 +148,7 @@ def gear_changes_max_RPM(sessions):
 
 
 def pit_stops():
-    pit = pd.read_csv('../resources/Pit stops.csv', sep='|')
+    pit = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
     pit = pit[pit['Year'] == 2023]
     more_time = pit.groupby('Driver')['Time'].sum().sort_values(ascending=False)
     more_stops = pit['Driver'].value_counts().sort_values(ascending=False)
@@ -351,14 +351,14 @@ def weather(sessions):
 
 
 def awards_2023():
-    # sessions = get_all_sessions()
+    sessions = get_all_sessions()
     # with open("awards/sessions.pkl", "wb") as file:
     #     pickle.dump(sessions, file)
     # with open("awards/sessions.pkl", "rb") as file:
     #     sessions = pickle.load(file)
     # # gear_changes_max_RPM(sessions)
     # laps(sessions)
-    pit_stops()
+    # pit_stops()
     # # off_tracks(sessions)
     # # # slowest_lap(sessions)
     # race_pace_deviation(sessions)

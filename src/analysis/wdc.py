@@ -1,19 +1,16 @@
 import fastf1
 import numpy as np
-import matplotlib.path as mpath
 from fastf1.ergast import Ergast
-from matplotlib import pyplot as plt, cm, image as mpimg
+from matplotlib import pyplot as plt, cm
 import re
-import matplotlib.patches as mpatches
 from matplotlib.lines import Line2D
 
-from matplotlib.offsetbox import AnnotationBbox, OffsetImage
-
-from src.plots.plots import rounded_top_rect, stacked_bars
+from src.ergast_api.my_ergast import My_Ergast
+from src.plots.plots import stacked_bars, round_bars, annotate_bars
+from src.variables.variables import point_systems
 
 
 def win_wdc(year):
-
     """
          Plots who can win the WDC in a year
 
@@ -80,7 +77,6 @@ def win_wdc(year):
 
 
 def process_race_data(content, driver, points, team_mate_points, team_mates_names, DNFs=None):
-
     append = False
     for race in content:
         race_data = race[(race['familyName'] == driver.split(" ")[1]) & (race['givenName'] == driver.split(" ")[0])]
@@ -112,7 +108,6 @@ def process_race_data(content, driver, points, team_mate_points, team_mates_name
 
 
 def wdc_comparation(driver, start=None, end=None, DNFs=None):
-
     """
          Plots the driver given with the points comparison against all his teammates
 
@@ -164,146 +159,61 @@ def wdc_comparation(driver, start=None, end=None, DNFs=None):
         formatted_string = ' - '.join(formatted_elements)
         fixed_names.append(formatted_string)
 
-    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
-    # Bar width
-    barWidth = 0.4
+    points_diff = np.subtract(points_per_year, team_mates_points_per_year)
 
-    # Set position of bars on x axis
-    r1 = np.arange(len(points_per_year))
-    r2 = [x + barWidth for x in r1]
+    fig, ax1 = plt.subplots(figsize=(10, 8), dpi=150)
 
     all_teammate_names = set()
     for names in fixed_names:
         all_teammate_names.add(names)
 
-    # Using a colormap for generating unique colors
     color_map = cm.get_cmap('tab20', len(all_teammate_names))
-    name_to_color = {name: color_map(i) for i, name in enumerate(all_teammate_names)}
 
-    # Create bars for Driver 1
-    bars = plt.bar(r1, points_per_year, color="#8B0000", width=barWidth,
-                   edgecolor='white')
-
-    def my_rounded_top_rect(x, y, width, height, color):
-        corner_radius = min(5 * width, height / 2)
-
-        # Calculate the starting point for the curves based on height
-        # Calculate the starting point for the curves based on height
-        curve_start_y = y + height * 0.98 - corner_radius
-        curve_end_x_left = x + width / 2
-        curve_end_x_right = x + width / 2
-
-        # Vertices for the rectangle with rounded top
-        verts = [
-            (x, y),  # bottom-left
-            (x, curve_start_y),  # start of left curve
-            (x, y + height),  # Control point for top-left curve
-            (curve_end_x_left, y + height),  # end of left curve and start of top-left curve
-            (curve_end_x_right, y + height),  # end of top-left curve and start of top-right curve
-            (x + width, y + height),  # Control point for top-right curve
-            (x + width, curve_start_y),  # end of top-right curve
-            (x + width, y),  # bottom-right
-            (x, y)  # close polygon
-        ]
-
-        codes = [
-            mpath.Path.MOVETO,
-            mpath.Path.LINETO,
-            mpath.Path.CURVE3,
-            mpath.Path.CURVE3,
-            mpath.Path.LINETO,
-            mpath.Path.CURVE3,
-            mpath.Path.CURVE3,
-            mpath.Path.LINETO,
-            mpath.Path.CLOSEPOLY
-        ]
-
-        path = mpath.Path(verts, codes)
-        patch = mpatches.PathPatch(path, facecolor=color, edgecolor=color)
-        return patch
-
-    for bar in bars:
-        bar.set_alpha(0)
-
-    # Overlay rounded rectangle patches on top of the original bars
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        rounded_box = my_rounded_top_rect(x, y, width, height, "#8B0000")
-        rounded_box.set_facecolor("#8B0000")
-        ax1.add_patch(rounded_box)
-
-    added_to_legend = set()
-    # Create bars for Driver 2 with varying names
-    for i, (r, point, name) in enumerate(zip(r2, team_mates_points_per_year, fixed_names)):
-        # Use the appropriate color from our map
-        color = name_to_color[name]
-
-        # Create the original bar for the legend
-        if name not in added_to_legend:
-            bar = plt.bar(r, point, width=barWidth, edgecolor='white', color=color)
-            added_to_legend.add(name)
+    first_three_letters = [
+        '/'.join(
+            part[:3].upper() if '.' not in part else part.split('.')[0][:3].upper()
+            for part in name.replace(' - ', '/').split('/')
+        )
+        for name in fixed_names
+    ]
+    text_to_annotate = []
+    for p, d in zip(points_diff, first_three_letters):
+        if p > 0:
+            text = f'+{p:.0f}\nVS\n{d}'
         else:
-            bar = plt.bar(r, point, width=barWidth, edgecolor='white', color=color)
+            text = f'{p:.0f}\nVS\n{d}'
+        text_to_annotate.append(text)
 
-        # Hide the original bar
-        for b in bar:
-            b.set_alpha(0)
+    bars = plt.bar(years, points_diff)
+    round_bars(bars, ax1, color_map, color_1='#32CD32', color_2='#FF0000', y_offset_rounded=0, corner_radius=0.4)
+    annotate_bars(bars, ax1, 2.5, 13, text_annotate=text_to_annotate, ceil_values=False,
+                  round=0, y_negative_offset='height', annotate_zero=True, negative_offset=21.5)
 
-        # Create rounded rectangle patch and add it to the axes
-        height = bar[0].get_height()
-        x, y = bar[0].get_xy()
-        width = bar[0].get_width()
-        rounded_box = my_rounded_top_rect(x, y, width, height, color)
-        ax1.add_patch(rounded_box)
-
-    def add_labels(x_positions, values, offset=0.5):
-        for x, value in zip(x_positions, values):
-            plt.text(x, value + offset, '{:.1f}'.format(value), ha='center', va='bottom', zorder=5,
-                     font='Fira Sans', fontsize=8)
-
-    add_labels(r1, points_per_year)
-    add_labels(r2, team_mates_points_per_year)
-
-    legend_lines = [Line2D([0], [0], color="#8B0000", lw=4)]
-    names_legend = [driver.split(" ")[1]]
-    colors_added = []
-    for name in fixed_names:
-        color = name_to_color[name]
-        if color not in colors_added:
-            hex_code = "#{:02X}{:02X}{:02X}".format(round(255 * color[0]),
-                                                    round(255 * color[1]), round(255 * color[2]))
-            line = Line2D([0], [0], color=hex_code, lw=4)
-            legend_lines.append(line)
-            names_legend.append(name)
-            colors_added.append(color)
-
-    plt.legend(legend_lines, names_legend,
-               loc='upper left', fontsize='medium')
-    # Add some details
-
-    plt.xlabel('Year', font='Fira Sans', fontsize=11)
-    plt.ylabel('Points', font='Fira Sans', fontsize=11)
-    plt.xticks([(x1 + x2) / 2 for x1, x2 in zip(r1, r2)], years)
+    ax1.set_ylim(top=np.max(points_diff) + 25)
+    y_min = np.min(points_diff)
+    if y_min < 0:
+        ax1.set_ylim(bottom=y_min * 3)
+    plt.xlabel('Year', font='Fira Sans', fontsize=16)
+    plt.ylabel('Points difference', font='Fira Sans', fontsize=16)
 
     plt.title(f'{driver} points comparison per year with his teammates {"- excluding mechanical DNFs" if DNFs else ""}',
-              font='Fira Sans', fontsize=14,
+              font='Fira Sans', fontsize=18,
               )
     plt.gca().yaxis.grid(True, linestyle='dashed')
     plt.gca().xaxis.grid(False)
-    plt.tick_params(axis='x', which='both', pad=15)
-    plt.xticks(font='Fira Sans', fontsize=9.5)  # for x-axis
-    plt.yticks(font='Fira Sans', fontsize=9.5)  # for y-axis
+    ax1.set_xticks(years)
+    ax1.set_xticklabels(years)
+    plt.xticks(font='Fira Sans', fontsize=14, rotation=45)
+    plt.yticks(font='Fira Sans', fontsize=14)
+
     plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver} POINTS COMPARISON WDC {"DNFs" if DNFs is True else ""}.png', dpi=150)
+    plt.savefig(f'../PNGs/{driver} POINTS COMPARISON WDC {"DNFs" if DNFs is True else ""}.png', dpi=450)
 
     plt.show()
 
 
 def team_wdc_history(team, color='papaya'):
-
     """
          Plots all the results for a team in the constructors championship
 
@@ -357,3 +267,74 @@ def team_wdc_history(team, color='papaya'):
     plt.tight_layout()
     plt.savefig(f'../PNGs/{team} history.png', dpi=450)
     plt.show()
+
+
+def proccess_season_data(data, drivers, driver_points, system):
+    """
+        Print the points for a season
+
+        Parameters:
+        data (DataFrame): Data
+        drivers (int): Drivers to analyze
+        driver_points (dict): Dict with the driver's points
+        system (dict): Point system
+   """
+
+    def print_wdc(driver_points):
+        driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
+        total_p = 0
+        pos = 1
+        for d, p in driver_points.items():
+            print(f'{pos}: {d} - {p}')
+            total_p += p
+            pos += 1
+        print(total_p)
+
+    for i in range(len(data)):
+        for driver in drivers:
+            driver_data = data[i][data[i]['driverCode'] == driver]
+            if len(driver_data) > 0:
+                pos = data[i][data[i]['driverCode'] == driver]['position'].values[0]
+                if pos in list(system.keys()):
+                    driver_points[driver] += system[pos]
+        if i == len(data) - 2:
+            print_wdc(driver_points)
+
+    print_wdc(driver_points)
+
+
+def simulate_season_different_psystem(year, system):
+    """
+       Simulate a season with another point system
+
+        Parameters:
+        year (int): Data
+        system (dict): Point system
+   """
+
+    ergast = Ergast()
+    race_data = ergast.get_race_results(season=year, limit=1000).content
+    drivers = set([code for df in race_data for code in df['driverCode'].values])
+    driver_points = {}
+    for driver in drivers:
+        driver_points[driver] = 0
+    system = point_systems[system]
+    proccess_season_data(race_data, drivers, driver_points, system)
+
+
+def simulate_qualy_championship(year, system):
+    """
+       Simulate a qualy WDC with a point system
+
+        Parameters:
+        year (int): Data
+        system (dict): Point system
+   """
+
+    qualy_data = My_Ergast().get_qualy_results([year]).content
+    drivers = set([code for df in qualy_data for code in df['driverCode'].values])
+    driver_points = {}
+    for driver in drivers:
+        driver_points[driver] = 0
+    system = point_systems[system]
+    proccess_season_data(qualy_data, drivers, driver_points, system)

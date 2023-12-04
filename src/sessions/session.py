@@ -1,3 +1,6 @@
+import pickle
+import statistics
+
 import fastf1
 import numpy as np
 import pandas as pd
@@ -9,7 +12,8 @@ from matplotlib.collections import LineCollection
 from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
 from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
-
+from matplotlib.ticker import FuncFormatter
+import matplotlib.patheffects as path_effects
 from src.utils import utils
 from src.plots.plots import round_bars, annotate_bars
 from src.utils.utils import darken_color, plot_turns, rotate
@@ -239,7 +243,8 @@ def session_diff_last_year(year, round_id, circuit=None, session='Q'):
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
     round_bars(bars, ax, colors, y_offset_rounded=0)
-    annotate_bars(bars, ax, 0.02, 12.25, '+{height}s', ceil_values=False)
+    annotate_bars(bars, ax, 0.02, 12.25, '+{height}s',
+                  ceil_values=False, round=3, y_negative_offset=-0.06)
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
@@ -339,7 +344,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
             d2_lap = i[1]
 
     else:
-        # d1_lap = session.laps.pick_driver('ALO')
+        # d1_lap = session.laps.pick_driver('VER')
         # count = 1
         # for i in d1_lap.iterlaps():
         #     if count == 38:
@@ -366,23 +371,23 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
 
     ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
                color='#0000FF',
-               label=driver_1)
+               label=driver_1, linewidth=3)
     ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
                color='#FFA500',
-               label=driver_2)
+               label=driver_2, linewidth=3)
 
     colors = ['green' if x > 0 else 'red' for x in delta_time]
     twin = ax[0].twinx()
     for i in range(1, len(delta_time)):
         twin.plot(ref_tel['Distance'][i - 1:i + 1], delta_time[i - 1:i + 1], color=colors[i],
-                  alpha=0.5, label='delta')
+                  alpha=0.6, label='delta', linewidth=2)
 
     # Set the labels for the axes
     ax[0].set_xlabel('Distance')
     ax[0].set_ylabel('Speed')
     ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
                     f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
-                    font='Fira Sans', fontsize=18, y=1.1)
+                    font='Fira Sans', fontsize=16, y=1.1)
 
     # ax[0].set_title(f'ALONSO POTENTIAL BRAKE CHECK',
     #                 font='Fira Sans', fontsize=18, y=1.1)
@@ -398,7 +403,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     handles1, labels1 = ax[0].get_legend_handles_labels()
     handles1 = handles1 + legend_elements
     labels1 = labels1 + [entry.get_label() for entry in legend_elements]
-    ax[0].legend(handles1, labels1, bbox_to_anchor=(0.75, 0.4))
+    ax[0].legend(handles1, labels1, bbox_to_anchor=(0.25, 1))
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],
@@ -508,7 +513,6 @@ def plot_circuit_with_data(session, col='nGear'):
 
 
 def fastest_by_point(session, team_1, team_2, scope='Team'):
-
     """
        Plot the circuit with the time diff between 2 laps at each points
 
@@ -732,3 +736,248 @@ def track_dominance(session, team_1, team_2):
             f" {session.event.EventName}.png")
     plt.savefig(path, dpi=400)
     plt.show()
+
+
+def get_topspeed(gp):
+    """
+        Get top speeds for a range of rounds
+
+        Parameters:
+        gp (int): Number of rounds
+
+   """
+
+    top_speed_array = []
+
+    for i in range(gp):
+
+        session = fastf1.get_session(2023, i + 1, 'Q')
+        session.load(telemetry=True, weather=False)
+        circuit_speed = {}
+
+        for lap in session.laps.pick_quicklaps().iterrows():
+            top_speed = max(lap[1].telemetry['Speed'])
+            driver = lap[1]['Driver']
+            driver_speed = circuit_speed.get(driver)
+            if driver_speed is not None:
+                if top_speed > driver_speed:
+                    circuit_speed[driver] = top_speed
+            else:
+                circuit_speed[driver] = top_speed
+
+            print(circuit_speed)
+
+        max_key = max(circuit_speed, key=circuit_speed.get)
+        driver_top_speed = f'{max_key} - {circuit_speed[max_key]} - {session.event["EventName"]}'
+
+        top_speed_array.append(driver_top_speed)
+
+        print(top_speed_array)
+
+    print(top_speed_array)
+
+
+def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
+    """
+        Get the fastest data in a session
+
+        Parameters:
+        session (Session): Session to be analyzed
+        column (str): Data to plot
+        fastest_lap (bool): Get only data from the fastest lap
+
+   """
+
+    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
+    drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
+    drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    circuit_speed = {}
+    colors_dict = {}
+    for driver in drivers:
+        d_laps = session.laps.pick_driver(driver)
+        if fastest_lap:
+            d_laps = session.laps.pick_driver(driver).pick_fastest()
+        if len(d_laps) > 0:
+            if column == 'Speed':
+                if not DRS:
+                    d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
+
+                top_speed = max(d_laps.telemetry['Speed'])
+            else:
+                top_speed = round(min(d_laps[column].dropna()).total_seconds(), 3)
+            if fastest_lap:
+                team = d_laps['Team'].lower()
+            else:
+                team = d_laps['Team'].values[0].lower()
+            if team == 'red bull racing':
+                team = 'red bull'
+            elif team == 'haas f1 team':
+                team = 'haas'
+            circuit_speed[driver] = top_speed
+            colors_dict[driver] = team
+
+        print(circuit_speed)
+
+    if column == 'Speed':
+        order = True
+        if fastest_lap:
+            column = 'Top Speeds (only the fastest lap from each driver)'
+        else:
+            column = 'Top Speeds'
+        x_fix = 5
+        y_fix = 0.25
+        annotate_fontsize = 12
+        y_offset_rounded = 0.035
+        round_decimals = 0
+    else:
+        y_fix = 0.015
+        x_fix = 0.45
+        annotate_fontsize = 7.9
+        y_offset_rounded = 0.085
+        round_decimals = 3
+        order = False
+        column = f"{column[:-5]} {column[-5:-4]} Times"
+        if not DRS:
+            column += 'without DRS'
+
+    circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=order)}
+
+    fig, ax1 = plt.subplots(figsize=(8, 6.5), dpi=175)
+
+    colors = []
+    for i in range(len(circuit_speed)):
+        colors.append(fastf1.plotting.TEAM_COLORS[colors_dict[list(circuit_speed.keys())[i]]])
+
+    bars = ax1.bar(list(circuit_speed.keys()), list(circuit_speed.values()), color=colors,
+                   edgecolor='white')
+
+    round_bars(bars, ax1, colors, y_offset_rounded=y_offset_rounded)
+    annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False, round=round_decimals)
+
+    ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Location + " " + session.name}',
+                  font='Fira Sans', fontsize=12)
+    ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
+    if 'Speed' in column:
+        y_label = 'Max speed'
+        ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
+    else:
+        y_label = 'Sector time'
+    ax1.set_ylabel(y_label, fontweight='bold', fontsize=12)
+    max_value = max(circuit_speed.values())
+    ax1.set_ylim(min(circuit_speed.values()) - x_fix, max_value + x_fix)
+    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+
+    def format_ticks(val, pos):
+        return '{:.0f}'.format(val)
+
+    if column == 'Speed':
+        plt.gca().yaxis.set_major_formatter(FuncFormatter(format_ticks))
+
+    plt.xticks(fontsize=12, rotation=45)
+    color_index = 0
+    for label in ax1.get_xticklabels():
+        label.set_color('black')
+        label.set_fontsize(10)
+        label.set_rotation(45)
+        label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=colors[color_index])])
+        color_index += 1
+    ax1.yaxis.grid(True, linestyle='--')
+    ax1.xaxis.grid(False)
+    plt.yticks(fontsize=12)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{column} IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
+                dpi=450)
+    plt.show()
+
+
+def air_track_temps():
+    plt.rcParams['font.family'] = 'Fira Sans'
+    plt.rcParams['font.sans-serif'] = 'Fira Sans'
+    with open("awards/sessions.pkl", "rb") as file:
+        sessions = pickle.load(file)
+    race_names = []
+    track_temp = []
+    air_temp = []
+    count = 0
+    for s in sessions:
+        if s.event.Location not in race_names:
+            race_names.append(s.event.Location)
+            track_temp.append(min(s.weather_data['TrackTemp']))
+            air_temp.append(min(s.weather_data['AirTemp']))
+            count += 1
+        else:
+            prev_track_temp = track_temp[count - 1]
+            curr_track_temp = min(s.weather_data['TrackTemp'])
+            curr_air_temp = min(s.weather_data['AirTemp'])
+
+            if curr_track_temp < prev_track_temp and curr_track_temp != 0:
+                track_temp[count - 1] = curr_track_temp
+                air_temp[count - 1] = curr_air_temp
+
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=150)
+    ax.scatter(track_temp, air_temp, color='orange')
+
+    texts = []
+    delta = []
+    delta_dict = {}
+    for i, txt in enumerate(race_names):
+        ax.scatter(track_temp[i], air_temp[i], color='orange', s=70)
+        texts.append(ax.text(track_temp[i], air_temp[i], txt, fontname='Fira Sans', color='white', fontsize=11))
+        diff = track_temp[i] - air_temp[i]
+        delta.append(diff)
+        delta_dict[race_names[i]] = diff
+
+    print(f'MEAN: {statistics.mean(delta)}')
+    print(f'MEDIAN: {statistics.median(delta)}')
+
+    delta_dict = dict(sorted(delta_dict.items(), key=lambda item: item[1], reverse=False))
+    for r, d in delta_dict.items():
+        print(f'{r}: {round(d, 2)}')
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # Find the lower bound of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # Find the upper bound of both axes
+    ]
+    ax.plot(lims, lims, color='white', alpha=0.6, zorder=-10)  # Plot the x=y line
+
+    adjust_text(texts)
+    print(race_names)
+    print(track_temp)
+    print(air_temp)
+    plt.title("Minimum Track and Air Temperatures in 2023 season", font='Fira Sans', fontsize=18)
+    plt.xlabel("Track Temperature (°C)", fontname='Fira Sans', fontsize=17)
+    plt.ylabel("Air Temperature (°C)", fontname='Fira Sans', fontsize=17)
+    plt.xticks(fontname='Fira Sans', fontsize=15)
+    plt.yticks(fontname='Fira Sans', fontsize=15)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.savefig('../PNGs/Track temps.png', dpi=450)
+    plt.show()
+
+
+def session_results(start, end, session=2):
+    count = 0
+    for i in range(end, start - 1, -1):
+        year_data = fastf1.get_event_schedule(i)
+        year_data = year_data[year_data['EventFormat'] != 'testing']
+        for j in range(len(year_data), 0, -1):
+            try:
+                practice_times = {}
+                s = fastf1.get_session(i, j, session)
+                s.load()
+                drivers = s.laps['Driver'].unique()
+                for d in drivers:
+                    d_lap = s.laps.pick_driver(d).pick_fastest()['LapTime']
+                    team = s.laps.pick_driver(d).pick_fastest()['Team']
+                    if not pd.isna(d_lap):
+                        practice_times[f'{d} + {team}'] = d_lap
+                practice_times = dict(sorted(practice_times.items(), key=lambda item: item[1], reverse=False))
+                top2 = list(practice_times.keys())[2]
+                print(top2)
+                if 'PIA + McLaren' in top2:
+                    print(s)
+                    if count == 1:
+                        exit(0)
+                    count += 1
+            except:
+                print('No data')
