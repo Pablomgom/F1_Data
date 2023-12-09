@@ -91,3 +91,8 @@ def plot_overtakes():
     plt.tight_layout()
     plt.savefig(f'../PNGs/OVERTAKES IN F1.png', dpi=400)
     plt.show()
+
+
+def overtakes_by_race():
+    df = pd.read_csv('../resources/csv/Overtakes_by_race.csv')
+    a = 1

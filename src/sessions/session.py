@@ -794,28 +794,29 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     circuit_speed = {}
     colors_dict = {}
     for driver in drivers:
-        d_laps = session.laps.pick_driver(driver)
-        if fastest_lap:
-            d_laps = session.laps.pick_driver(driver).pick_fastest()
-        if len(d_laps) > 0:
-            if column == 'Speed':
-                if not DRS:
-                    d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
-
-                top_speed = max(d_laps.telemetry['Speed'])
-            else:
-                top_speed = round(min(d_laps[column].dropna()).total_seconds(), 3)
+        try:
+            d_laps = session.laps.pick_driver(driver)
             if fastest_lap:
-                team = d_laps['Team'].lower()
-            else:
-                team = d_laps['Team'].values[0].lower()
-            if team == 'red bull racing':
-                team = 'red bull'
-            elif team == 'haas f1 team':
-                team = 'haas'
-            circuit_speed[driver] = top_speed
-            colors_dict[driver] = team
-
+                d_laps = session.laps.pick_driver(driver).pick_fastest()
+            if len(d_laps) > 0:
+                if column == 'Speed':
+                    if not DRS:
+                        d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
+                    top_speed = max(d_laps.telemetry['Speed'])
+                else:
+                    top_speed = round(min(d_laps[column].dropna()).total_seconds(), 3)
+                if fastest_lap:
+                    team = d_laps['Team'].lower()
+                else:
+                    team = d_laps['Team'].values[0].lower()
+                if team == 'red bull racing':
+                    team = 'red bull'
+                elif team == 'haas f1 team':
+                    team = 'haas'
+                circuit_speed[driver] = top_speed
+                colors_dict[driver] = team
+        except KeyError:
+            print(f'No data for {driver}')
         print(circuit_speed)
 
     if column == 'Speed':
@@ -826,7 +827,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
             column = 'Top Speeds'
         x_fix = 5
         y_fix = 0.25
-        annotate_fontsize = 12
+        annotate_fontsize = 13
         y_offset_rounded = 0.035
         round_decimals = 0
     else:
@@ -855,7 +856,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False, round=round_decimals)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Location + " " + session.name}',
-                  font='Fira Sans', fontsize=12)
+                  font='Fira Sans', fontsize=16)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
         y_label = 'Max speed'
@@ -876,10 +877,13 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     plt.xticks(fontsize=12, rotation=45)
     color_index = 0
     for label in ax1.get_xticklabels():
-        label.set_color('black')
-        label.set_fontsize(10)
-        label.set_rotation(45)
-        label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=colors[color_index])])
+        label.set_color('white')
+        label.set_fontsize(14)
+        label.set_rotation(35)
+        for_color = colors[color_index]
+        if for_color == '#ffffff':
+            for_color = '#FF7C7C'
+        label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=for_color)])
         color_index += 1
     ax1.yaxis.grid(True, linestyle='--')
     ax1.xaxis.grid(False)

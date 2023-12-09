@@ -12,9 +12,11 @@ from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
 import matplotlib.patches as mpatches
 from src.ergast_api.my_ergast import My_Ergast
-from src.exceptions import qualy_exceptions
+from src.exceptions import qualy_by_year
+from src.exceptions.custom_exceptions import QualyException
 from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
-
+from src.utils.utils import append_duplicate_number
+from src.variables.team_colors import team_colors_2023
 
 
 def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
@@ -27,7 +29,6 @@ def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
        year (int, optional): Year of the analysis. Default = 2023
 
    """
-
 
     ergast = Ergast()
     prev_year = ergast.get_qualifying_results(season=year - 1, limit=1000)
@@ -121,7 +122,6 @@ def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
 
 
 def qualy_results(session):
-
     """
        Plot the results of a qualy with fastF1 API
 
@@ -129,7 +129,6 @@ def qualy_results(session):
        session (Session): Session of the lap
 
     """
-
 
     drivers = pd.unique(session.laps['Driver'])
     list_fastest_laps = list()
@@ -178,8 +177,7 @@ def qualy_results(session):
     plt.show()
 
 
-def qualy_diff(team_1, team_2, rounds):
-
+def qualy_diff(year):
     """
        Plot the qualy time diff between 2 teams
 
@@ -190,65 +188,87 @@ def qualy_diff(team_1, team_2, rounds):
 
     """
 
-
-    qualys = []
     session_names = []
-
-    for i in range(rounds):
-        session = fastf1.get_session(2023, i + 1, 'Q')
+    n_qualys = Ergast().get_qualifying_results(season=year, limit=1000).content
+    delta_diff = {}
+    for i in range(len(n_qualys)):
+        qualy_delta_diffs = {}
+        session = fastf1.get_session(year, i + 1, 'Q')
         session.load(telemetry=True)
-        qualys.append(session)
         session_names.append(session.event['Location'].split('-')[0])
+        from src.utils.utils import call_function_from_module
+        try:
+            call_function_from_module(qualy_by_year, f"year_{year}", i + 1)
+            teams_session_dict = {}
+            teams_session = []
+            for i in range(2, -1, -1):
+                q_session = session.laps.split_qualifying_sessions()[i]
+                teams_session = q_session['Team'].unique()
+                for t in teams_session:
+                    if t not in teams_session_dict:
+                        teams_session_dict[t] = i
 
-    delta_laps = []
+            q_session = session.laps.pick_teams(teams_session)
+            fastest_laps = pd.DataFrame(q_session.loc[q_session.groupby('Team')['LapTime'].idxmin()]
+                                        [['Team', 'LapTime']]).sort_values(by='LapTime')
+            fastest_lap_in_session = fastest_laps['LapTime'].iloc[0]
+            fastest_laps['DeltaPercent'] = ((fastest_laps['LapTime'] - fastest_lap_in_session)
+                                            / fastest_lap_in_session) * 100
 
-    for qualy in qualys:
-        team_1_lap = qualy.laps.pick_team(team_1).pick_fastest()['LapTime'].total_seconds()
-        team_2_lap = qualy.laps.pick_team(team_2).pick_fastest()['LapTime'].total_seconds()
+            for t in teams_session:
+                if t not in qualy_delta_diffs:
+                    qualy_delta_diffs[t] = fastest_laps[fastest_laps['Team'] == t]['DeltaPercent'].loc[0]
 
-        percentage_diff = (team_2_lap - team_1_lap) / team_1_lap * 100
-        if qualy.event.Country == 'Canada':
-            delta_laps.append(0)
-        else:
-            delta_laps.append(round(percentage_diff, 2))
+            for t, v in qualy_delta_diffs.items():
+                if t not in delta_diff:
+                    delta_diff[t] = [v]
+                else:
+                    delta_diff[t].append(v)
+        except QualyException:
+            teams = session.laps['Team'].unique()
+            for t in teams:
+                if t not in delta_diff:
+                    delta_diff[t] = [np.NaN]
+                else:
+                    delta_diff[t].append(np.NaN)
 
-    fig, ax1 = plt.subplots(figsize=(14, 8))
-    colors = []
-    labels = []
-    for i in range(len(session_names)):
-        color = plotting.team_color(team_1) if delta_laps[i] > 0 else plotting.team_color(team_2)
-        colors.append(color)
-        label = f'{team_1} faster' if delta_laps[i] > 0 else f'{team_2} faster'
-        labels.append(label)
+    session_names = append_duplicate_number(session_names)
 
-    bars = plt.bar(session_names, delta_laps, color=colors, label=labels)
+    fig, ax1 = plt.subplots(figsize=(12, 10))
+    plt.rcParams["font.family"] = "Fira Sans"
+    for team, deltas in delta_diff.items():
+        plt.plot(session_names, deltas, label=team, marker='o',
+                 color=team_colors_2023.get(team), markersize=7, linewidth=3)
 
-    round_bars(bars, ax1, colors, color_1=plotting.team_color(team_1), color_2=plotting.team_color(team_2))
-    annotate_bars(bars, ax1, 0.01, 13, text_annotate='{height}%', ceil_values=False)
+        # Find the indices right before and after the NaNs to plot dashed lines
+        for i, delta in enumerate(deltas):
+            if np.isnan(delta):
+                # Find the previous non-NaN index
+                prev_index = max([j for j in range(i - 1, -1, -1) if not np.isnan(deltas[j])], default=None)
+                # Find the next non-NaN index
+                next_index = min([j for j in range(i + 1, len(deltas)) if not np.isnan(deltas[j])], default=None)
 
-    if min(delta_laps) < 0:
-        plt.axhline(0, color='white', linewidth=2)
+                # If both indices are found, plot a dashed line between them
+                if prev_index is not None and next_index is not None:
+                    plt.plot([session_names[prev_index], session_names[next_index]],
+                             [deltas[prev_index], deltas[next_index]],
+                             color=team_colors_2023.get(team), linewidth=1.25, linestyle='--')
 
-    legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
-                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
-
-    plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster', 'Moving Average (4 last races)'],
-               loc='lower left', fontsize='x-large')
-
-    plt.ylabel(f'Percentage time difference', font='Fira Sans', fontsize=16)
-    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
+    plt.gca().invert_yaxis()
+    plt.legend(loc='lower right', fontsize='large')
+    plt.title(f'{year} AVERAGE QUALY DIFF PER CIRCUIT', font='Fira Sans', fontsize=24)
+    plt.ylabel('Percentage time difference (%)', font='Fira Sans', fontsize=20)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=20)
     ax1.yaxis.grid(True, linestyle='--')
-    title_font_properties = {'family': 'Fira Sans', 'size': 24, 'weight': 'bold'}
-    plt.title(f'{team_1} VS {team_2} qualy time difference', fontdict=title_font_properties)
-    plt.xticks(rotation=90, fontsize=12, fontname='Fira Sans')
-    plt.yticks(fontsize=12, fontname='Fira Sans')
+    ax1.xaxis.grid(True, linestyle='--', alpha=0.2)
+    plt.xticks(rotation=90, fontsize=15, fontname='Fira Sans')
+    plt.yticks(fontsize=15, fontname='Fira Sans')
     plt.tight_layout()
-    plt.savefig(f"../PNGs/{team_2} VS {team_1} time difference.png", dpi=400)
+    plt.savefig(f"../PNGs/{year} ONE LAP PACE DIFFERENCE.png", dpi=400)
     plt.show()
 
 
 def qualy_margin(circuit, start=None, end=None):
-
     """
        Prints the qualy margins in a given circuits
 
@@ -325,7 +345,6 @@ def qualy_diff_teammates(team, rounds):
         else:
             session = q1
         try:
-            call_function_from_module(qualy_exceptions, f"{team.replace(' ', '_')}_{2023}", i + 1)
             d0_time = session.pick_driver(drivers[0]).pick_fastest()['LapTime'].total_seconds()
             d1_time = session.pick_driver(drivers[1]).pick_fastest()['LapTime'].total_seconds()
 

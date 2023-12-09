@@ -86,6 +86,8 @@ def get_funcs():
         'points_percentage_diff': points_percentage_diff,
         'fastest_pit_stop_by_team': fastest_pit_stop_by_team,
         'predict_race_pace': predict_race_pace,
+        'overtakes_by_race': overtakes_by_race,
+        'race_pace_between_drivers': race_pace_between_drivers,
         'help': help
     }
 

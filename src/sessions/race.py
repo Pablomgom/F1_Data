@@ -1,3 +1,9 @@
+import statistics
+
+from tabulate import tabulate
+
+from src.exceptions import race_same_team_exceptions
+from src.exceptions.custom_exceptions import RaceException
 from src.plots.plots import get_font_properties
 import fastf1
 from fastf1.ergast import Ergast
@@ -6,10 +12,11 @@ from fastf1 import plotting
 from matplotlib import pyplot as plt, ticker, patheffects
 import seaborn as sns
 import numpy as np
-
+import pandas as pd
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 
+from src.utils.utils import append_duplicate_number
 from src.variables.driver_colors import driver_colors_2023
 from src.variables.team_colors import team_colors_2023
 
@@ -68,7 +75,6 @@ def position_changes(session):
 
 
 def driver_race_times_per_tyre(session, driver):
-
     """
          Plots all the time laps, with the compound, for a driver
 
@@ -96,6 +102,7 @@ def driver_race_times_per_tyre(session, driver):
 
     ax.set_xlabel("Lap Number", font='Fira Sans', fontsize=16)
     ax.set_ylabel("Lap Time", font='Fira Sans', fontsize=16)
+
     def lap_time_formatter(x, pos):
         minutes, seconds = divmod(x, 60)
         return f"{int(minutes):02}:{seconds:06.3f}"
@@ -109,14 +116,12 @@ def driver_race_times_per_tyre(session, driver):
     plt.grid(color='w', which='major', axis='both')
     sns.despine(left=True, bottom=True)
 
-
     plt.tight_layout()
     plt.savefig(f"../PNGs/RACE LAPS {driver} {session.event.OfficialEventName}.png", dpi=500)
     plt.show()
 
 
 def tyre_strategies(session):
-
     """
          Plots the tyre strategy in a race
 
@@ -206,8 +211,6 @@ def tyre_strategies(session):
             patches[label] = mpatches.Patch(color=color_rgb + (alpha,), label=label)
 
             previous_stint_end += row["StintLength"]
-
-
 
     patches = {k: patches[k] for k in sorted(patches.keys(), key=lambda x: (x.split()[1], x.split()[0]))}
     plt.legend(handles=patches.values(), bbox_to_anchor=(0.5, -0.1),
@@ -308,12 +311,12 @@ def race_pace_top_10(session, threshold=1.07):
     plt.legend(title='Tyre Compound', loc='upper left', fontsize='medium')
 
     plt.tight_layout()
-    plt.savefig(f"../PNGs/{session.event['EventDate'].year} {session.event['EventName']} Lap Time Distributions.png", dpi=450)
+    plt.savefig(f"../PNGs/{session.event['EventDate'].year} {session.event['EventName']} Lap Time Distributions.png",
+                dpi=450)
     plt.show()
 
 
 def race_diff(year):
-
     """
          Plots the race time diff between 2 different teams
 
@@ -326,92 +329,99 @@ def race_diff(year):
     n_races = Ergast().get_race_results(season=year, limit=1000)
     mean_delta_by_team = {}
     for i in range(len(n_races.content)):
-        race = fastf1.get_session(year, i + 1, 'R')
-        race.load(telemetry=True)
-        total_laps = race.total_laps
-        session_names.append(race.event['Location'].split('-')[0])
-        teams = race.results['TeamName'].unique()
-        teams = teams[teams != 'nan']
-        pace_with_laps = {}
-        for t in teams:
-            drivers = race.laps[race.laps['Team'] == t]['Driver'].unique()
-            n_laps = [len(race.laps[race.laps['Driver'] == i]) for i in drivers]
-            if race.event.Location == 'Monaco' and year == 2022 and t == 'McLaren':
-                n_laps = [51]
-            if race.event.Location == 'Imola' and year == 2022 and t == 'Ferrari':
-                n_laps = [49]
-            paces = {}
-            for d in drivers:
-                for n in set(n_laps):
-                    if n >= total_laps/3:
-                        if len(race.laps.pick_driver(d)[0:n]) >= n:
-                            mean = race.laps.pick_driver(d)[0:n].pick_quicklaps().pick_wo_box()['LapTime'].mean()
-                            if d not in paces:
-                                paces[d] = {'MEAN': [mean],
-                                            'LAPS': [n]}
-                            else:
-                                paces[d]['MEAN'].append(mean)
-                                paces[d]['LAPS'].append(n)
-            if len(paces) == 0:
-                if t not in mean_delta_by_team:
-                    mean_delta_by_team[t] = [np.NaN]
+        if not (year == 2021 and (i + 1) == 12):
+            race = fastf1.get_session(year, i + 1, 'R')
+            race.load(telemetry=True)
+            total_laps = race.total_laps
+            session_names.append(race.event['Location'].split('-')[0])
+            teams = race.results['TeamName'].unique()
+            teams = teams[teams != 'nan']
+            pace_with_laps = {}
+            for t in teams:
+                drivers = race.laps[race.laps['Team'] == t]['Driver'].unique()
+                n_laps = [len(race.laps[race.laps['Driver'] == i]) for i in drivers]
+                if race.event.Location == 'Monaco' and year == 2022 and t == 'McLaren':
+                    n_laps = [51]
+                if race.event.Location == 'Imola' and year == 2022 and t == 'Ferrari':
+                    n_laps = [49]
+                paces = {}
+                for d in drivers:
+                    for n in set(n_laps):
+                        if n >= total_laps / 3:
+                            if len(race.laps.pick_driver(d)[0:n]) >= n:
+                                mean = race.laps.pick_driver(d)[0:n].pick_quicklaps().pick_wo_box()['LapTime'].mean()
+                                if d not in paces:
+                                    paces[d] = {'MEAN': [mean],
+                                                'LAPS': [n]}
+                                else:
+                                    paces[d]['MEAN'].append(mean)
+                                    paces[d]['LAPS'].append(n)
+                if len(paces) == 0:
+                    if t not in mean_delta_by_team:
+                        mean_delta_by_team[t] = [np.NaN]
+                    else:
+                        mean_delta_by_team[t].append(np.NaN)
                 else:
-                    mean_delta_by_team[t].append(np.NaN)
-            else:
-                if race.event.Location == 'Spielberg' and year == 2022 and t == 'Red Bull Racing':
-                    paces.pop('PER')
-                if len(paces) > 1:
-                    paces = dict(sorted(paces.items(),
-                                        key=lambda item: (min(item[1]["LAPS"]),
-                                                          item[1]["MEAN"][item[1]["LAPS"].index(min(item[1]["LAPS"]))])))
-                else:
-                    key = next(iter(paces))  # Get the single key
-                    laps, means = paces[key]["LAPS"], paces[key]["MEAN"]
-                    sorted_pairs = sorted(zip(laps, means), key=lambda pair: pair[1])  # Sort by "MEAN"
-                    sorted_laps, sorted_means = zip(*sorted_pairs)  # Unzip the sorted pairs
-                    paces = {key: {"LAPS": sorted_laps, "MEAN": sorted_means}}
-                pace_with_laps[t] = {"MEAN": paces[list(paces.keys())[0]]['MEAN'][0],
-                                     "LAPS": paces[list(paces.keys())[0]]['LAPS'][0]}
-        pace_with_laps = dict(sorted(pace_with_laps.items(), key=lambda item: (item[1]["MEAN"])))
-        current_fastest_team = list(pace_with_laps.keys())[0]
-        current_fastest_mean = pace_with_laps[list(pace_with_laps.keys())[0]]['MEAN']
-        pace_with_laps = dict(sorted(pace_with_laps.items(), key=lambda item: (-item[1]["LAPS"], item[1]["MEAN"])))
-        for t, m in pace_with_laps.items():
-            if m['LAPS'] < total_laps - 5:
-                laps = m['LAPS']
-                pace = m['MEAN']
-                drivers_fastest_team = race.laps[race.laps['Team'] == current_fastest_team]['Driver'].unique()
-                mean_fixed_laps = []
-                for d in drivers_fastest_team:
-                    mean_fixed_laps.append(race.laps.pick_driver(d)[0:laps].pick_quicklaps().pick_wo_box()['LapTime'].mean())
-                fastest_fixed_mean = min(mean_fixed_laps)
-                delta_diff = ((pace - fastest_fixed_mean) / fastest_fixed_mean) * 100
-                if t not in mean_delta_by_team:
-                    mean_delta_by_team[t] = [delta_diff]
-                else:
-                    mean_delta_by_team[t].append(delta_diff)
-            elif t != current_fastest_team:
-                team_mean = m['MEAN']
-                delta_diff = ((team_mean - current_fastest_mean) / current_fastest_mean)*100
-                if t not in mean_delta_by_team:
-                    mean_delta_by_team[t] = [delta_diff]
-                else:
-                    mean_delta_by_team[t].append(delta_diff)
-            elif t == current_fastest_team:
-                if t not in mean_delta_by_team:
-                    mean_delta_by_team[t] = [0]
-                else:
-                    mean_delta_by_team[t].append(0)
-        min_latest_value = min(value[-1] if isinstance(value, list) and len(value) > 0 else 0
-                               for value in mean_delta_by_team.values())
-        if min_latest_value != 0:
-            for team, value in mean_delta_by_team.items():
-                if len(value) > 0:
-                    mean_delta_by_team[team][-1] = value[-1] - min_latest_value
-            print(f'Recompute {race.event.Location}')
+                    if race.event.Location == 'Spielberg' and year == 2022 and t == 'Red Bull Racing':
+                        paces.pop('PER')
+                    if len(paces) > 1:
+                        paces = dict(sorted(paces.items(),
+                                            key=lambda item: (min(item[1]["LAPS"]),
+                                                              item[1]["MEAN"][
+                                                                  item[1]["LAPS"].index(min(item[1]["LAPS"]))])))
+                    else:
+                        key = next(iter(paces))  # Get the single key
+                        laps, means = paces[key]["LAPS"], paces[key]["MEAN"]
+                        sorted_pairs = sorted(zip(laps, means), key=lambda pair: pair[1])  # Sort by "MEAN"
+                        sorted_laps, sorted_means = zip(*sorted_pairs)  # Unzip the sorted pairs
+                        paces = {key: {"LAPS": sorted_laps, "MEAN": sorted_means}}
+                    pace_with_laps[t] = {"MEAN": paces[list(paces.keys())[0]]['MEAN'][0],
+                                         "LAPS": paces[list(paces.keys())[0]]['LAPS'][0]}
+            pace_with_laps = dict(sorted(pace_with_laps.items(), key=lambda item: (item[1]["MEAN"])))
+            current_fastest_team = list(pace_with_laps.keys())[0]
+            current_fastest_mean = pace_with_laps[list(pace_with_laps.keys())[0]]['MEAN']
+            pace_with_laps = dict(sorted(pace_with_laps.items(), key=lambda item: (-item[1]["LAPS"], item[1]["MEAN"])))
+            for t, m in pace_with_laps.items():
+                if m['LAPS'] < total_laps - 5:
+                    laps = m['LAPS']
+                    pace = m['MEAN']
+                    drivers_fastest_team = race.laps[race.laps['Team'] == current_fastest_team]['Driver'].unique()
+                    mean_fixed_laps = []
+                    for d in drivers_fastest_team:
+                        mean_fixed_laps.append(
+                            race.laps.pick_driver(d)[0:laps].pick_quicklaps().pick_wo_box()['LapTime'].mean())
+                    fastest_fixed_mean = min(mean_fixed_laps)
+                    delta_diff = ((pace - fastest_fixed_mean) / fastest_fixed_mean) * 100
+                    if t not in mean_delta_by_team:
+                        mean_delta_by_team[t] = [delta_diff]
+                    else:
+                        mean_delta_by_team[t].append(delta_diff)
+                elif t != current_fastest_team:
+                    team_mean = m['MEAN']
+                    delta_diff = ((team_mean - current_fastest_mean) / current_fastest_mean) * 100
+                    if t not in mean_delta_by_team:
+                        mean_delta_by_team[t] = [delta_diff]
+                    else:
+                        mean_delta_by_team[t].append(delta_diff)
+                elif t == current_fastest_team:
+                    if t not in mean_delta_by_team:
+                        mean_delta_by_team[t] = [0]
+                    else:
+                        mean_delta_by_team[t].append(0)
+            min_latest_value = min(value[-1] if isinstance(value, list) and len(value) > 0 else 0
+                                   for value in mean_delta_by_team.values())
+            if min_latest_value != 0:
+                for team, value in mean_delta_by_team.items():
+                    if len(value) > 0:
+                        mean_delta_by_team[team][-1] = value[-1] - min_latest_value
+                print(f'Recompute {race.event.Location}')
+        else:
+            print('THE INFAMOUS')
 
     for t, d in mean_delta_by_team.items():
         print(f'{t} - {d}')
+
+    session_names = append_duplicate_number(session_names)
 
     fig, ax1 = plt.subplots(figsize=(12, 8))
     plt.rcParams["font.family"] = "Fira Sans"
@@ -491,7 +501,6 @@ def race_distance(session, top=10):
 
 
 def teams_diff_session(session):
-
     teams = session.laps['Team'].unique()
     for c in ['MEDIAN', 'MEAN']:
         print(f'{c} DIFFERENCE')
@@ -525,3 +534,49 @@ def teams_diff_session(session):
                 else:
                     print(f'{drivers[0]}: {format_time_delta(d1_time)}\n'
                           f'{drivers[1]}: {format_time_delta(d2_time)} (+{diff})')
+
+
+def race_pace_between_drivers(year, d1, d2):
+    schedule = fastf1.get_event_schedule(2023, include_testing=False)
+    total_laps_d1 = []
+    total_laps_d2 = []
+    for i in range(len(schedule)):
+        session = fastf1.get_session(year, i + 1, 'R')
+        session.load()
+        try:
+            team_d1 = session.laps.pick_driver(d1)['Team'].unique()[0]
+            team_d2 = session.laps.pick_driver(d2)['Team'].unique()[0]
+            from src.utils.utils import call_function_from_module
+            min_laps_d1, max_laps_d1 = call_function_from_module(race_same_team_exceptions,
+                                                           f"{team_d1.replace(' ', '_')}_{year}",
+                                                           i + 1, session.total_laps)
+            min_laps_d2, max_laps_d2 = call_function_from_module(race_same_team_exceptions,
+                                                           f"{team_d2.replace(' ', '_')}_{year}",
+                                                           i + 1, session.total_laps)
+            min_laps = max(min_laps_d1, min_laps_d2)
+            max_laps = min (max_laps_d1, max_laps_d2)
+            d1_laps = session.laps.pick_driver(d1)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
+            d2_laps = session.laps.pick_driver(d2)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
+            d1_compare = pd.DataFrame(d1_laps[['LapNumber', 'LapTime', 'Compound', 'TyreLife']])
+            d2_compare = pd.DataFrame(d2_laps[['LapNumber', 'LapTime', 'Compound', 'TyreLife']])
+            d1_compare.columns = ['LapNumber', 'LapTime_d1', 'Compound_d1', 'TyreLife_d1']
+            d2_compare.columns = ['LapNumber', 'LapTime_d2', 'Compound_d2', 'TyreLife_d2']
+            comparable_laps = pd.merge(d1_compare, d2_compare, how='inner', on='LapNumber')
+            comparable_laps = comparable_laps[comparable_laps['Compound_d1'] == comparable_laps['Compound_d2']]
+            comparable_laps = comparable_laps[abs(comparable_laps['TyreLife_d1'] - comparable_laps['TyreLife_d2']) <= 3]
+            if len(comparable_laps) > 5:
+                print(tabulate(comparable_laps, headers='keys', tablefmt='fancy_grid'))
+                total_laps_d1.extend(comparable_laps['LapTime_d1'].values)
+                total_laps_d2.extend(comparable_laps['LapTime_d2'].values)
+        except (RaceException, IndexError):
+            print(f'{session}')
+    race_differences = []
+    for l1, l2 in zip(total_laps_d1, total_laps_d2):
+        delta_diff = (l1 - l2) / ((l1 + l2) / 2) * 100
+        race_differences.append(delta_diff)
+
+    median = statistics.median(race_differences)
+    mean = statistics.mean(race_differences)
+    print(race_differences)
+    print(f'MEDIAN DIFF {d1 if median < 0 else d2} FASTER:{median}')
+    print(f'MEAN DIFF {d1 if mean < 0 else d2} FASTER:{mean}')

@@ -338,9 +338,9 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
         years_sorted = sorted(driver.ma_elo.keys())
         driver.ma_elo_3ma = {}
         for i, year in enumerate(years_sorted):
-            if i >= 2:
-                three_years = [years_sorted[i - j] for j in range(3)]
-                avg = sum([driver.ma_elo[y] for y in three_years]) / 3
+            if i >= 3:
+                three_years = [years_sorted[i - j] for j in range(4)]
+                avg = sum([driver.ma_elo[y] for y in three_years]) / 4
                 driver.ma_elo_3ma[year] = avg
     print(total_elo / len(drivers))
 
