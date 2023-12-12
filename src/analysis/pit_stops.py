@@ -21,8 +21,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         points(bool, optional): Plot DHL system points. Default: False
 
    """
-
-    fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
     pitstops = pitstops[pitstops['Year'] == year]
     colors = []
@@ -167,4 +165,27 @@ def fastest_pit_stop_by_team(year):
     plt.legend(bbox_to_anchor=(1.0, 0.7), fontsize='large')
     plt.tight_layout()
     plt.savefig('../PNGs/FASTEST PIT STOP TEAM-RACE.png', dpi=450)
+    plt.show()
+
+
+
+def pitstops_per_year(year):
+
+    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
+    pitstops = pitstops[pitstops['Year'] == year].sort_values(by='Race_ID')
+    pitstops_year = pitstops.groupby(['Race_Name', 'Race_ID']).size().reset_index().sort_values(by='Race_ID')
+    pitstops_year.columns = ['Race', 'Id', 'Count']
+    fig, ax = plt.subplots(figsize=(8,8))
+    bars = plt.bar(pitstops_year['Race'], pitstops_year['Count'])
+    round_bars(bars, ax, '#fc6600', color_1=None, color_2=None, y_offset_rounded=0, corner_radius=0.1, linewidth=2.5)
+    annotate_bars(bars, ax, 0.25, 14, text_annotate='default', ceil_values=False, round=0,
+                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0)
+
+    plt.title('Number of pit stops per race', font='Fira Sans', fontsize=24)
+    plt.xlabel('Race', font='Fira Sans', fontsize=18)
+    plt.ylabel('Number of pit stops', font='Fira Sans', fontsize=18)
+    plt.xticks(rotation=90, font='Fira Sans', fontsize=15)
+    plt.yticks(font='Fira Sans', fontsize=15)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/PIT STOPS IN {year}.png', dpi=450)
     plt.show()

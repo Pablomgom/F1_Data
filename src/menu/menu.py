@@ -88,6 +88,11 @@ def get_funcs():
         'predict_race_pace': predict_race_pace,
         'overtakes_by_race': overtakes_by_race,
         'race_pace_between_drivers': race_pace_between_drivers,
+        'victories_per_driver_team': victories_per_driver_team,
+        'fuel_correct_factor': fuel_correct_factor,
+        'driver_fuel_corrected_laps': driver_fuel_corrected_laps,
+        'race_diff_v2': race_diff_v2,
+        'pitstops_per_year': pitstops_per_year,
         'help': help
     }
 

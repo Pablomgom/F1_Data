@@ -6,9 +6,11 @@ import numpy as np
 import pandas as pd
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt, cm
+from pySankey import sankey
 from tabulate import tabulate
 from unidecode import unidecode
 
+from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import get_handels_labels, get_font_properties
 from src.plots.table import render_mpl_table
 from src.variables.driver_colors import driver_colors_historical
@@ -492,3 +494,27 @@ def points_percentage_diff():
         print(f'{k} - ({v})%')
 
 
+def victories_per_driver_team(start=2014, end=2024):
+
+
+    ergast = My_Ergast()
+    races = ergast.get_race_results([i for i in range(start, end)])
+    df = pd.DataFrame(columns=['Driver', 'Team'])
+    for r in races.content:
+        r = r[r['position'] == 1]
+        driver = r['fullName'].iloc[0]
+        team = r['constructorName'].iloc[0]
+        df.loc[len(df)] = [driver, team]
+
+    df['Team'] = df['Team'].replace('Alpine F1 Team', 'Alpine')
+    df['Count Driver'] = df.groupby('Driver')['Driver'].transform('count')
+    df['Count Teams'] = df.groupby('Team')['Team'].transform('count')
+    df['Driver'] = [f'{driver} ({count})' for driver, count in zip(df['Driver'], df['Count Driver'])]
+    df['Team'] = [f'{driver} ({count})' for driver, count in zip(df['Team'], df['Count Teams'])]
+    df = df.sort_values(by='Count Teams', ascending=True)
+    df = df.drop(['Count Teams', 'Count Driver'], axis=1)
+    sankey.sankey(df['Driver'], df['Team'], aspect=1, fontsize=11)
+    plt.title(f'WINS PER TEAM ({start}-{end-1})', font='Fira Sans', fontsize=18, color='white')
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/WINNERS-TEAM IN PERIOD.png', dpi=450)
+    plt.show()

@@ -344,17 +344,17 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
             d2_lap = i[1]
 
     else:
-        # d1_lap = session.laps.pick_driver('VER')
-        # count = 1
-        # for i in d1_lap.iterlaps():
-        #     if count == 38:
-        #         d1_lap = i[1]
-        #     elif count == 37:
-        #         d2_lap = i[1]
-        #     count += 1
+        d1_lap = session.laps.pick_driver('HAM')
+        count = 1
+        for i in d1_lap.iterlaps():
+            if count == 20:
+                d1_lap = i[1]
+            elif count == 19:
+                d2_lap = i[1]
+            count += 1
         # # d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver('NOR').pick_quicklaps()
-        d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
-        d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
+        # d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
+        # d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
     delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap)
 
@@ -371,10 +371,10 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
 
     ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
                color='#0000FF',
-               label=driver_1, linewidth=3)
+               label=driver_1, linewidth=2.75)
     ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
                color='#FFA500',
-               label=driver_2, linewidth=3)
+               label=driver_2, linewidth=2.75)
 
     colors = ['green' if x > 0 else 'red' for x in delta_time]
     twin = ax[0].twinx()
@@ -403,7 +403,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     handles1, labels1 = ax[0].get_legend_handles_labels()
     handles1 = handles1 + legend_elements
     labels1 = labels1 + [entry.get_label() for entry in legend_elements]
-    ax[0].legend(handles1, labels1, bbox_to_anchor=(0.25, 1))
+    ax[0].legend(handles1, labels1, loc='lower left')
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],

@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict, Counter
-
+from pySankey import sankey
 import pandas as pd
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
@@ -154,7 +154,7 @@ def get_position_changes(year, round):
     plt.show()
 
 
-def compare_my_ergast_teammates(given, family, start=2001, end=2024):
+def compare_my_ergast_teammates(driver, start=2001, end=2024):
     """
     Compare a driver against his teammates
     :param given: Name
@@ -165,11 +165,11 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
     """
 
     def process_data(session, d_data, t_data, col, race_data):
-        driver_data = session[(session['givenName'] == given) & (session['familyName'] == family)]
+        driver_data = session[session['fullName'] == driver]
         if len(driver_data) == 1:
             team = driver_data['constructorName'].values[0]
             team_data = session[session['constructorName'] == team]
-            team_data = team_data[(team_data['givenName'] != given) & (team_data['familyName'] != family)]
+            team_data = team_data[team_data['fullName'] != driver]
             if len(team_data) == 1:
                 d_position = driver_data[col].values[0]
                 t_position = team_data[col].values[0]
@@ -182,10 +182,9 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
                     d_data[0] += 1
                 else:
                     t_data[0] += 1
-                driver_race_data = race_data[(race_data['givenName'] == given) & (race_data['familyName'] == family)]
+                driver_race_data = race_data[race_data['fullName'] == driver]
                 team_race_data = race_data[race_data['constructorName'] == team]
-                team_race_data = team_race_data[
-                    (team_race_data['givenName'] != given) & (team_race_data['familyName'] != family)]
+                team_race_data = team_race_data[team_race_data['fullName'] != driver]
                 d_grid = driver_race_data['grid'].values[0]
                 t_grid = team_race_data['grid'].values[0]
                 if d_grid == 1:
@@ -207,11 +206,11 @@ def compare_my_ergast_teammates(given, family, start=2001, end=2024):
         index += 1
 
     for race in r.content:
-        driver_data = race[(race['givenName'] == given) & (race['familyName'] == family)]
+        driver_data = race[race['fullName'] == driver]
         if len(driver_data) == 1:
             team = driver_data['constructorName'].values[0]
             team_data = race[race['constructorName'] == team]
-            team_data = team_data[(team_data['givenName'] != given) & (team_data['familyName'] != family)]
+            team_data = team_data[team_data['fullName'] != driver]
             d_points = driver_data['points'].values[0]
             d_data[7] += d_points
             if len(team_data) == 1:
@@ -377,6 +376,27 @@ def results_from_pole(driver, start=1950, end=2024, grid=1):
     for pos, count in sorted(winners.items(), key=lambda x: x[1], reverse=True):
         print(f'{pos}: {count} times')
 
+    def sankey_plot(counter, driver, title):
+        drivers_expanded = [[f'{driver} ({count})'] * count for driver, count in counter.items()]
+        drivers_flat = [driver for sublist in drivers_expanded for driver in sublist]
+        df = pd.DataFrame(drivers_flat, columns=['Winner'])
+        df['Driver'] = f'{driver} ({len(df)})'
+        df['Count'] = df['Winner'].apply(lambda x: int(x.split('(')[1].split(')')[0]))
+        df = df.sort_values(by='Count', ascending=True)
+        df = df.drop('Count', axis=1)
+        sankey.sankey(df['Driver'], df['Winner'], aspect=1000, fontsize=16)
+        plt.title(title, font='Fira Sans', fontsize=18, color='white', ha='center')
+        plt.tight_layout()
+        plt.savefig(f'../PNGs/{title}.png', dpi=450)
+        plt.show()
+
+    sankey_plot(winners, driver, f'RACE WINNERS WITH {driver.upper()} ON POLE')
+    sankey_plot(finish_positions, driver, f'{driver.upper()} RESULTS STARTING ON POLE')
+
+
+
+
+
 
 def highest_qualy(team, start, end=2024):
     ergast = My_Ergast()
@@ -451,6 +471,7 @@ def driver_grid_positions(driver, start=1950, end=2024):
         if len(data) == 1:
             grid_pos = data['grid'].iloc[0]
             grid_positions[grid_pos] += 1
+            print(f'{grid_pos} - {race["year"].iloc[0]}: {race["raceName"].iloc[0]}')
 
     for pos, count in sorted(grid_positions.items(), key=lambda x: x[1], reverse=True):
         print(f'{pos}: {count} times')

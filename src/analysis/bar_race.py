@@ -6,7 +6,7 @@ from src.variables.variables import max_races
 
 
 
-def bar_season(year):
+def bar_season(year, mode='Driver'):
 
     """
          Creates a .mp4 with the points changes in a year
@@ -44,17 +44,24 @@ def bar_season(year):
     races_df.sort(key=sort_key)
 
     all_family_names = set()
-    for race in races_df:
-        all_family_names.update((race['givenName'] + ' ' + race['familyName']).unique())
+    if mode == 'Driver':
+        for race in races_df:
+            all_family_names.update((race['givenName'] + ' ' + race['familyName']).unique())
+    else:
+        for race in races_df:
+            all_family_names.update((race['constructorId']).unique())
 
     family_points_dict = {name: [] for name in all_family_names}
     for race in races_df:
         current_race_points = {name: 0.0 for name in all_family_names}
 
         for i in range(len(race)):
-            family_name = race.loc[i, 'familyName']
-            given_name = race.loc[i, 'givenName']
-            full_name = given_name + ' ' + family_name
+            if mode == 'Driver':
+                family_name = race.loc[i, 'familyName']
+                given_name = race.loc[i, 'givenName']
+                full_name = given_name + ' ' + family_name
+            else:
+                full_name = race.loc[i, 'constructorId']
             points = race.loc[i, 'points']
             current_race_points[full_name] += points
         for name in all_family_names:
@@ -116,10 +123,10 @@ def bar_season(year):
         index.insert(len(races_df), 'Final results')
 
     df = pd.DataFrame(family_points_dict, index=index)
-    df.iloc[28, 19] = 6.9
     filename = f'../MP4/F1 Championship - {races.description.season[0]} Season.mp4'
     title = f'F1 Championship - {races.description.season[0]} Season'
-
+    df.columns = ['AlphaTauri', 'Alpine', 'Haas', 'Alfa Romeo', 'Mercedes',
+                  'Aston Martin', 'Williams', 'McLaren', 'Ferrari', 'Red Bull']
     figsize = (1920 / 200, 1080 / 200)
     bcr.bar_chart_race(
         df=df.cumsum(),

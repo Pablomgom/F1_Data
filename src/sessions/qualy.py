@@ -149,7 +149,7 @@ def qualy_results(session):
             color = plotting.team_color(lap['Team'])
         team_colors.append(color)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8,8))
     ax.barh(fastest_laps.index, fastest_laps['LapTimeDelta'],
             color=team_colors, edgecolor='grey')
 
@@ -161,17 +161,19 @@ def qualy_results(session):
     ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000)
     lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
 
-    plt.suptitle(f"{session.event['EventName']} {session.event.year} Qualifying\n"
-                 f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})")
+    plt.title(f"{session.event['EventName']} {session.event.year} Qualifying\n"
+                 f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})", font='Fira Sans', fontsize=20)
 
-    plt.xlabel("Seconds")
-    plt.ylabel("Driver")
+    plt.xlabel("Diff in seconds (s)", font='Fira Sans', fontsize=17)
+    plt.ylabel("Driver", font='Fira Sans', fontsize=17)
 
     def custom_formatter(x, pos):
         return round(x * 100000, 1)
 
     ax.xaxis.set_major_formatter(FuncFormatter(custom_formatter))
     ax.xaxis.grid(True, color='white', linestyle='--')
+    plt.xticks(font='Fira Sans', fontsize=15)
+    plt.yticks(font='Fira Sans', fontsize=15)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f"../PNGs/QUALY OVERVIEW {session.event.OfficialEventName}.png", dpi=400)
     plt.show()

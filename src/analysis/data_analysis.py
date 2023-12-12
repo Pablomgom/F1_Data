@@ -173,36 +173,44 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None, 
     plt.show()
 
 
-def predict_race_pace():
+def predict_race_pace(year=2024, track='Bahrain', session='R'):
 
-    race_pace_delta = pd.read_csv('../resources/csv/Race_pace_delta.csv')
+    if session == 'R':
+        race_pace_delta = pd.read_csv('../resources/csv/Race_pace_delta.csv')
+    else:
+        race_pace_delta = pd.read_csv('../resources/csv/Qualy_pace_delta.csv')
     circuit_data = pd.read_csv('../resources/csv/Circuit_data.csv')
-    race_pace_delta = race_pace_delta.pivot(index=['Year', 'Session'], columns='Team', values='Delta').reset_index()
+    race_pace_delta = race_pace_delta.pivot(index=['Year', 'Track', 'Session'], columns=['Team'], values='Delta').reset_index()
     teams = ['Red Bull Racing', 'Aston Martin', 'Alpine', 'Mercedes', 'AlphaTauri',
              'Alfa Romeo', 'Williams', 'Haas F1 Team', 'McLaren', 'Ferrari']
-    predict_data = pd.merge(race_pace_delta, circuit_data, on=['Year', 'Session'], how='inner')
+    predict_data = pd.merge(race_pace_delta, circuit_data, on=['Year', 'Track'], how='inner')
+    predict_data = predict_data.drop(['Session_y'], axis=1).rename({'Session_x': 'Session'}, axis=1)
     predict_data = predict_data.sort_values(by=['Year', 'Session'], ascending=[True, True])
     predict_data['ID'] = range(1, len(predict_data) + 1)
-    for column in predict_data.columns:
+    for column in teams:
         median_value = predict_data[column].median()
         predict_data[column].fillna(median_value, inplace=True)
-    X = predict_data.drop(columns=teams+['Year', 'Session'])
+    X = predict_data.drop(columns=teams+['Session', 'Track'])
     y = predict_data[teams]
     scaler = StandardScaler()
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     X_scaled = scaler.fit_transform(X)
     model.fit(X_scaled, y)
+    prev_year_data = circuit_data[(circuit_data['Year'] == year - 1) & (circuit_data['Track'] == track)]
+    if len(prev_year_data) == 0:
+        raise Exception('No data for that year/track combination')
     next_race_data = {
-        'Corner Density': 358.4421722636128,
-        'Top Speed': 321.0,
-        'Full Gas': 0.6141821231473246,
-        'Lifting': 0.22733615449591732,
-        'Q1 Corner Speed': 127,
-        'Median Corner Speed': 173.5,
-        'Q3 Corner Speed': 224,
-        'Average Corner Speed': 169.52666666666667,
-        'Corner Speed Variance': 3766.3959555555552,
-        'ID': 23
+        'Year': year,
+        'Corner Density': prev_year_data['Corner Density'].loc[0],
+        'Top Speed': prev_year_data['Top Speed'].loc[0],
+        'Full Gas': prev_year_data['Full Gas'].loc[0],
+        'Lifting': prev_year_data['Lifting'].loc[0],
+        'Q1 Corner Speed': prev_year_data['Q1 Corner Speed'].loc[0],
+        'Median Corner Speed': prev_year_data['Median Corner Speed'].loc[0],
+        'Q3 Corner Speed': prev_year_data['Q3 Corner Speed'].loc[0],
+        'Average Corner Speed': prev_year_data['Average Corner Speed'].loc[0],
+        'Corner Speed Variance': prev_year_data['Corner Speed Variance'].loc[0],
+        'ID': predict_data['ID'].max() + 1
     }
 
     next_race_df = pd.DataFrame([next_race_data])
@@ -212,16 +220,27 @@ def predict_race_pace():
     adjusted_predictions = [value - min_value for value in next_race_prediction[0]]
     next_race_prediction = pd.DataFrame([adjusted_predictions], columns=teams)
     next_race_prediction = next_race_prediction.transpose().sort_values(by=0, ascending=False)
+    ref_session = fastf1.get_session(year - 1, track, session)
+    ref_session.load()
+    fastest_team = next_race_prediction.index[len(next_race_prediction) - 1]
+    delta_time = ref_session.laps.pick_team(fastest_team).pick_quicklaps().pick_wo_box()['LapTime'].median()
+
     fig, ax = plt.subplots(figsize=(10, 8))
     colors = [team_colors_2023.get(t) for t in next_race_prediction.index]
     bars = plt.barh(next_race_prediction.index, next_race_prediction[0].values, color=colors)
     for bar in bars:
         width = bar.get_width()
-        label_x_pos = width + 0.02  # adjust this value to move the label left or right
-        ax.text(label_x_pos, bar.get_y() + bar.get_height() / 2, f'{width:.2f}%',
+        label_x_pos = width + 0.02
+        diff_in_seconds = round(((width/100) * delta_time).total_seconds(), 3)
+        ax.text(label_x_pos, bar.get_y() + bar.get_height() / 2, f'{width:.2f}% (+{diff_in_seconds:.3f}s)',
                 va='center', ha='left', font='Fira Sans', fontsize=16)
+    if session == 'R':
+        plt.title(f'{track.upper()} {year} RACE PACE PREDICTION', font='Fira Sans', fontsize=24)
+    else:
+        plt.title(f'{track.upper()} {year} QUALY PREDICTION', font='Fira Sans', fontsize=24)
     plt.yticks(font='Fira Sans', fontsize=16)
     plt.xticks(font='Fira Sans', fontsize=16)
     plt.xlabel('Percentage difference', font='Fira Sans', fontsize=18)
     plt.tight_layout()
+    plt.savefig(f'../PNGs/{year} {track} {session} PREDICTION.png', dpi=450)
     plt.show()
