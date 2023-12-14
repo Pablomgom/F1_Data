@@ -167,7 +167,7 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
 
 
 def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate='default', ceil_values=False, round=0,
-                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0):
+                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0, add_character=''):
     i = 0
     for bar in bars:
         height = bar.get_height()
@@ -189,7 +189,7 @@ def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate=
         else:
             text = text_annotate
         if height != 0 or annotate_zero:
-            plot_text = text_annotate_bars(height, text, round)
+            plot_text = text_annotate_bars(height, text, round, add_character)
             if negative_offset != 0 and height < 0:
                 text = ax.text(bar.get_x() + bar.get_width() / 2, y_offset, plot_text, ha='center',
                                va='bottom',
@@ -204,10 +204,10 @@ def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate=
         i += 1
 
 
-def text_annotate_bars(height, original_text, round):
+def text_annotate_bars(height, original_text, round, add_caracter=''):
     height_formatted = f'{height:.{round}f}'
     if original_text == 'default':
-        return f"{height_formatted}"
+        return f"{height_formatted}{add_caracter}"
     else:
         if height < 0:
             original_text = original_text.replace('+', '')

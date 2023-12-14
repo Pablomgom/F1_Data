@@ -3,6 +3,7 @@ from datetime import timedelta
 import pandas as pd
 
 from src.ergast_api.ergast_struct import ergast_struct
+from src.exceptions.pit_stops_exceptions import filter_pit_stops
 
 
 def string_to_timedelta(time_str):
@@ -40,17 +41,21 @@ def apply_custom_schema(df, schema):
     return df[schema].copy()
 
 
-def get_list_dataframes(df, schema):
+def get_list_dataframes(df, schema, pit_stop=False):
     grouped = df.groupby('raceId')
     races_list = [group for _, group in grouped]
 
     def custom_sort_key(df):
-        # Extract the values from the DataFrame and return them
-        return (df['year'].values[0], df['round'].values[0])
+        if pit_stop:
+            return df['year'].values[0], df['round'].values[0], df['lap'].values[0]
+        else:
+            return df['year'].values[0], df['round'].values[0]
 
-    # Sort the list of DataFrames using the custom sorting key
     races_list = sorted(races_list, key=custom_sort_key)
-    races_list = [apply_custom_schema(df, schema).sort_values(by='position', ascending=True) for df in races_list]
+    if pit_stop:
+        races_list = [apply_custom_schema(df, schema).sort_values(by='lap', ascending=True) for df in races_list]
+    else:
+        races_list = [apply_custom_schema(df, schema).sort_values(by='position', ascending=True) for df in races_list]
     return races_list
 
 
@@ -67,6 +72,7 @@ qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', '
                         'givenName', 'familyName', 'fullName', 'driverCode', 'circuitName',
                         'location', 'country', 'circuitRef']
 
+pit_stop_schema = ['year', 'round', 'raceName', 'fullName', 'stop', 'lap', 'pitTime', 'duration']
 
 class My_Ergast:
 
@@ -214,4 +220,18 @@ class My_Ergast:
             {qualyId},{raceId},{driverId},{constructorId},{number},{grid},/N,/N,/N
         """)
 
+
+    def get_pit_stops(self, year, race_id=None):
+        pitstops = self.pit_stops
+        pitstops = pd.merge(pitstops, self.drivers, on='driverId', how='inner')
+        pitstops = pd.merge(pitstops, self.races, on='raceId', how='inner')
+        if race_id is None:
+            pitstops = pitstops[pitstops['year'].isin(year)]
+        else:
+            pitstops = pitstops[(pitstops['year'].isin(year)) & (pitstops['round'] == race_id)]
+        pitstops['fullName'] = pitstops['givenName'] + ' ' + pitstops['familyName']
+        pitstops_list = get_list_dataframes(pitstops, pit_stop_schema, True)
+        pitstops_list = ergast_struct(pitstops_list)
+        pitstops_list = filter_pit_stops(pitstops_list)
+        return pitstops_list
 

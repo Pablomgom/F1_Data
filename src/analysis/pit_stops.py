@@ -1,8 +1,12 @@
+import statistics
+
 import fastf1
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import matplotlib.patheffects as path_effects
+
+from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import round_bars, annotate_bars, get_font_properties
 from src.utils.utils import update_name
 from src.variables.team_colors import team_colors_2023
@@ -188,4 +192,47 @@ def pitstops_per_year(year):
     plt.yticks(font='Fira Sans', fontsize=15)
     plt.tight_layout()
     plt.savefig(f'../PNGs/PIT STOPS IN {year}.png', dpi=450)
+    plt.show()
+
+
+
+def pitstops_pirelli_era():
+
+    ergast = My_Ergast()
+    pitstops_ergast = ergast.get_pit_stops([i for i in range(2011, 2023)]).content
+    races = ergast.get_race_results([i for i in range(2011, 2023)]).content
+    pit_stop_dict = {}
+
+    for p, r in zip(pitstops_ergast, races):
+        year = p['year'].loc[0]
+        r = r[~r['status'].isin(['Withdrew', 'Did not start'])]
+        mean_pit_stops_race = len(p) / len(r)
+        if year not in pit_stop_dict:
+            pit_stop_dict[year] = [mean_pit_stops_race]
+        else:
+            pit_stop_dict[year].append(mean_pit_stops_race)
+
+    mean_pit_stops = []
+    years = [i for i in range(2011, 2024)]
+    for y, p in pit_stop_dict.items():
+        mean_pit_stops.append(statistics.mean(p))
+
+    pitstops_2023 = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
+    pitstops_2023 = pitstops_2023[pitstops_2023['Year'] == 2023].sort_values(by='Race_ID')
+    mean_pit_stops.append((pitstops_2023.groupby('Race_ID').size()/20).mean())
+
+    fig, ax = plt.subplots(figsize=(9, 8))
+    bars = plt.bar(years, mean_pit_stops)
+    round_bars(bars, ax, '#00BFFF', color_1=None, color_2=None, y_offset_rounded=0.05, corner_radius=0.1, linewidth=4)
+    annotate_bars(bars, ax, 0.01, 18, text_annotate='default', ceil_values=False, round=2,
+                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0)
+
+    plt.title('Average pit stops per driver/season in the Pirelli era', font='Fira Sans', fontsize=24)
+    plt.xlabel('Year', font='Fira Sans', fontsize=20)
+    plt.ylabel('Average pit stops per driver', font='Fira Sans', fontsize=20)
+    plt.xticks([i for i in range(2011, 2024)], rotation=35, font='Fira Sans', fontsize=18)
+    plt.yticks(font='Fira Sans', fontsize=16)
+    ax.yaxis.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/PIT STOPS IN PIRELLI ERA.png', dpi=450)
     plt.show()

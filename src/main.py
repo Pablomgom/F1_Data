@@ -28,7 +28,6 @@ previous_input = ""
 
 if __name__ == '__main__':
 
-
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
         func_name = func.split('(')[0]

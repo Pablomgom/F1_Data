@@ -14,10 +14,14 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 import matplotlib.patheffects as path_effects
+
+from src.exceptions import qualy_by_year
+from src.exceptions.custom_exceptions import QualyException
 from src.utils import utils
 from src.plots.plots import round_bars, annotate_bars
-from src.utils.utils import darken_color, plot_turns, rotate
+from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows
 import seaborn as sns
+from src.variables.team_colors import team_colors_2023
 
 
 def long_runs_driver(session, driver, threshold=1.07):
@@ -985,3 +989,88 @@ def session_results(start, end, session=2):
                     count += 1
             except:
                 print('No data')
+
+
+def drs_efficiency(year):
+
+    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    drs_dict = {}
+    for i in range(len(schedule)):
+        from src.utils.utils import call_function_from_module
+        try:
+            call_function_from_module(qualy_by_year, f"year_{year}", i + 1)
+            if i == 3:
+                raise QualyException
+            current_session_delta = {}
+            session = fastf1.get_session(year, i + 1, 'Q')
+            session.load()
+            teams = session.laps['Team'].unique()
+            teams = [t for t in teams if not pd.isna(t)]
+            for t in teams:
+                team_lap = session.laps.pick_team(t).pick_fastest()
+                drs_data = team_lap.telemetry['DRS'].replace(14, 12).replace(10, 12).diff().fillna(0)
+                open_close = drs_data[drs_data != 0]
+                open_close = remove_close_rows(open_close)
+                if len(open_close) == 0:
+                    raise QualyException
+                indexes = list(open_close.index.values)
+                if open_close[0] == -4:
+                    first_index = open_close.index[0]
+                    indexes.remove(first_index)
+                    indexes.append(first_index)
+                for d in range(int(len(indexes)/2)):
+                    speed_open = team_lap.telemetry['Speed'][indexes[0+d*2]]
+                    try:
+                        speed_close = max(team_lap.telemetry['Speed'][indexes[0+d*2]:indexes[1+d*2]])
+                    except ValueError:
+                        max_index = max(team_lap.telemetry['Speed'].index)
+                        before_finish_line = team_lap.telemetry['Speed'][indexes[0+d*2]:max_index]
+                        after_finish_line = team_lap.telemetry['Speed'][0:indexes[1+d*2]+1]
+                        speed_close = max(pd.concat([before_finish_line, after_finish_line]))
+                    delta_diff = ((speed_close - speed_open) / speed_open) * 100
+                    if t not in current_session_delta:
+                        current_session_delta[t] = [delta_diff]
+                    else:
+                        current_session_delta[t].append(delta_diff)
+
+            if len(current_session_delta) == 10:
+                for t in current_session_delta.keys():
+                    print(f'{t} - {len(current_session_delta[t])}')
+                    if t not in drs_dict:
+                        drs_dict[t] = current_session_delta[t]
+                    else:
+                        drs_dict[t].extend(current_session_delta[t])
+            else:
+                print(current_session_delta)
+        except QualyException:
+            print(f'No data for {year}-{i + 1}')
+    df = pd.DataFrame(drs_dict).melt(var_name='Team', value_name='Delta').groupby('Team')['Delta'].mean().reset_index()
+    df = df.sort_values(by='Delta', ascending=False)
+    df['Team'].replace({'Haas F1 Team': 'Haas', 'Red Bull Racing': 'Red Bull'}, inplace=True)
+    fix, ax = plt.subplots(figsize=(9, 8))
+    bars = plt.bar(df['Team'], df['Delta'])
+    colors = [team_colors_2023.get(i) for i in df['Team']]
+    round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.1, linewidth=4)
+    annotate_bars(bars, ax, 0.1, 14, text_annotate='default', ceil_values=False, round=2,
+                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0, add_character='%')
+
+    plt.title(f'DRS EFFICIENCY IN {year} SEASON', font='Fira Sans', fontsize=24)
+    plt.xlabel('Team', font='Fira Sans', fontsize=20)
+    plt.ylabel('Drs efficiency (%)', font='Fira Sans', fontsize=20)
+    plt.xticks(rotation=35, font='Fira Sans', fontsize=18)
+    plt.yticks(font='Fira Sans', fontsize=16)
+    plt.ylim(bottom=min(df['Delta'])-1, top=max(df['Delta'])+1)
+    color_index = 0
+    for label in ax.get_xticklabels():
+        label.set_color('white')
+        label.set_fontsize(16)
+        label.set_rotation(35)
+        for_color = colors[color_index]
+        if for_color == '#ffffff':
+            for_color = '#FF7C7C'
+        label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=for_color)])
+        color_index += 1
+    ax.yaxis.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/DRS EFFICIENCY {year}.png', dpi=450)
+    plt.show()

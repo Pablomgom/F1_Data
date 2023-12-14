@@ -196,3 +196,17 @@ def find_nearest_non_repeating(array1, array2):
         used_indices.add(nearest_index)  # Mark this index as used
 
     return nearest_values
+
+
+def remove_close_rows(df):
+    drop_indices = []
+    previous_index = None
+    for index in df.index:
+        if previous_index is not None and (index - previous_index) < 15:
+            drop_indices.extend([previous_index, index])
+        previous_index = index
+    # Remove duplicates from the list
+    drop_indices = list(set(drop_indices))
+    # Drop the rows
+    df = df.drop(index=drop_indices)
+    return df

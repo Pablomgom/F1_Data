@@ -93,6 +93,8 @@ def get_funcs():
         'driver_fuel_corrected_laps': driver_fuel_corrected_laps,
         'race_diff_v2': race_diff_v2,
         'pitstops_per_year': pitstops_per_year,
+        'pitstops_pirelli_era': pitstops_pirelli_era,
+        'drs_efficiency': drs_efficiency,
         'help': help
     }
 
