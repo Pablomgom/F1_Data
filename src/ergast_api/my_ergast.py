@@ -150,48 +150,32 @@ class My_Ergast:
     def insert_qualy_data(self, year, round):
 
         self.qualifying = load_csv('qualifying', False)
-        new_column_names = {
-            'Driver': 'fullName',
-            'Pos': 'position',
-            'No': 'number',
-            'Lap': 'q1',
-            'Constructor': 'constructorName',
-        }
 
-        teams_dict = {
-            'McLaren-Mercedes': 'McLaren',
-            'Jordan-Honda': 'Jordan',
-            'Williams-BMW': 'Williams',
-            'BAR-Honda': 'BAR',
-            'Sauber-Petronas': 'Sauber',
-            'Jaguar-Cosworth': 'Jaguar',
-            'Prost-Acer': 'Prost',
-            'Arrows-Cosworth': 'Arrows',
-            'Minardi-Asiatech': 'Minardi',
-            'Haas': 'Haas F1 Team',
-            'Alpine': 'Alpine F1 Team'
-        }
 
         raceId = self.races[(self.races['year'] == year) & (self.races['round'] == round)]['raceId'].values[0]
         data_to_append = load_csv('take_data', False)
+        og_len = len(data_to_append)
         qualyId = self.qualifying['qualifyId'].max() + 1
         self.drivers['fullName'] = self.drivers['givenName'] + ' ' + self.drivers['familyName']
-        data_to_append.rename(columns=new_column_names, inplace=True)
         data_to_append = pd.merge(data_to_append, self.drivers[['driverId', 'fullName']], on='fullName', how='inner')
-        data_to_append['constructorName'] = data_to_append['constructorName'].replace(teams_dict)
         data_to_append = pd.merge(data_to_append, self.constructors[['constructorId', 'constructorName']],
                                   on='constructorName', how='inner')
         data_to_append['qualifyId'] = qualyId + data_to_append.index
         data_to_append['raceId'] = raceId
-        data_to_append['q1'] = data_to_append['q1'].astype(str)
-        data_to_append['q2'] = data_to_append['q2'].astype(str)
-        data_to_append['q3'] = data_to_append['q3'].astype(str)
-
+        q_session = ['q1', 'q2', 'q3']
+        for q in q_session:
+            if q in data_to_append.columns:
+                data_to_append[q] = data_to_append[q].astype(str)
+            else:
+                data_to_append[q] = None
+        print(data_to_append.groupby('constructorName').size())
         data_to_append = data_to_append[['qualifyId', 'raceId', 'driverId', 'constructorId',
                                          'number', 'position', 'q1', 'q2', 'q3']]
+        new_len = len(data_to_append)
         combined_data = pd.concat([self.qualifying, data_to_append], ignore_index=True)
+        if og_len != new_len:
+            raise Exception('BAD PROCESS')
         combined_data.to_csv('../resources/ergast_data/qualifying.csv', index=False)
-        a = 1
 
     def get_race_row(self, qualy_data, driver, team, number, grid):
         resultId = self.results['resultId'].max() + 1

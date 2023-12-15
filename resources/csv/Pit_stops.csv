@@ -1,769 +1,766 @@
-Pos|Team|Driver|Time|Lap|Points|Race_ID|Year|Race_Name
-1|McLaren|Norris|2.13|22|25|14|2023|Monza
-2|Ferrari|Leclerc|2.32|20|18|14|2023|Monza
-3|Red Bull|Perez|2.35|21|15|14|2023|Monza
-4|AlphaTauri|Lawson|2.51|33|12|14|2023|Monza
-5|AlphaTauri|Lawson|2.53|13||14|2023|Monza
-6|Red Bull|Verstappen|2.54|20|10|14|2023|Monza
-7|Alfa Romeo|Zhou|2.63|11|8|14|2023|Monza
-8|Mercedes|Russell|2.66|19|6|14|2023|Monza
-9|Alpine|Ocon|2.69|24|4|14|2023|Monza
-10|McLaren|Piastri|2.77|23|2|14|2023|Monza
-11|Mercedes|Hamilton|2.83|27|1|14|2023|Monza
-12|Haas|Magnussen|2.98|12||14|2023|Monza
-13|Alfa Romeo|Bottas|3.01|25||14|2023|Monza
-14|Williams|Albon|3.05|15||14|2023|Monza
-15|Alpine|Gasly|3.05|31||14|2023|Monza
-16|Haas|Hulkenberg|3.17|39||14|2023|Monza
-17|Aston Martin|Alonso|3.18|21||14|2023|Monza
-18|Haas|Magnussen|3.18|33||14|2023|Monza
-19|Williams|Sargeant|3.24|14||14|2023|Monza
-20|Ferrari|Sainz|3.35|19||14|2023|Monza
-21|Aston Martin|Stroll|3.96|20||14|2023|Monza
-22|Alfa Romeo|Zhou|4.15|33||14|2023|Monza
-23|Haas|Hulkenberg|4.48|14||14|2023|Monza
-24|Alpine|Gasly|5.98|10||14|2023|Monza
-25|McLaren|Piastri|10.21|41||14|2023|Monza
-1|Red Bull|Verstappen|2.01|61|25|13|2023|Zandvoort
-2|Red Bull|Verstappen|2.21|49||13|2023|Zandvoort
-3|McLaren|Piastri|2.27|15|18|13|2023|Zandvoort
-4|McLaren|Norris|2.27|42|15|13|2023|Zandvoort
-5|Alpine|Ocon|2.43|10|12|13|2023|Zandvoort
-6|AlphaTauri|Lawson|2.43|59|10|13|2023|Zandvoort
-7|McLaren|Piastri|2.43|46||13|2023|Zandvoort
-8|Aston Martin|Stroll|2.46|4|8|13|2023|Zandvoort
-9|Red Bull|Perez|2.46|45|6|13|2023|Zandvoort
-10|Alpine|Ocon|2.48|43||13|2023|Zandvoort
-11|AlphaTauri|Lawson|2.51|46||13|2023|Zandvoort
-12|Red Bull|Verstappen|2.55|11||13|2023|Zandvoort
-13|AlphaTauri|Lawson|2.55|17||13|2023|Zandvoort
-14|Alpine|Gasly|2.58|11|4|13|2023|Zandvoort
-15|AlphaTauri|Tsunoda|2.59|10|2|13|2023|Zandvoort
-16|Alfa Romeo|Bottas|2.69|59|1|13|2023|Zandvoort
-17|Red Bull|Perez|2.69|12||13|2023|Zandvoort
-18|Alpine|Gasly|2.69|60||13|2023|Zandvoort
-19|Aston Martin|Stroll|2.71|16||13|2023|Zandvoort
-20|Ferrari|Sainz|2.71|2||13|2023|Zandvoort
-21|Alfa Romeo|Zhou|2.82|10||13|2023|Zandvoort
-22|Red Bull|Verstappen|2.83|63||13|2023|Zandvoort
-23|McLaren|Norris|2.84|3||13|2023|Zandvoort
-24|Aston Martin|Alonso|2.88|2||13|2023|Zandvoort
-25|Mercedes|Hamilton|2.89|3||13|2023|Zandvoort
-26|Mercedes|Russell|2.90|16||13|2023|Zandvoort
-27|Red Bull|Perez|2.91|1||13|2023|Zandvoort
-28|Ferrari|Sainz|2.92|10||13|2023|Zandvoort
-29|Alfa Romeo|Zhou|2.93|1||13|2023|Zandvoort
-30|Aston Martin|Alonso|2.98|10||13|2023|Zandvoort
-31|Ferrari|Sainz|2.99|41||13|2023|Zandvoort
-32|Red Bull|Verstappen|3.02|2||13|2023|Zandvoort
-33|Ferrari|Sainz|3.03|60||13|2023|Zandvoort
-34|AlphaTauri|Tsunoda|3.05|60||13|2023|Zandvoort
-35|Aston Martin|Alonso|3.05|61||13|2023|Zandvoort
-36|Mercedes|Russell|3.09|10||13|2023|Zandvoort
-37|Aston Martin|Stroll|3.10|34||13|2023|Zandvoort
-38|McLaren|Norris|3.12|60||13|2023|Zandvoort
-39|Mercedes|Hamilton|3.14|9||13|2023|Zandvoort
-40|Mercedes|Hamilton|3.14|45||13|2023|Zandvoort
-41|McLaren|Piastri|3.15|60||13|2023|Zandvoort
-42|Williams|Albon|3.17|44||13|2023|Zandvoort
-43|Aston Martin|Stroll|3.21|9||13|2023|Zandvoort
-44|Red Bull|Perez|3.27|63||13|2023|Zandvoort
-45|Mercedes|Russell|3.34|60||13|2023|Zandvoort
-46|Haas|Magnussen|3.35|9||13|2023|Zandvoort
-47|Alfa Romeo|Bottas|3.35|16||13|2023|Zandvoort
-48|Haas|Hulkenberg|3.35|48||13|2023|Zandvoort
-49|McLaren|Norris|3.37|10||13|2023|Zandvoort
-50|Alfa Romeo|Bottas|3.46|47||13|2023|Zandvoort
-51|Alfa Romeo|Zhou|3.61|37||13|2023|Zandvoort
-52|Aston Martin|Stroll|3.68|60||13|2023|Zandvoort
-53|Alfa Romeo|Zhou|3.78|60||13|2023|Zandvoort
-54|Mercedes|Russell|3.80|4||13|2023|Zandvoort
-55|Mercedes|Russell|3.80|67||13|2023|Zandvoort
-56|Haas|Hulkenberg|3.82|16||13|2023|Zandvoort
-57|Haas|Magnussen|3.82|35||13|2023|Zandvoort
-58|Williams|Albon|3.94|61||13|2023|Zandvoort
-59|Mercedes|Hamilton|3.96|60||13|2023|Zandvoort
-60|Alpine|Ocon|4.07|61||13|2023|Zandvoort
-61|Alpine|Ocon|4.09|2||13|2023|Zandvoort
-62|Haas|Magnussen|4.83|60||13|2023|Zandvoort
-63|Haas|Hulkenberg|5.10|60||13|2023|Zandvoort
-64|Aston Martin|Alonso|8.39|48||13|2023|Zandvoort
-65|AlphaTauri|Lawson|9.00|1||13|2023|Zandvoort
-66|Ferrari|Leclerc|10.24|11||13|2023|Zandvoort
-67|Alpine|Gasly|10.61|1||13|2023|Zandvoort
-68|Haas|Magnussen|10.74|1||13|2023|Zandvoort
-69|Red Bull|Perez|10.92|60||13|2023|Zandvoort
-70|Ferrari|Leclerc|13.58|1||13|2023|Zandvoort
-71|AlphaTauri|Tsunoda|14.66|1||13|2023|Zandvoort
-1|Ferrari|Leclerc|2.19|13|25|12|2023|Spa
-2|Red Bull|Perez|2.24|29|18|12|2023|Spa
-3|AlphaTauri|Tsunoda|2.29|9|15|12|2023|Spa
-4|AlphaTauri|Ricciardo|2.35|5|12|12|2023|Spa
-5|Red Bull|Verstappen|2.38|30|10|12|2023|Spa
-6|Aston Martin|Alonso|2.42|10|8|12|2023|Spa
-7|Alpine|Ocon|2.45|6|6|12|2023|Spa
-8|AlphaTauri|Tsunoda|2.49|24||12|2023|Spa
-9|Red Bull|Verstappen|2.51|14||12|2023|Spa
-10|AlphaTauri|Ricciardo|2.56|22||12|2023|Spa
-11|Ferrari|Sainz|2.65|7|4|12|2023|Spa
-12|Ferrari|Leclerc|2.74|28||12|2023|Spa
-13|Williams|Sargeant|2.75|34|2|12|2023|Spa
-14|Mercedes|Hamilton|2.76|12|1|12|2023|Spa
-15|Alpine|Ocon|2.76|25||12|2023|Spa
-16|Williams|Albon|2.84|23||12|2023|Spa
-17|Mercedes|Hamilton|2.85|27||12|2023|Spa
-18|Williams|Albon|2.92|33||12|2023|Spa
-19|Mercedes|Russell|2.93|22||12|2023|Spa
-20|Mercedes|Hamilton|2.93|42||12|2023|Spa
-21|Haas|Magnussen|3.02|5||12|2023|Spa
-22|Alfa Romeo|Bottas|3.09|6||12|2023|Spa
-23|Haas|Magnussen|3.11|25||12|2023|Spa
-24|Williams|Sargeant|3.13|8||12|2023|Spa
-25|Red Bull|Perez|3.22|13||12|2023|Spa
-26|Alfa Romeo|Bottas|3.24|24||12|2023|Spa
-27|McLaren|Norris|3.33|17||12|2023|Spa
-28|Aston Martin|Alonso|3.33|29||12|2023|Spa
-29|Alfa Romeo|Zhou|3.42|25||12|2023|Spa
-30|Williams|Sargeant|3.44|24||12|2023|Spa
-31|Alfa Romeo|Zhou|3.88|7||12|2023|Spa
-32|Haas|Hulkenberg|3.99|12||12|2023|Spa
-33|Aston Martin|Stroll|4.36|20||12|2023|Spa
-34|McLaren|Norris|4.38|5||12|2023|Spa
-35|Williams|Albon|4.71|7||12|2023|Spa
-36|Alpine|Gasly|5.01|23||12|2023|Spa
-37|Haas|Hulkenberg|5.11|24||12|2023|Spa
-1|Red Bull|Perez|1.98|42|25|11|2023|Budapest
-2|McLaren|Piastri|2.01|18|18|11|2023|Budapest
-3|Ferrari|Sainz|2.14|15|15|11|2023|Budapest
-4|McLaren|Norris|2.15|44|12|11|2023|Budapest
-5|Ferrari|Leclerc|2.27|43|10|11|2023|Budapest
-6|McLaren|Norris|2.32|17||11|2023|Budapest
-7|AlphaTauri|Tsunoda|2.37|44|8|11|2023|Budapest
-8|Red Bull|Verstappen|2.38|23|6|11|2023|Budapest
-9|AlphaTauri|Ricciardo|2.50|18|4|11|2023|Budapest
-10|Aston Martin|Stroll|2.61|9|2|11|2023|Budapest
-11|Red Bull|Verstappen|2.64|51||11|2023|Budapest
-12|Ferrari|Sainz|2.71|44||11|2023|Budapest
-13|Haas|Hulkenberg|2.73|38|1|11|2023|Budapest
-14|Mercedes|Russell|2.76|46||11|2023|Budapest
-15|Red Bull|Perez|2.80|24||11|2023|Budapest
-16|Williams|Albon|2.82|8||11|2023|Budapest
-17|Mercedes|Hamilton|2.83|49||11|2023|Budapest
-18|Mercedes|Hamilton|2.85|16||11|2023|Budapest
-19|McLaren|Piastri|2.89|42||11|2023|Budapest
-20|Mercedes|Russell|2.91|28||11|2023|Budapest
-21|Haas|Magnussen|2.92|41||11|2023|Budapest
-22|Williams|Albon|2.94|31||11|2023|Budapest
-23|AlphaTauri|Ricciardo|2.95|29||11|2023|Budapest
-24|Williams|Sargeant|2.96|34||11|2023|Budapest
-25|Alfa Romeo|Bottas|3.07|9||11|2023|Budapest
-26|Aston Martin|Stroll|3.26|34||11|2023|Budapest
-27|Aston Martin|Alonso|3.42|20||11|2023|Budapest
-28|Alfa Romeo|Zhou|3.60|38||11|2023|Budapest
-29|Haas|Magnussen|3.75|14||11|2023|Budapest
-30|Alfa Romeo|Bottas|3.90|40||11|2023|Budapest
-31|Haas|Hulkenberg|3.97|16||11|2023|Budapest
-32|Williams|Sargeant|4.58|13||11|2023|Budapest
-33|Aston Martin|Alonso|4.71|43||11|2023|Budapest
-34|AlphaTauri|Tsunoda|7.37|9||11|2023|Budapest
-35|Ferrari|Leclerc|9.46|17||11|2023|Budapest
-36|Alfa Romeo|Zhou|9.74|10||11|2023|Budapest
-1|McLaren|Norris|2.23|33|25|10|2023|Silverstone
-2|Ferrari|Leclerc|2.32|18|18|10|2023|Silverstone
-3|Aston Martin|Stroll|2.35|31|15|10|2023|Silverstone
-4|Alpine|Gasly|2.37|31|12|10|2023|Silverstone
-5|Ferrari|Sainz|2.41|26|10|10|2023|Silverstone
-6|Red Bull|Perez|2.42|28|8|10|2023|Silverstone
-7|McLaren|Piastri|2.42|29|6|10|2023|Silverstone
-8|AlphaTauri|de Vries|2.46|32|4|10|2023|Silverstone
-9|AlphaTauri|de Vries|2.48|27||10|2023|Silverstone
-10|Ferrari|Leclerc|2.57|32||10|2023|Silverstone
-11|AlphaTauri|Tsunoda|2.60|14|2|10|2023|Silverstone
-12|Aston Martin|Alonso|2.67|33|1|10|2023|Silverstone
-13|Williams|Sargeant|2.69|29||10|2023|Silverstone
-14|Red Bull|Verstappen|2.76|33||10|2023|Silverstone
-15|Alfa Romeo|Zhou|2.89|33||10|2023|Silverstone
-16|Alfa Romeo|Zhou|2.92|24||10|2023|Silverstone
-17|AlphaTauri|Tsunoda|3.11|32||10|2023|Silverstone
-18|Mercedes|Hamilton|3.22|33||10|2023|Silverstone
-19|Alfa Romeo|Bottas|3.35|32||10|2023|Silverstone
-20|Williams|Albon|3.54|32||10|2023|Silverstone
-21|Mercedes|Russell|3.95|28||10|2023|Silverstone
-22|Haas|Hulkenberg|4.09|32||10|2023|Silverstone
-23|Alfa Romeo|Zhou|8.27|36||10|2023|Silverstone
-24|Haas|Hulkenberg|16.16|7||10|2023|Silverstone
-1|McLaren|Norris|2.10|14|25|9|2023|Austria
-2|AlphaTauri|de Vries|2.28|37|18|9|2023|Austria
-3|AlphaTauri|de Vries|2.31|12||9|2023|Austria
-4|Red Bull|Verstappen|2.32|24|15|9|2023|Austria
-5|Red Bull|Verstappen|2.33|49||9|2023|Austria
-6|Red Bull|Verstappen|2.38|69||9|2023|Austria
-7|Ferrari|Leclerc|2.40|47|12|9|2023|Austria
-8|Williams|Sargeant|2.45|43|10|9|2023|Austria
-9|Red Bull|Perez|2.46|50|8|9|2023|Austria
-10|Alpine|Gasly|2.54|14|6|9|2023|Austria
-11|Aston Martin|Alonso|2.55|44|4|9|2023|Austria
-12|AlphaTauri|Tsunoda|2.60|43|2|9|2023|Austria
-13|Alpine|Ocon|2.61|14|1|9|2023|Austria
-14|Red Bull|Perez|2.66|25||9|2023|Austria
-15|Aston Martin|Stroll|2.69|54||9|2023|Austria
-16|Aston Martin|Stroll|2.72|36||9|2023|Austria
-17|Aston Martin|Alonso|2.74|15||9|2023|Austria
-18|Williams|Albon|2.75|14||9|2023|Austria
-19|Alfa Romeo|Bottas|2.81|40||9|2023|Austria
-20|Mercedes|Russell|2.87|41||9|2023|Austria
-21|Aston Martin|Stroll|2.89|15||9|2023|Austria
-22|Mercedes|Hamilton|2.91|14||9|2023|Austria
-23|Alfa Romeo|Zhou|3.00|38||9|2023|Austria
-24|McLaren|Piastri|3.08|41||9|2023|Austria
-25|Haas|Hulkenberg|3.10|11||9|2023|Austria
-26|Haas|Magnussen|3.10|34||9|2023|Austria
-27|McLaren|Norris|3.12|41||9|2023|Austria
-28|McLaren|Piastri|3.14|14||9|2023|Austria
-29|Williams|Sargeant|3.21|14||9|2023|Austria
-30|Mercedes|Russell|3.29|14||9|2023|Austria
-31|Ferrari|Leclerc|4.46|15||9|2023|Austria
-32|Ferrari|Sainz|4.56|15||9|2023|Austria
-33|Alfa Romeo|Zhou|5.36|8||9|2023|Austria
-34|Haas|Magnussen|6.44|2||9|2023|Austria
-35|Haas|Magnussen|7.15|1||9|2023|Austria
-36|AlphaTauri|Tsunoda|8.47|23||9|2023|Austria
-37|Williams|Albon|8.86|41||9|2023|Austria
-38|Mercedes|Hamilton|8.94|42||9|2023|Austria
-39|Alpine|Gasly|9.25|44||9|2023|Austria
-40|Ferrari|Sainz|9.40|45||9|2023|Austria
-41|AlphaTauri|Tsunoda|10.27|1||9|2023|Austria
-42|McLaren|Piastri|10.61|22||9|2023|Austria
-43|Alpine|Ocon|11.34|40||9|2023|Austria
-44|Alfa Romeo|Bottas|12.44|21||9|2023|Austria
-1|Red Bull|Perez|2.23|68|25|8|2023|Canada
-2|Red Bull|Verstappen|2.30|12|18|8|2023|Canada
-3|Red Bull|Perez|2.31|37||8|2023|Canada
-4|Aston Martin|Alonso|2.34|12|15|8|2023|Canada
-5|McLaren|Piastri|2.41|37|12|8|2023|Canada
-6|AlphaTauri|Tsunoda|2.46|1|10|8|2023|Canada
-7|McLaren|Norris|2.47|35|8|8|2023|Canada
-8|Aston Martin|Stroll|2.48|11|6|8|2023|Canada
-9|Alpine|Ocon|2.58|36|4|8|2023|Canada
-10|Aston Martin|Stroll|2.59|27||8|2023|Canada
-11|Aston Martin|Alonso|2.67|41||8|2023|Canada
-12|Mercedes|Hamilton|2.77|40|2|8|2023|Canada
-13|Red Bull|Verstappen|2.79|42||8|2023|Canada
-14|Alfa Romeo|Zhou|2.81|12|1|8|2023|Canada
-15|Ferrari|Sainz|2.87|38||8|2023|Canada
-16|AlphaTauri|de Vries|2.91|50||8|2023|Canada
-17|Alfa Romeo|Bottas|2.92|36||8|2023|Canada
-18|Alpine|Ocon|2.96|12||8|2023|Canada
-19|Alpine|Gasly|2.98|33||8|2023|Canada
-20|Ferrari|Leclerc|2.99|39||8|2023|Canada
-21|Haas|Magnussen|3.01|53||8|2023|Canada
-22|Haas|Hulkenberg|3.12|31||8|2023|Canada
-23|Haas|Magnussen|3.19|35||8|2023|Canada
-24|Haas|Hulkenberg|3.23|11||8|2023|Canada
-25|Mercedes|Hamilton|3.26|12||8|2023|Canada
-26|McLaren|Piastri|3.30|12||8|2023|Canada
-27|Williams|Albon|3.69|12||8|2023|Canada
-28|AlphaTauri|de Vries|3.89|11||8|2023|Canada
-29|McLaren|Norris|4.22|12||8|2023|Canada
-30|Alfa Romeo|Zhou|6.34|32||8|2023|Canada
-31|AlphaTauri|Tsunoda|6.47|34||8|2023|Canada
-32|Alpine|Gasly|6.60|10||8|2023|Canada
-33|Mercedes|Russell|64.16|12||8|2023|Canada
-1|Red Bull|Perez|2.07|27|25|7|2023|Spain
-2|Red Bull|Perez|2.26|50||7|2023|Spain
-3|Red Bull|Verstappen|2.28|26|18|7|2023|Spain
-4|Alpine|Ocon|2.34|13|15|7|2023|Spain
-5|McLaren|Norris|2.40|50|12|7|2023|Spain
-6|Ferrari|Leclerc|2.46|16|10|7|2023|Spain
-7|AlphaTauri|Tsunoda|2.51|34|8|7|2023|Spain
-8|McLaren|Piastri|2.55|17|6|7|2023|Spain
-9|Haas|Magnussen|2.60|10|4|7|2023|Spain
-10|Mercedes|Russell|2.61|45|2|7|2023|Spain
-11|Mercedes|Russell|2.65|25||7|2023|Spain
-12|Red Bull|Verstappen|2.65|52||7|2023|Spain
-13|Aston Martin|Stroll|2.68|14|1|7|2023|Spain
-14|Williams|Sargeant|2.70|17||7|2023|Spain
-15|Aston Martin|Alonso|2.74|19||7|2023|Spain
-16|Aston Martin|Alonso|2.74|44||7|2023|Spain
-17|AlphaTauri|Tsunoda|2.76|10||7|2023|Spain
-18|AlphaTauri|de Vries|2.88|38||7|2023|Spain
-19|Haas|Hulkenberg|2.89|8||7|2023|Spain
-20|Ferrari|Sainz|2.97|45||7|2023|Spain
-21|AlphaTauri|de Vries|3.02|9||7|2023|Spain
-22|Mercedes|Hamilton|3.07|24||7|2023|Spain
-23|McLaren|Piastri|3.12|39||7|2023|Spain
-24|Ferrari|Sainz|3.14|41||7|2023|Spain
-25|McLaren|Norris|3.20|22||7|2023|Spain
-26|Haas|Magnussen|3.24|42||7|2023|Spain
-27|Aston Martin|Stroll|3.35|34||7|2023|Spain
-28|Ferrari|Leclerc|3.36|41||7|2023|Spain
-29|Mercedes|Hamilton|3.45|50||7|2023|Spain
-30|Williams|Albon|3.51|16||7|2023|Spain
-31|Alfa Romeo|Zhou|3.71|9||7|2023|Spain
-32|Alfa Romeo|Zhou|3.76|36||7|2023|Spain
-33|Haas|Hulkenberg|3.78|26||7|2023|Spain
-34|Williams|Albon|3.90|37||7|2023|Spain
-35|Alpine|Gasly|3.94|19||7|2023|Spain
-36|Williams|Sargeant|4.01|36||7|2023|Spain
-37|Alfa Romeo|Bottas|4.06|39||7|2023|Spain
-38|Alpine|Ocon|4.28|35||7|2023|Spain
-39|Alfa Romeo|Bottas|4.31|5||7|2023|Spain
-40|Haas|Magnussen|5.01|24||7|2023|Spain
-41|Haas|Hulkenberg|5.03|43||7|2023|Spain
-42|Alpine|Gasly|5.04|39||7|2023|Spain
-43|McLaren|Norris|17.69|1||7|2023|Spain
-1|Red Bull|Perez|2.15|53|25|6|2023|Monaco
-2|Ferrari|Leclerc|2.24|44|18|6|2023|Monaco
-3|Red Bull|Verstappen|2.43|55|15|6|2023|Monaco
-4|Aston Martin|Alonso|2.47|54|12|6|2023|Monaco
-5|Alpine|Ocon|2.56|54|10|6|2023|Monaco
-6|Ferrari|Sainz|2.56|55|8|6|2023|Monaco
-7|Alpine|Gasly|2.58|47|6|6|2023|Monaco
-8|AlphaTauri|de Vries|2.60|53|4|6|2023|Monaco
-9|Ferrari|Sainz|2.64|33||6|2023|Monaco
-10|Ferrari|Leclerc|2.66|55||6|2023|Monaco
-11|Aston Martin|Stroll|2.67|51|2|6|2023|Monaco
-12|McLaren|Norris|2.76|50|1|6|2023|Monaco
-13|McLaren|Piastri|2.78|54||6|2023|Monaco
-14|Williams|Albon|2.79|18||6|2023|Monaco
-15|Williams|Sargeant|2.90|20||6|2023|Monaco
-16|Aston Martin|Alonso|3.01|55||6|2023|Monaco
-17|Mercedes|Hamilton|3.01|31||6|2023|Monaco
-18|Haas|Hulkenberg|3.16|59||6|2023|Monaco
-19|Red Bull|Perez|3.21|1||6|2023|Monaco
-20|Alfa Romeo|Zhou|3.42|52||6|2023|Monaco
-21|Red Bull|Perez|3.44|70||6|2023|Monaco
-22|Alfa Romeo|Zhou|3.59|1||6|2023|Monaco
-23|Williams|Sargeant|3.72|52||6|2023|Monaco
-24|Mercedes|Hamilton|4.23|54||6|2023|Monaco
-25|Alpine|Ocon|4.27|32||6|2023|Monaco
-26|Williams|Albon|5.30|52||6|2023|Monaco
-27|Red Bull|Perez|5.66|57||6|2023|Monaco
-28|Williams|Sargeant|6.07|23||6|2023|Monaco
-29|McLaren|Norris|6.36|54||6|2023|Monaco
-30|Alpine|Gasly|7.79|54||6|2023|Monaco
-31|Alfa Romeo|Bottas|8.40|51||6|2023|Monaco
-32|Mercedes|Russell|8.85|54||6|2023|Monaco
-33|Haas|Hulkenberg|10.91|1||6|2023|Monaco
-34|Red Bull|Perez|11.01|34||6|2023|Monaco
-35|AlphaTauri|Tsunoda|11.50|53||6|2023|Monaco
-36|Haas|Hulkenberg|12.33|54||6|2023|Monaco
-37|Haas|Magnussen|24.80|56||6|2023|Monaco
-1|Ferrari|Sainz|2.21|18|25|5|2023|Miami
-2|Red Bull|Perez|2.27|20|18|5|2023|Miami
-3|McLaren|Piastri|2.31|5|15|5|2023|Miami
-4|Mercedes|Hamilton|2.52|37|12|5|2023|Miami
-5|Alpine|Gasly|2.57|15|10|5|2023|Miami
-6|Ferrari|Leclerc|2.61|17|8|5|2023|Miami
-7|Alpine|Ocon|2.62|39|6|5|2023|Miami
-8|Williams|Albon|2.64|22|4|5|2023|Miami
-9|Mercedes|Russell|2.71|17|2|5|2023|Miami
-10|Aston Martin|Alonso|2.78|24|1|5|2023|Miami
-11|Haas|Magnussen|2.79|14||5|2023|Miami
-12|Alfa Romeo|Bottas|2.89|15||5|2023|Miami
-13|Haas|Hulkenberg|2.99|33||5|2023|Miami
-14|Alfa Romeo|Zhou|3.02|31||5|2023|Miami
-15|Aston Martin|Stroll|3.04|42||5|2023|Miami
-16|Red Bull|Verstappen|3.13|45||5|2023|Miami
-17|AlphaTauri|Tsunoda|3.32|36||5|2023|Miami
-18|AlphaTauri|de Vries|3.57|15||5|2023|Miami
-19|McLaren|Norris|4.35|4||5|2023|Miami
-20|Williams|Sargeant|28.71|2||5|2023|Miami
-1|Red Bull|Perez|2.30|11|25|4|2023|Baku
-2|McLaren|Norris|2.35|9|18|4|2023|Baku
-3|Ferrari|Leclerc|2.49|11|15|4|2023|Baku
-4|AlphaTauri|Tsunoda|2.55|8|12|4|2023|Baku
-5|Alpine|Gasly|2.56|5|10|4|2023|Baku
-6|Mercedes|Hamilton|2.68|9|8|4|2023|Baku
-7|Alfa Romeo|Bottas|2.68|34|6|4|2023|Baku
-8|Alpine|Ocon|2.74|50|4|4|2023|Baku
-9|Mercedes|Russell|2.79|11|2|4|2023|Baku
-10|Williams|Sargeant|2.81|8|1|4|2023|Baku
-11|Alfa Romeo|Bottas|2.86|6||4|2023|Baku
-12|Red Bull|Verstappen|2.92|10||4|2023|Baku
-13|Ferrari|Sainz|2.96|11||4|2023|Baku
-14|McLaren|Piastri|3.02|8||4|2023|Baku
-15|Williams|Albon|3.05|7||4|2023|Baku
-16|Alpine|Gasly|3.40|23||4|2023|Baku
-17|Aston Martin|Stroll|3.57|11||4|2023|Baku
-18|Mercedes|Russell|3.73|49||4|2023|Baku
-19|Alfa Romeo|Bottas|3.87|12||4|2023|Baku
-20|Alfa Romeo|Zhou|4.21|11||4|2023|Baku
-21|Aston Martin|Alonso|4.74|11||4|2023|Baku
-22|Haas|Hulkenberg|6.47|49||4|2023|Baku
-23|Haas|Magnussen|13.12|10||4|2023|Baku
-1|Red Bull|Perez|2.11|1|25|3|2023|Australia
-2|Red Bull|Perez|2.62|2||3|2023|Australia
-3|Alpine|Ocon|2.65|1|18|3|2023|Australia
-4|Ferrari|Sainz|2.71|7|15|3|2023|Australia
-5|Williams|Sargeant|2.93|1|12|3|2023|Australia
-6|AlphaTauri|de Vries|2.94|45|10|3|2023|Australia
-7|Williams|Sargeant|2.98|2||3|2023|Australia
-8|AlphaTauri|Tsunoda|2.99|54|8|3|2023|Australia
-9|Alfa Romeo|Zhou|3.37|1|6|3|2023|Australia
-10|Williams|Sargeant|3.63|36||3|2023|Australia
-11|Alfa Romeo|Bottas|3.65|1|4|3|2023|Australia
-12|Mercedes|Russell|3.69|7|2|3|2023|Australia
-13|McLaren|Piastri|3.96|54|1|3|2023|Australia
-14|Alfa Romeo|Bottas|4.31|53||3|2023|Australia
-15|Haas|Magnussen|5.48|7||3|2023|Australia
-16|Alfa Romeo|Zhou|6.90|54||3|2023|Australia
-1|Ferrari|Leclerc|2.10|16|25|2|2023|Jeddah
-2|Alpine|Ocon|2.36|16|18|2|2023|Jeddah
-3|Red Bull|Perez|2.50|18|15|2|2023|Jeddah
-4|Mercedes|Russell|2.55|18|12|2|2023|Jeddah
-5|Alpine|Gasly|2.73|14|10|2|2023|Jeddah
-6|Ferrari|Sainz|2.73|15|8|2|2023|Jeddah
-7|Red Bull|Verstappen|2.74|18|6|2|2023|Jeddah
-8|Haas|Magnussen|2.76|8|4|2|2023|Jeddah
-9|McLaren|Norris|2.88|19|2|2|2023|Jeddah
-10|Aston Martin|Stroll|2.90|13|1|2|2023|Jeddah
-11|Williams|Sargeant|2.90|18||2|2023|Jeddah
-12|AlphaTauri|de Vries|2.93|17||2|2023|Jeddah
-13|AlphaTauri|Tsunoda|2.95|17||2|2023|Jeddah
-14|Mercedes|Hamilton|3.06|18||2|2023|Jeddah
-15|Williams|Albon|3.17|17||2|2023|Jeddah
-16|Alfa Romeo|Bottas|3.35|9||2|2023|Jeddah
-17|Haas|Hulkenberg|3.52|11||2|2023|Jeddah
-18|Alfa Romeo|Bottas|3.55|35||2|2023|Jeddah
-19|Alfa Romeo|Bottas|3.65|17||2|2023|Jeddah
-20|Alfa Romeo|Zhou|3.83|18||2|2023|Jeddah
-21|Alfa Romeo|Zhou|4.01|11||2|2023|Jeddah
-22|Aston Martin|Alonso|8.56|18||2|2023|Jeddah
-23|McLaren|Norris|11.10|2||2|2023|Jeddah
-24|McLaren|Piastri|13.20|1||2|2023|Jeddah
-1|Ferrari|Leclerc|2.22|13|25|1|2023|Bahrain
-2|Red Bull|Verstappen|2.25|14|18|1|2023|Bahrain
-3|Ferrari|Sainz|2.31|31|15|1|2023|Bahrain
-4|Ferrari|Sainz|2.36|13||1|2023|Bahrain
-5|Mercedes|Hamilton|2.40|12|12|1|2023|Bahrain
-6|Red Bull|Perez|2.43|17|10|1|2023|Bahrain
-7|Aston Martin|Stroll|2.48|30|8|1|2023|Bahrain
-8|Red Bull|Verstappen|2.50|36||1|2023|Bahrain
-9|Mercedes|Hamilton|2.53|30||1|2023|Bahrain
-10|Mercedes|Russell|2.55|31|6|1|2023|Bahrain
-11|AlphaTauri|Tsunoda|2.62|26|4|1|2023|Bahrain
-12|Aston Martin|Alonso|2.64|34|2|1|2023|Bahrain
-13|Williams|Albon|2.64|40|1|1|2023|Bahrain
-14|Red Bull|Perez|2.74|34||1|2023|Bahrain
-15|Alpine|Ocon|2.76|12||1|2023|Bahrain
-16|Williams|Albon|2.78|26||1|2023|Bahrain
-17|Alpine|Gasly|2.80|40||1|2023|Bahrain
-18|Alfa Romeo|Bottas|2.81|11||1|2023|Bahrain
-19|Alpine|Gasly|2.88|25||1|2023|Bahrain
-20|Ferrari|Leclerc|2.96|33||1|2023|Bahrain
-21|AlphaTauri|de Vries|2.96|27||1|2023|Bahrain
-22|AlphaTauri|de Vries|2.98|11||1|2023|Bahrain
-23|Haas|Magnussen|3.07|40||1|2023|Bahrain
-24|Williams|Albon|3.10|11||1|2023|Bahrain
-25|Haas|Magnussen|3.15|15||1|2023|Bahrain
-26|Aston Martin|Stroll|3.18|15||1|2023|Bahrain
-27|Haas|Magnussen|3.20|29||1|2023|Bahrain
-28|Alfa Romeo|Bottas|3.21|29||1|2023|Bahrain
-29|Williams|Sargeant|3.21|40||1|2023|Bahrain
-30|Haas|Hulkenberg|3.36|40||1|2023|Bahrain
-31|AlphaTauri|Tsunoda|3.46|10||1|2023|Bahrain
-32|Alfa Romeo|Zhou|3.50|32||1|2023|Bahrain
-33|Aston Martin|Alonso|3.50|14||1|2023|Bahrain
-34|Williams|Sargeant|3.57|30||1|2023|Bahrain
-35|Haas|Hulkenberg|3.61|11||1|2023|Bahrain
-36|Williams|Sargeant|3.65|12||1|2023|Bahrain
-37|Alpine|Gasly|3.79|9||1|2023|Bahrain
-38|Alfa Romeo|Zhou|3.84|12||1|2023|Bahrain
-39|AlphaTauri|Tsunoda|4.22|40||1|2023|Bahrain
-40|Mercedes|Russell|5.04|13||1|2023|Bahrain
-41|Alfa Romeo|Zhou|8.38|54||1|2023|Bahrain
-42|McLaren|Norris|8.78|47||1|2023|Bahrain
-43|McLaren|Norris|9.25|54||1|2023|Bahrain
-44|McLaren|Norris|10.60|10||1|2023|Bahrain
-45|Alpine|Ocon|10.95|0||1|2023|Bahrain
-46|McLaren|Norris|11.10|37||1|2023|Bahrain
-47|McLaren|Norris|11.46|27||1|2023|Bahrain
-48|McLaren|Norris|11.77|17||1|2023|Bahrain
-49|Haas|Hulkenberg|15.39|26||1|2023|Bahrain
-50|Alpine|Ocon|19.59|15||1|2023|Bahrain
-51|Alpine|Ocon|22.04|32||1|2023|Bahrain
-52|McLaren|Piastri|42.57|0||1|2023|Bahrain
-1|Red Bull|Perez|2.32|39|25|15|2023|Singapore
-2|McLaren|Norris|2.46|20|18|15|2023|Singapore
-3|Ferrari|Sainz|2.51|20|15|15|2023|Singapore
-4|McLaren|Piastri|2.54|20|12|15|2023|Singapore
-5|Alpine|Ocon|2.65|20|10|15|2023|Singapore
-6|Alfa Romeo|Zhou|2.88|2|8|15|2023|Singapore
-7|Williams|Albon|2.99|43|6|15|2023|Singapore
-8|Mercedes|Russell|3.01|20|4|15|2023|Singapore
-9|Mercedes|Russell|3.01|44||15|2023|Singapore
-10|Red Bull|Verstappen|3.02|40|2|15|2023|Singapore
-11|Mercedes|Hamilton|3.18|44|1|15|2023|Singapore
-12|Williams|Albon|3.27|20||15|2023|Singapore
-13|Alfa Romeo|Bottas|3.41|40||15|2023|Singapore
-14|Alfa Romeo|Zhou|3.55|20||15|2023|Singapore
-15|Aston Martin|Alonso|3.66|20||15|2023|Singapore
-16|Mercedes|Hamilton|3.73|20||15|2023|Singapore
-17|Haas|Magnussen|3.92|20||15|2023|Singapore
-18|Williams|Sargeant|4.12|43||15|2023|Singapore
-19|Alpine|Gasly|4.69|20||15|2023|Singapore
-20|Haas|Hulkenberg|4.92|20||15|2023|Singapore
-21|AlphaTauri|Lawson|5.19|20||15|2023|Singapore
-22|Ferrari|Leclerc|5.70|20||15|2023|Singapore
-23|Haas|Magnussen|6.19|43||15|2023|Singapore
-24|Aston Martin|Alonso|25.89|44||15|2023|Singapore
-25|Williams|Sargeant|35.33|19||15|2023|Singapore
-1|Ferrari|Leclerc|2.23|34|25|16|2023|Japan
-2|Ferrari|Sainz|2.30|18|18|16|2023|Japan
-3|AlphaTauri|Tsunoda|2.40|9|15|16|2023|Japan
-4|Ferrari|Leclerc|2.40|17||16|2023|Japan
-5|Aston Martin|Stroll|2.47|14|12|16|2023|Japan
-6|McLaren|Norris|2.48|36|10|16|2023|Japan
-7|McLaren|Norris|2.54|17||16|2023|Japan
-8|AlphaTauri|Lawson|2.60|10|8|16|2023|Japan
-9|McLaren|Piastri|2.60|35|6|16|2023|Japan
-10|Red Bull|Verstappen|2.64|37|4|16|2023|Japan
-11|AlphaTauri|Tsunoda|2.69|30||16|2023|Japan
-12|Haas|Hulkenberg|2.79|37|2|16|2023|Japan
-13|Haas|Magnussen|2.82|12|1|16|2023|Japan
-14|Ferrari|Sainz|2.82|38||16|2023|Japan
-15|Haas|Hulkenberg|2.84|8||16|2023|Japan
-16|Alpine|Ocon|2.94|28||16|2023|Japan
-17|Mercedes|Russell|2.96|24||16|2023|Japan
-18|Aston Martin|Alonso|2.99|11||16|2023|Japan
-19|Haas|Magnussen|2.99|31||16|2023|Japan
-20|Mercedes|Hamilton|3.00|34||16|2023|Japan
-21|Alfa Romeo|Zhou|3.04|29||16|2023|Japan
-22|AlphaTauri|Lawson|3.06|25||16|2023|Japan
-23|Alfa Romeo|Zhou|3.22|10||16|2023|Japan
-24|Red Bull|Verstappen|3.30|16||16|2023|Japan
-25|Alpine|Gasly|3.44|18||16|2023|Japan
-26|Aston Martin|Alonso|3.45|25||16|2023|Japan
-27|Haas|Hulkenberg|3.54|21||16|2023|Japan
-28|Alpine|Gasly|3.57|34||16|2023|Japan
-29|McLaren|Piastri|3.85|13||16|2023|Japan
-30|Mercedes|Hamilton|4.07|16||16|2023|Japan
-31|Alpine|Ocon|4.82|1||16|2023|Japan
-32|Red Bull|Perez|9.07|14||16|2023|Japan
-33|Red Bull|Perez|11.20|2||16|2023|Japan
-34|Williams|Sargeant|11.64|2||16|2023|Japan
-35|Williams|Sargeant|13.83|21||16|2023|Japan
-36|Red Bull|Perez|18.23|12||16|2023|Japan
-37|Alfa Romeo|Zhou|18.97|1||16|2023|Japan
-38|Williams|Sargeant|23.04|5||16|2023|Japan
-39|Williams|Albon|28.83|1||16|2023|Japan
-40|Williams|Albon|31.41|13||16|2023|Japan
-41|Alfa Romeo|Bottas|32.08|6||16|2023|Japan
-42|Alfa Romeo|Bottas|33.97|1||16|2023|Japan
-1|McLaren|Norris|1.80|27|25|17|2023|Qatar
-2|Ferrari|Leclerc|1.93|43|18|17|2023|Qatar
-3|McLaren|Piastri|2.00|43|15|17|2023|Qatar
-4|McLaren|Norris|2.14|44||17|2023|Qatar
-5|McLaren|Piastri|2.15|25||17|2023|Qatar
-6|AlphaTauri|Tsunoda|2.19|22|12|17|2023|Qatar
-7|Red Bull|Perez|2.24|17|10|17|2023|Qatar
-8|Ferrari|Leclerc|2.29|25||17|2023|Qatar
-9|AlphaTauri|Tsunoda|2.30|40||17|2023|Qatar
-10|Aston Martin|Alonso|2.33|11|8|17|2023|Qatar
-11|Aston Martin|Alonso|2.35|26||17|2023|Qatar
-12|Aston Martin|Alonso|2.39|44||17|2023|Qatar
-13|AlphaTauri|Tsunoda|2.40|9||17|2023|Qatar
-14|Red Bull|Verstappen|2.43|17|6|17|2023|Qatar
-15|Ferrari|Leclerc|2.45|12||17|2023|Qatar
-16|Aston Martin|Stroll|2.49|21|4|17|2023|Qatar
-17|Red Bull|Verstappen|2.51|34||17|2023|Qatar
-18|Alpine|Gasly|2.56|11|2|17|2023|Qatar
-19|Aston Martin|Stroll|2.56|3||17|2023|Qatar
-20|McLaren|Norris|2.56|13||17|2023|Qatar
-21|Mercedes|Russell|2.59|50|1|17|2023|Qatar
-22|AlphaTauri|Lawson|2.60|39||17|2023|Qatar
-23|Mercedes|Russell|2.63|32||17|2023|Qatar
-24|Haas|Magnussen|2.68|3||17|2023|Qatar
-25|Mercedes|Russell|2.68|14||17|2023|Qatar
-26|Alfa Romeo|Zhou|2.73|18||17|2023|Qatar
-27|Alfa Romeo|Zhou|2.82|35||17|2023|Qatar
-28|Alpine|Ocon|2.97|10||17|2023|Qatar
-29|Alfa Romeo|Zhou|3.00|0||17|2023|Qatar
-30|Haas|Hulkenberg|3.06|27||17|2023|Qatar
-31|Alpine|Ocon|3.07|25||17|2023|Qatar
-32|AlphaTauri|Lawson|3.08|21||17|2023|Qatar
-33|Williams|Albon|3.08|31||17|2023|Qatar
-34|Alfa Romeo|Bottas|3.10|3||17|2023|Qatar
-35|Haas|Magnussen|3.11|21||17|2023|Qatar
-36|Alfa Romeo|Bottas|3.11|39||17|2023|Qatar
-37|Haas|Hulkenberg|3.12|39||17|2023|Qatar
-38|Williams|Albon|3.12|44||17|2023|Qatar
-39|McLaren|Piastri|3.15|12||17|2023|Qatar
-40|AlphaTauri|Lawson|3.23|3||17|2023|Qatar
-41|Alfa Romeo|Bottas|3.27|21||17|2023|Qatar
-42|Alpine|Ocon|3.32|43||17|2023|Qatar
-43|Williams|Sargeant|3.37|13||17|2023|Qatar
-44|Williams|Sargeant|3.39|26||17|2023|Qatar
-45|Williams|Albon|3.46|18||17|2023|Qatar
-46|Aston Martin|Stroll|3.79|39||17|2023|Qatar
-47|Alpine|Gasly|4.07|26||17|2023|Qatar
-48|Red Bull|Verstappen|4.18|51||17|2023|Qatar
-49|Haas|Magnussen|4.60|39||17|2023|Qatar
-50|Red Bull|Perez|7.88|31||17|2023|Qatar
-51|Red Bull|Perez|7.93|43||17|2023|Qatar
-52|Alpine|Gasly|9.03|44||17|2023|Qatar
-53|Mercedes|Russell|12.53|1||17|2023|Qatar
-54|Haas|Hulkenberg|14.10|13||17|2023|Qatar
-1|McLaren|Norris|2.07|34|25|18|2023|COTA
-2|Alpine|Gasly|2.22|18|18|18|2023|COTA
-3|Ferrari|Sainz|2.23|35|15|18|2023|COTA
-4|AlphaTauri|Tsunoda|2.30|54|12|18|2023|COTA
-5|Red Bull|Perez|2.45|37|10|18|2023|COTA
-6|Aston Martin|Stroll|2.45|40|8|18|2023|COTA
-7|Red Bull|Verstappen|2.53|16|6|18|2023|COTA
-8|Ferrari|Sainz|2.54|17||18|2023|COTA
-9|Mercedes|Russell|2.58|39|4|18|2023|COTA
-10|Aston Martin|Stroll|2.81|20||18|2023|COTA
-11|AlphaTauri|Ricciardo|2.82|22|2|18|2023|COTA
-12|AlphaTauri|Tsunoda|2.82|17||18|2023|COTA
-13|Mercedes|Russell|2.82|21||18|2023|COTA
-14|McLaren|Norris|2.83|17||18|2023|COTA
-15|Red Bull|Perez|2.88|17||18|2023|COTA
-16|AlphaTauri|Tsunoda|2.98|34||18|2023|COTA
-17|Haas|Hulkenberg|3.07|34|1|18|2023|COTA
-18|Ferrari|Leclerc|3.09|23||18|2023|COTA
-19|Alfa Romeo|Bottas|3.11|10||18|2023|COTA
-20|Aston Martin|Alonso|3.12|42||18|2023|COTA
-21|Alfa Romeo|Zhou|3.17|27||18|2023|COTA
-22|Williams|Albon|3.18|10||18|2023|COTA
-23|Aston Martin|Alonso|3.26|19||18|2023|COTA
-24|Haas|Magnussen|3.33|29||18|2023|COTA
-25|Alpine|Gasly|3.38|37||18|2023|COTA
-26|Red Bull|Verstappen|3.39|35||18|2023|COTA
-27|Mercedes|Hamilton|3.41|38||18|2023|COTA
-28|Williams|Albon|3.44|29||18|2023|COTA
-29|Alfa Romeo|Bottas|3.50|28||18|2023|COTA
-30|Haas|Magnussen|3.56|10||18|2023|COTA
-31|Mercedes|Hamilton|3.64|20||18|2023|COTA
-32|Williams|Sargeant|3.67|11||18|2023|COTA
-33|Alfa Romeo|Zhou|4.12|9||18|2023|COTA
-34|Haas|Hulkenberg|4.35|19||18|2023|COTA
-35|Williams|Sargeant|4.40|32||18|2023|COTA
-36|AlphaTauri|Ricciardo|4.80|47||18|2023|COTA
-1|Ferrari|Sainz|2.35|30|25|19|2023|Mexico
-2|AlphaTauri|Ricciardo|2.37|27|18|19|2023|Mexico
-3|Red Bull|Verstappen|2.42|33|15|19|2023|Mexico
-4|Red Bull|Verstappen|2.46|19||19|2023|Mexico
-5|Ferrari|Leclerc|2.49|31|12|19|2023|Mexico
-6|Aston Martin|Stroll|2.55|30|10|19|2023|Mexico
-7|Mercedes|Hamilton|2.56|24|8|19|2023|Mexico
-8|McLaren|Norris|2.60|33|6|19|2023|Mexico
-9|Mercedes|Russell|2.62|26|4|19|2023|Mexico
-10|Alpine|Gasly|2.81|28|2|19|2023|Mexico
-11|Aston Martin|Alonso|2.83|29|1|19|2023|Mexico
-12|McLaren|Norris|2.85|11||19|2023|Mexico
-13|Alfa Romeo|Zhou|2.92|21||19|2023|Mexico
-14|Haas|Hulkenberg|3.31|23||19|2023|Mexico
-15|McLaren|Piastri|3.37|25||19|2023|Mexico
-16|Haas|Magnussen|3.48|23||19|2023|Mexico
-17|Williams|Albon|3.58|33||19|2023|Mexico
-18|Alfa Romeo|Bottas|3.62|31||19|2023|Mexico
-19|Williams|Sargeant|4.23|22||19|2023|Mexico
-20|AlphaTauri|Tsunoda|10.15|9||19|2023|Mexico
-1|Red Bull|Verstappen|2.22|27|25|20|2023|Brazil
-2|McLaren|Piastri|2.25|23|18|20|2023|Brazil
-3|Red Bull|Perez|2.27|20|15|20|2023|Brazil
-4|AlphaTauri|Tsunoda|2.29|55|12|20|2023|Brazil
-5|Ferrari|Sainz|2.35|26|10|20|2023|Brazil
-6|Red Bull|Perez|2.37|46||20|2023|Brazil
-7|AlphaTauri|Tsunoda|2.40|26||20|2023|Brazil
-8|Aston Martin|Stroll|2.51|22|8|20|2023|Brazil
-9|McLaren|Piastri|2.52|52||20|2023|Brazil
-10|Red Bull|Verstappen|2.53|56||20|2023|Brazil
-11|Aston Martin|Alonso|2.58|47|6|20|2023|Brazil
-12|McLaren|Norris|2.58|59|4|20|2023|Brazil
-13|Alpine|Gasly|2.59|46|2|20|2023|Brazil
-14|AlphaTauri|Ricciardo|2.60|55|1|20|2023|Brazil
-15|Alfa Romeo|Zhou|2.61|15||20|2023|Brazil
-16|McLaren|Norris|2.62|27||20|2023|Brazil
-17|Mercedes|Hamilton|2.70|18||20|2023|Brazil
-18|Aston Martin|Alonso|2.81|25||20|2023|Brazil
-19|AlphaTauri|Ricciardo|2.83|26||20|2023|Brazil
-20|Alpine|Ocon|2.88|51||20|2023|Brazil
-21|Ferrari|Sainz|2.88|51||20|2023|Brazil
-22|Mercedes|Russell|2.92|19||20|2023|Brazil
-23|Alfa Romeo|Bottas|2.96|18||20|2023|Brazil
-24|Mercedes|Russell|3.08|45||20|2023|Brazil
-25|Mercedes|Hamilton|3.13|46||20|2023|Brazil
-26|Haas|Hulkenberg|3.15|46||20|2023|Brazil
-27|Alpine|Ocon|3.18|14||20|2023|Brazil
-28|Alpine|Ocon|3.20|31||20|2023|Brazil
-29|Haas|Hulkenberg|3.38|21||20|2023|Brazil
-30|Williams|Sargeant|3.43|44||20|2023|Brazil
-31|Williams|Sargeant|3.50|17||20|2023|Brazil
-32|Williams|Sargeant|3.57|1||20|2023|Brazil
-33|Alpine|Gasly|4.14|26||20|2023|Brazil
-34|Aston Martin|Stroll|4.32|52||20|2023|Brazil
-35|Haas|Hulkenberg|9.09|1||20|2023|Brazil
-1|McLaren|Piastri|1.99|43|25|21|2023|Vegas
-2|AlphaTauri|Tsunoda|2.20|10|18|21|2023|Vegas
-3|Ferrari|Sainz|2.25|3|15|21|2023|Vegas
-4|Red Bull|Perez|2.45|26|12|21|2023|Vegas
-5|AlphaTauri|Tsunoda|2.49|21||21|2023|Vegas
-6|Mercedes|Russell|2.58|15|10|21|2023|Vegas
-7|Williams|Sargeant|2.60|15|8|21|2023|Vegas
-8|Williams|Albon|2.61|16|6|21|2023|Vegas
-9|Alfa Romeo|Bottas|2.63|24|4|21|2023|Vegas
-10|Red Bull|Verstappen|2.71|26|2|21|2023|Vegas
-11|Haas|Magnussen|2.89|14|1|21|2023|Vegas
-12|Alpine|Ocon|2.95|20||21|2023|Vegas
-13|Mercedes|Russell|2.99|26||21|2023|Vegas
-14|Haas|Magnussen|3.07|26||21|2023|Vegas
-15|Alfa Romeo|Zhou|3.08|26||21|2023|Vegas
-16|AlphaTauri|Ricciardo|3.16|17||21|2023|Vegas
-17|Ferrari|Sainz|3.17|26||21|2023|Vegas
-18|Alpine|Gasly|3.25|17||21|2023|Vegas
-19|Haas|Hulkenberg|3.33|12||21|2023|Vegas
-20|Aston Martin|Stroll|3.35|26||21|2023|Vegas
-21|Haas|Hulkenberg|3.62|26||21|2023|Vegas
-22|Aston Martin|Stroll|3.65|3||21|2023|Vegas
-23|Mercedes|Hamilton|3.77|26||21|2023|Vegas
-24|Ferrari|Leclerc|3.91|21||21|2023|Vegas
-25|Aston Martin|Alonso|4.02|26||21|2023|Vegas
-26|McLaren|Piastri|4.41|16||21|2023|Vegas
-27|Mercedes|Hamilton|6.36|17||21|2023|Vegas
-28|Red Bull|Verstappen|7.74|16||21|2023|Vegas
-29|Aston Martin|Alonso|9.46|1||21|2023|Vegas
-30|Red Bull|Perez|11.48|1||21|2023|Vegas
-31|Alfa Romeo|Bottas|24.73|1||21|2023|Vegas
-1|Ferrari|Sainz|2.16|23|25|22|2023|Abu Dhabi
-2|McLaren|Norris|2.22|33|18|22|2023|Abu Dhabi
-3|McLaren|Piastri|2.22|36|15|22|2023|Abu Dhabi
-4|Ferrari|Sainz|2.25|56||22|2023|Abu Dhabi
-5|Red Bull|Perez|2.27|42|12|22|2023|Abu Dhabi
-6|Red Bull|Verstappen|2.32|43|10|22|2023|Abu Dhabi
-7|AlphaTauri|Ricciardo|2.36|7|8|22|2023|Abu Dhabi
-8|Ferrari|Leclerc|2.37|35|6|22|2023|Abu Dhabi
-9|Red Bull|Perez|2.46|17||22|2023|Abu Dhabi
-10|AlphaTauri|Tsunoda|2.53|22|4|22|2023|Abu Dhabi
-11|Aston Martin|Alonso|2.53|36|2|22|2023|Abu Dhabi
-12|AlphaTauri|Ricciardo|2.59|31||22|2023|Abu Dhabi
-13|McLaren|Piastri|2.64|13||22|2023|Abu Dhabi
-14|Alpine|Ocon|2.71|15|1|22|2023|Abu Dhabi
-15|Williams|Sargeant|2.75|41||22|2023|Abu Dhabi
-16|Ferrari|Leclerc|2.77|17||22|2023|Abu Dhabi
-17|Alfa Romeo|Zhou|2.84|37||22|2023|Abu Dhabi
-18|Haas|Hulkenberg|2.85|13||22|2023|Abu Dhabi
-19|Williams|Albon|2.89|43||22|2023|Abu Dhabi
-20|Aston Martin|Stroll|2.90|22||22|2023|Abu Dhabi
-21|Red Bull|Verstappen|2.91|16||22|2023|Abu Dhabi
-22|Aston Martin|Stroll|2.91|42||22|2023|Abu Dhabi
-23|Haas|Magnussen|2.92|22||22|2023|Abu Dhabi
-24|Mercedes|Russell|2.97|14||22|2023|Abu Dhabi
-25|Williams|Sargeant|2.98|15||22|2023|Abu Dhabi
-26|Alfa Romeo|Bottas|3.07|29||22|2023|Abu Dhabi
-27|Aston Martin|Alonso|3.10|12||22|2023|Abu Dhabi
-28|Mercedes|Russell|3.10|34||22|2023|Abu Dhabi
-29|Haas|Hulkenberg|3.12|33||22|2023|Abu Dhabi
-30|Mercedes|Hamilton|3.21|15||22|2023|Abu Dhabi
-31|Alfa Romeo|Zhou|3.33|13||22|2023|Abu Dhabi
-32|Williams|Albon|3.36|16||22|2023|Abu Dhabi
-33|Mercedes|Hamilton|3.41|35||22|2023|Abu Dhabi
-34|Haas|Magnussen|3.50|5||22|2023|Abu Dhabi
-35|Alpine|Gasly|3.54|17||22|2023|Abu Dhabi
-36|Alpine|Gasly|4.13|32||22|2023|Abu Dhabi
-37|McLaren|Norris|5.16|14||22|2023|Abu Dhabi
-
-
-
+ID,Pos|Team|Driver|Time|Lap|Points|Race_ID|Year|Race_Name
+1,1|McLaren|Norris|2.13|22|25|14|2023|Monza
+2,2|Ferrari|Leclerc|2.32|20|18|14|2023|Monza
+3,3|Red Bull|Perez|2.35|21|15|14|2023|Monza
+4,4|AlphaTauri|Lawson|2.51|33|12|14|2023|Monza
+5,5|AlphaTauri|Lawson|2.53|13||14|2023|Monza
+6,6|Red Bull|Verstappen|2.54|20|10|14|2023|Monza
+7,7|Alfa Romeo|Zhou|2.63|11|8|14|2023|Monza
+8,8|Mercedes|Russell|2.66|19|6|14|2023|Monza
+9,9|Alpine|Ocon|2.69|24|4|14|2023|Monza
+10,10|McLaren|Piastri|2.77|23|2|14|2023|Monza
+11,11|Mercedes|Hamilton|2.83|27|1|14|2023|Monza
+12,12|Haas|Magnussen|2.98|12||14|2023|Monza
+13,13|Alfa Romeo|Bottas|3.01|25||14|2023|Monza
+14,14|Williams|Albon|3.05|15||14|2023|Monza
+15,15|Alpine|Gasly|3.05|31||14|2023|Monza
+16,16|Haas|Hulkenberg|3.17|39||14|2023|Monza
+17,17|Aston Martin|Alonso|3.18|21||14|2023|Monza
+18,18|Haas|Magnussen|3.18|33||14|2023|Monza
+19,19|Williams|Sargeant|3.24|14||14|2023|Monza
+20,20|Ferrari|Sainz|3.35|19||14|2023|Monza
+21,21|Aston Martin|Stroll|3.96|20||14|2023|Monza
+22,22|Alfa Romeo|Zhou|4.15|33||14|2023|Monza
+23,23|Haas|Hulkenberg|4.48|14||14|2023|Monza
+24,24|Alpine|Gasly|5.98|10||14|2023|Monza
+25,25|McLaren|Piastri|10.21|41||14|2023|Monza
+26,1|Red Bull|Verstappen|2.01|61|25|13|2023|Zandvoort
+27,2|Red Bull|Verstappen|2.21|49||13|2023|Zandvoort
+28,3|McLaren|Piastri|2.27|15|18|13|2023|Zandvoort
+29,4|McLaren|Norris|2.27|42|15|13|2023|Zandvoort
+30,5|Alpine|Ocon|2.43|10|12|13|2023|Zandvoort
+31,6|AlphaTauri|Lawson|2.43|59|10|13|2023|Zandvoort
+32,7|McLaren|Piastri|2.43|46||13|2023|Zandvoort
+33,8|Aston Martin|Stroll|2.46|4|8|13|2023|Zandvoort
+34,9|Red Bull|Perez|2.46|45|6|13|2023|Zandvoort
+35,10|Alpine|Ocon|2.48|43||13|2023|Zandvoort
+36,11|AlphaTauri|Lawson|2.51|46||13|2023|Zandvoort
+37,12|Red Bull|Verstappen|2.55|11||13|2023|Zandvoort
+38,13|AlphaTauri|Lawson|2.55|17||13|2023|Zandvoort
+39,14|Alpine|Gasly|2.58|11|4|13|2023|Zandvoort
+40,15|AlphaTauri|Tsunoda|2.59|10|2|13|2023|Zandvoort
+41,16|Alfa Romeo|Bottas|2.69|59|1|13|2023|Zandvoort
+42,17|Red Bull|Perez|2.69|12||13|2023|Zandvoort
+43,18|Alpine|Gasly|2.69|60||13|2023|Zandvoort
+44,19|Aston Martin|Stroll|2.71|16||13|2023|Zandvoort
+45,20|Ferrari|Sainz|2.71|2||13|2023|Zandvoort
+46,21|Alfa Romeo|Zhou|2.82|10||13|2023|Zandvoort
+47,22|Red Bull|Verstappen|2.83|63||13|2023|Zandvoort
+48,23|McLaren|Norris|2.84|3||13|2023|Zandvoort
+49,24|Aston Martin|Alonso|2.88|2||13|2023|Zandvoort
+50,25|Mercedes|Hamilton|2.89|3||13|2023|Zandvoort
+51,26|Mercedes|Russell|2.90|16||13|2023|Zandvoort
+52,27|Red Bull|Perez|2.91|1||13|2023|Zandvoort
+53,28|Ferrari|Sainz|2.92|10||13|2023|Zandvoort
+54,29|Alfa Romeo|Zhou|2.93|1||13|2023|Zandvoort
+55,30|Aston Martin|Alonso|2.98|10||13|2023|Zandvoort
+56,31|Ferrari|Sainz|2.99|41||13|2023|Zandvoort
+57,32|Red Bull|Verstappen|3.02|2||13|2023|Zandvoort
+58,33|Ferrari|Sainz|3.03|60||13|2023|Zandvoort
+59,34|AlphaTauri|Tsunoda|3.05|60||13|2023|Zandvoort
+60,35|Aston Martin|Alonso|3.05|61||13|2023|Zandvoort
+61,36|Mercedes|Russell|3.09|10||13|2023|Zandvoort
+62,37|Aston Martin|Stroll|3.10|34||13|2023|Zandvoort
+63,38|McLaren|Norris|3.12|60||13|2023|Zandvoort
+64,39|Mercedes|Hamilton|3.14|9||13|2023|Zandvoort
+65,40|Mercedes|Hamilton|3.14|45||13|2023|Zandvoort
+66,41|McLaren|Piastri|3.15|60||13|2023|Zandvoort
+67,42|Williams|Albon|3.17|44||13|2023|Zandvoort
+68,43|Aston Martin|Stroll|3.21|9||13|2023|Zandvoort
+69,44|Red Bull|Perez|3.27|63||13|2023|Zandvoort
+70,45|Mercedes|Russell|3.34|60||13|2023|Zandvoort
+71,46|Haas|Magnussen|3.35|9||13|2023|Zandvoort
+72,47|Alfa Romeo|Bottas|3.35|16||13|2023|Zandvoort
+73,48|Haas|Hulkenberg|3.35|48||13|2023|Zandvoort
+74,49|McLaren|Norris|3.37|10||13|2023|Zandvoort
+75,50|Alfa Romeo|Bottas|3.46|47||13|2023|Zandvoort
+76,51|Alfa Romeo|Zhou|3.61|37||13|2023|Zandvoort
+77,52|Aston Martin|Stroll|3.68|60||13|2023|Zandvoort
+78,53|Alfa Romeo|Zhou|3.78|60||13|2023|Zandvoort
+79,54|Mercedes|Russell|3.80|4||13|2023|Zandvoort
+80,55|Mercedes|Russell|3.80|67||13|2023|Zandvoort
+81,56|Haas|Hulkenberg|3.82|16||13|2023|Zandvoort
+82,57|Haas|Magnussen|3.82|35||13|2023|Zandvoort
+83,58|Williams|Albon|3.94|61||13|2023|Zandvoort
+84,59|Mercedes|Hamilton|3.96|60||13|2023|Zandvoort
+85,60|Alpine|Ocon|4.07|61||13|2023|Zandvoort
+86,61|Alpine|Ocon|4.09|2||13|2023|Zandvoort
+87,62|Haas|Magnussen|4.83|60||13|2023|Zandvoort
+88,63|Haas|Hulkenberg|5.10|60||13|2023|Zandvoort
+89,64|Aston Martin|Alonso|8.39|48||13|2023|Zandvoort
+90,65|AlphaTauri|Lawson|9.00|1||13|2023|Zandvoort
+91,66|Ferrari|Leclerc|10.24|11||13|2023|Zandvoort
+92,67|Alpine|Gasly|10.61|1||13|2023|Zandvoort
+93,68|Haas|Magnussen|10.74|1||13|2023|Zandvoort
+94,69|Red Bull|Perez|10.92|60||13|2023|Zandvoort
+95,70|Ferrari|Leclerc|13.58|1||13|2023|Zandvoort
+96,71|AlphaTauri|Tsunoda|14.66|1||13|2023|Zandvoort
+97,1|Ferrari|Leclerc|2.19|13|25|12|2023|Spa
+98,2|Red Bull|Perez|2.24|29|18|12|2023|Spa
+99,3|AlphaTauri|Tsunoda|2.29|9|15|12|2023|Spa
+100,4|AlphaTauri|Ricciardo|2.35|5|12|12|2023|Spa
+101,5|Red Bull|Verstappen|2.38|30|10|12|2023|Spa
+102,6|Aston Martin|Alonso|2.42|10|8|12|2023|Spa
+103,7|Alpine|Ocon|2.45|6|6|12|2023|Spa
+104,8|AlphaTauri|Tsunoda|2.49|24||12|2023|Spa
+105,9|Red Bull|Verstappen|2.51|14||12|2023|Spa
+106,10|AlphaTauri|Ricciardo|2.56|22||12|2023|Spa
+107,11|Ferrari|Sainz|2.65|7|4|12|2023|Spa
+108,12|Ferrari|Leclerc|2.74|28||12|2023|Spa
+109,13|Williams|Sargeant|2.75|34|2|12|2023|Spa
+110,14|Mercedes|Hamilton|2.76|12|1|12|2023|Spa
+111,15|Alpine|Ocon|2.76|25||12|2023|Spa
+112,16|Williams|Albon|2.84|23||12|2023|Spa
+113,17|Mercedes|Hamilton|2.85|27||12|2023|Spa
+114,18|Williams|Albon|2.92|33||12|2023|Spa
+115,19|Mercedes|Russell|2.93|22||12|2023|Spa
+116,20|Mercedes|Hamilton|2.93|42||12|2023|Spa
+117,21|Haas|Magnussen|3.02|5||12|2023|Spa
+118,22|Alfa Romeo|Bottas|3.09|6||12|2023|Spa
+119,23|Haas|Magnussen|3.11|25||12|2023|Spa
+120,24|Williams|Sargeant|3.13|8||12|2023|Spa
+121,25|Red Bull|Perez|3.22|13||12|2023|Spa
+122,26|Alfa Romeo|Bottas|3.24|24||12|2023|Spa
+123,27|McLaren|Norris|3.33|17||12|2023|Spa
+124,28|Aston Martin|Alonso|3.33|29||12|2023|Spa
+125,29|Alfa Romeo|Zhou|3.42|25||12|2023|Spa
+126,30|Williams|Sargeant|3.44|24||12|2023|Spa
+127,31|Alfa Romeo|Zhou|3.88|7||12|2023|Spa
+128,32|Haas|Hulkenberg|3.99|12||12|2023|Spa
+129,33|Aston Martin|Stroll|4.36|20||12|2023|Spa
+130,34|McLaren|Norris|4.38|5||12|2023|Spa
+131,35|Williams|Albon|4.71|7||12|2023|Spa
+132,36|Alpine|Gasly|5.01|23||12|2023|Spa
+133,37|Haas|Hulkenberg|5.11|24||12|2023|Spa
+134,1|Red Bull|Perez|1.98|42|25|11|2023|Budapest
+135,2|McLaren|Piastri|2.01|18|18|11|2023|Budapest
+136,3|Ferrari|Sainz|2.14|15|15|11|2023|Budapest
+137,4|McLaren|Norris|2.15|44|12|11|2023|Budapest
+138,5|Ferrari|Leclerc|2.27|43|10|11|2023|Budapest
+139,6|McLaren|Norris|2.32|17||11|2023|Budapest
+140,7|AlphaTauri|Tsunoda|2.37|44|8|11|2023|Budapest
+141,8|Red Bull|Verstappen|2.38|23|6|11|2023|Budapest
+142,9|AlphaTauri|Ricciardo|2.50|18|4|11|2023|Budapest
+143,10|Aston Martin|Stroll|2.61|9|2|11|2023|Budapest
+144,11|Red Bull|Verstappen|2.64|51||11|2023|Budapest
+145,12|Ferrari|Sainz|2.71|44||11|2023|Budapest
+146,13|Haas|Hulkenberg|2.73|38|1|11|2023|Budapest
+147,14|Mercedes|Russell|2.76|46||11|2023|Budapest
+148,15|Red Bull|Perez|2.80|24||11|2023|Budapest
+149,16|Williams|Albon|2.82|8||11|2023|Budapest
+150,17|Mercedes|Hamilton|2.83|49||11|2023|Budapest
+151,18|Mercedes|Hamilton|2.85|16||11|2023|Budapest
+152,19|McLaren|Piastri|2.89|42||11|2023|Budapest
+153,20|Mercedes|Russell|2.91|28||11|2023|Budapest
+154,21|Haas|Magnussen|2.92|41||11|2023|Budapest
+155,22|Williams|Albon|2.94|31||11|2023|Budapest
+156,23|AlphaTauri|Ricciardo|2.95|29||11|2023|Budapest
+157,24|Williams|Sargeant|2.96|34||11|2023|Budapest
+158,25|Alfa Romeo|Bottas|3.07|9||11|2023|Budapest
+159,26|Aston Martin|Stroll|3.26|34||11|2023|Budapest
+160,27|Aston Martin|Alonso|3.42|20||11|2023|Budapest
+161,28|Alfa Romeo|Zhou|3.60|38||11|2023|Budapest
+162,29|Haas|Magnussen|3.75|14||11|2023|Budapest
+163,30|Alfa Romeo|Bottas|3.90|40||11|2023|Budapest
+164,31|Haas|Hulkenberg|3.97|16||11|2023|Budapest
+165,32|Williams|Sargeant|4.58|13||11|2023|Budapest
+166,33|Aston Martin|Alonso|4.71|43||11|2023|Budapest
+167,34|AlphaTauri|Tsunoda|7.37|9||11|2023|Budapest
+168,35|Ferrari|Leclerc|9.46|17||11|2023|Budapest
+169,36|Alfa Romeo|Zhou|9.74|10||11|2023|Budapest
+170,1|McLaren|Norris|2.23|33|25|10|2023|Silverstone
+171,2|Ferrari|Leclerc|2.32|18|18|10|2023|Silverstone
+172,3|Aston Martin|Stroll|2.35|31|15|10|2023|Silverstone
+173,4|Alpine|Gasly|2.37|31|12|10|2023|Silverstone
+174,5|Ferrari|Sainz|2.41|26|10|10|2023|Silverstone
+175,6|Red Bull|Perez|2.42|28|8|10|2023|Silverstone
+176,7|McLaren|Piastri|2.42|29|6|10|2023|Silverstone
+177,8|AlphaTauri|de Vries|2.46|32|4|10|2023|Silverstone
+178,9|AlphaTauri|de Vries|2.48|27||10|2023|Silverstone
+179,10|Ferrari|Leclerc|2.57|32||10|2023|Silverstone
+180,11|AlphaTauri|Tsunoda|2.60|14|2|10|2023|Silverstone
+181,12|Aston Martin|Alonso|2.67|33|1|10|2023|Silverstone
+182,13|Williams|Sargeant|2.69|29||10|2023|Silverstone
+183,14|Red Bull|Verstappen|2.76|33||10|2023|Silverstone
+184,15|Alfa Romeo|Zhou|2.89|33||10|2023|Silverstone
+185,16|Alfa Romeo|Zhou|2.92|24||10|2023|Silverstone
+186,17|AlphaTauri|Tsunoda|3.11|32||10|2023|Silverstone
+187,18|Mercedes|Hamilton|3.22|33||10|2023|Silverstone
+188,19|Alfa Romeo|Bottas|3.35|32||10|2023|Silverstone
+189,20|Williams|Albon|3.54|32||10|2023|Silverstone
+190,21|Mercedes|Russell|3.95|28||10|2023|Silverstone
+191,22|Haas|Hulkenberg|4.09|32||10|2023|Silverstone
+192,23|Alfa Romeo|Zhou|8.27|36||10|2023|Silverstone
+193,24|Haas|Hulkenberg|16.16|7||10|2023|Silverstone
+194,1|McLaren|Norris|2.10|14|25|9|2023|Austria
+195,2|AlphaTauri|de Vries|2.28|37|18|9|2023|Austria
+196,3|AlphaTauri|de Vries|2.31|12||9|2023|Austria
+197,4|Red Bull|Verstappen|2.32|24|15|9|2023|Austria
+198,5|Red Bull|Verstappen|2.33|49||9|2023|Austria
+199,6|Red Bull|Verstappen|2.38|69||9|2023|Austria
+200,7|Ferrari|Leclerc|2.40|47|12|9|2023|Austria
+201,8|Williams|Sargeant|2.45|43|10|9|2023|Austria
+202,9|Red Bull|Perez|2.46|50|8|9|2023|Austria
+203,10|Alpine|Gasly|2.54|14|6|9|2023|Austria
+204,11|Aston Martin|Alonso|2.55|44|4|9|2023|Austria
+205,12|AlphaTauri|Tsunoda|2.60|43|2|9|2023|Austria
+206,13|Alpine|Ocon|2.61|14|1|9|2023|Austria
+207,14|Red Bull|Perez|2.66|25||9|2023|Austria
+208,15|Aston Martin|Stroll|2.69|54||9|2023|Austria
+209,16|Aston Martin|Stroll|2.72|36||9|2023|Austria
+210,17|Aston Martin|Alonso|2.74|15||9|2023|Austria
+211,18|Williams|Albon|2.75|14||9|2023|Austria
+212,19|Alfa Romeo|Bottas|2.81|40||9|2023|Austria
+213,20|Mercedes|Russell|2.87|41||9|2023|Austria
+214,21|Aston Martin|Stroll|2.89|15||9|2023|Austria
+215,22|Mercedes|Hamilton|2.91|14||9|2023|Austria
+216,23|Alfa Romeo|Zhou|3.00|38||9|2023|Austria
+217,24|McLaren|Piastri|3.08|41||9|2023|Austria
+218,25|Haas|Hulkenberg|3.10|11||9|2023|Austria
+219,26|Haas|Magnussen|3.10|34||9|2023|Austria
+220,27|McLaren|Norris|3.12|41||9|2023|Austria
+221,28|McLaren|Piastri|3.14|14||9|2023|Austria
+222,29|Williams|Sargeant|3.21|14||9|2023|Austria
+223,30|Mercedes|Russell|3.29|14||9|2023|Austria
+224,31|Ferrari|Leclerc|4.46|15||9|2023|Austria
+225,32|Ferrari|Sainz|4.56|15||9|2023|Austria
+226,33|Alfa Romeo|Zhou|5.36|8||9|2023|Austria
+227,34|Haas|Magnussen|6.44|2||9|2023|Austria
+228,35|Haas|Magnussen|7.15|1||9|2023|Austria
+229,36|AlphaTauri|Tsunoda|8.47|23||9|2023|Austria
+230,37|Williams|Albon|8.86|41||9|2023|Austria
+231,38|Mercedes|Hamilton|8.94|42||9|2023|Austria
+232,39|Alpine|Gasly|9.25|44||9|2023|Austria
+233,40|Ferrari|Sainz|9.40|45||9|2023|Austria
+234,41|AlphaTauri|Tsunoda|10.27|1||9|2023|Austria
+235,42|McLaren|Piastri|10.61|22||9|2023|Austria
+236,43|Alpine|Ocon|11.34|40||9|2023|Austria
+237,44|Alfa Romeo|Bottas|12.44|21||9|2023|Austria
+238,1|Red Bull|Perez|2.23|68|25|8|2023|Canada
+239,2|Red Bull|Verstappen|2.30|12|18|8|2023|Canada
+240,3|Red Bull|Perez|2.31|37||8|2023|Canada
+241,4|Aston Martin|Alonso|2.34|12|15|8|2023|Canada
+242,5|McLaren|Piastri|2.41|37|12|8|2023|Canada
+243,6|AlphaTauri|Tsunoda|2.46|1|10|8|2023|Canada
+244,7|McLaren|Norris|2.47|35|8|8|2023|Canada
+245,8|Aston Martin|Stroll|2.48|11|6|8|2023|Canada
+246,9|Alpine|Ocon|2.58|36|4|8|2023|Canada
+247,10|Aston Martin|Stroll|2.59|27||8|2023|Canada
+248,11|Aston Martin|Alonso|2.67|41||8|2023|Canada
+249,12|Mercedes|Hamilton|2.77|40|2|8|2023|Canada
+250,13|Red Bull|Verstappen|2.79|42||8|2023|Canada
+251,14|Alfa Romeo|Zhou|2.81|12|1|8|2023|Canada
+252,15|Ferrari|Sainz|2.87|38||8|2023|Canada
+253,16|AlphaTauri|de Vries|2.91|50||8|2023|Canada
+254,17|Alfa Romeo|Bottas|2.92|36||8|2023|Canada
+255,18|Alpine|Ocon|2.96|12||8|2023|Canada
+256,19|Alpine|Gasly|2.98|33||8|2023|Canada
+257,20|Ferrari|Leclerc|2.99|39||8|2023|Canada
+258,21|Haas|Magnussen|3.01|53||8|2023|Canada
+259,22|Haas|Hulkenberg|3.12|31||8|2023|Canada
+260,23|Haas|Magnussen|3.19|35||8|2023|Canada
+261,24|Haas|Hulkenberg|3.23|11||8|2023|Canada
+262,25|Mercedes|Hamilton|3.26|12||8|2023|Canada
+263,26|McLaren|Piastri|3.30|12||8|2023|Canada
+264,27|Williams|Albon|3.69|12||8|2023|Canada
+265,28|AlphaTauri|de Vries|3.89|11||8|2023|Canada
+266,29|McLaren|Norris|4.22|12||8|2023|Canada
+267,30|Alfa Romeo|Zhou|6.34|32||8|2023|Canada
+268,31|AlphaTauri|Tsunoda|6.47|34||8|2023|Canada
+269,32|Alpine|Gasly|6.60|10||8|2023|Canada
+270,33|Mercedes|Russell|64.16|12||8|2023|Canada
+271,1|Red Bull|Perez|2.07|27|25|7|2023|Spain
+272,2|Red Bull|Perez|2.26|50||7|2023|Spain
+273,3|Red Bull|Verstappen|2.28|26|18|7|2023|Spain
+274,4|Alpine|Ocon|2.34|13|15|7|2023|Spain
+275,5|McLaren|Norris|2.40|50|12|7|2023|Spain
+276,6|Ferrari|Leclerc|2.46|16|10|7|2023|Spain
+277,7|AlphaTauri|Tsunoda|2.51|34|8|7|2023|Spain
+278,8|McLaren|Piastri|2.55|17|6|7|2023|Spain
+279,9|Haas|Magnussen|2.60|10|4|7|2023|Spain
+280,10|Mercedes|Russell|2.61|45|2|7|2023|Spain
+281,11|Mercedes|Russell|2.65|25||7|2023|Spain
+282,12|Red Bull|Verstappen|2.65|52||7|2023|Spain
+283,13|Aston Martin|Stroll|2.68|14|1|7|2023|Spain
+284,14|Williams|Sargeant|2.70|17||7|2023|Spain
+285,15|Aston Martin|Alonso|2.74|19||7|2023|Spain
+286,16|Aston Martin|Alonso|2.74|44||7|2023|Spain
+287,17|AlphaTauri|Tsunoda|2.76|10||7|2023|Spain
+288,18|AlphaTauri|de Vries|2.88|38||7|2023|Spain
+289,19|Haas|Hulkenberg|2.89|8||7|2023|Spain
+290,20|Ferrari|Sainz|2.97|45||7|2023|Spain
+291,21|AlphaTauri|de Vries|3.02|9||7|2023|Spain
+292,22|Mercedes|Hamilton|3.07|24||7|2023|Spain
+293,23|McLaren|Piastri|3.12|39||7|2023|Spain
+294,24|Ferrari|Sainz|3.14|41||7|2023|Spain
+295,25|McLaren|Norris|3.20|22||7|2023|Spain
+296,26|Haas|Magnussen|3.24|42||7|2023|Spain
+297,27|Aston Martin|Stroll|3.35|34||7|2023|Spain
+298,28|Ferrari|Leclerc|3.36|41||7|2023|Spain
+299,29|Mercedes|Hamilton|3.45|50||7|2023|Spain
+300,30|Williams|Albon|3.51|16||7|2023|Spain
+301,31|Alfa Romeo|Zhou|3.71|9||7|2023|Spain
+302,32|Alfa Romeo|Zhou|3.76|36||7|2023|Spain
+303,33|Haas|Hulkenberg|3.78|26||7|2023|Spain
+304,34|Williams|Albon|3.90|37||7|2023|Spain
+305,35|Alpine|Gasly|3.94|19||7|2023|Spain
+306,36|Williams|Sargeant|4.01|36||7|2023|Spain
+307,37|Alfa Romeo|Bottas|4.06|39||7|2023|Spain
+308,38|Alpine|Ocon|4.28|35||7|2023|Spain
+309,39|Alfa Romeo|Bottas|4.31|5||7|2023|Spain
+310,40|Haas|Magnussen|5.01|24||7|2023|Spain
+311,41|Haas|Hulkenberg|5.03|43||7|2023|Spain
+312,42|Alpine|Gasly|5.04|39||7|2023|Spain
+313,43|McLaren|Norris|17.69|1||7|2023|Spain
+314,1|Red Bull|Perez|2.15|53|25|6|2023|Monaco
+315,2|Ferrari|Leclerc|2.24|44|18|6|2023|Monaco
+316,3|Red Bull|Verstappen|2.43|55|15|6|2023|Monaco
+317,4|Aston Martin|Alonso|2.47|54|12|6|2023|Monaco
+318,5|Alpine|Ocon|2.56|54|10|6|2023|Monaco
+319,6|Ferrari|Sainz|2.56|55|8|6|2023|Monaco
+320,7|Alpine|Gasly|2.58|47|6|6|2023|Monaco
+321,8|AlphaTauri|de Vries|2.60|53|4|6|2023|Monaco
+322,9|Ferrari|Sainz|2.64|33||6|2023|Monaco
+323,10|Ferrari|Leclerc|2.66|55||6|2023|Monaco
+324,11|Aston Martin|Stroll|2.67|51|2|6|2023|Monaco
+325,12|McLaren|Norris|2.76|50|1|6|2023|Monaco
+326,13|McLaren|Piastri|2.78|54||6|2023|Monaco
+327,14|Williams|Albon|2.79|18||6|2023|Monaco
+328,15|Williams|Sargeant|2.90|20||6|2023|Monaco
+329,16|Aston Martin|Alonso|3.01|55||6|2023|Monaco
+330,17|Mercedes|Hamilton|3.01|31||6|2023|Monaco
+331,18|Haas|Hulkenberg|3.16|59||6|2023|Monaco
+332,19|Red Bull|Perez|3.21|1||6|2023|Monaco
+333,20|Alfa Romeo|Zhou|3.42|52||6|2023|Monaco
+334,21|Red Bull|Perez|3.44|70||6|2023|Monaco
+335,22|Alfa Romeo|Zhou|3.59|1||6|2023|Monaco
+336,23|Williams|Sargeant|3.72|52||6|2023|Monaco
+337,24|Mercedes|Hamilton|4.23|54||6|2023|Monaco
+338,25|Alpine|Ocon|4.27|32||6|2023|Monaco
+339,26|Williams|Albon|5.30|52||6|2023|Monaco
+340,27|Red Bull|Perez|5.66|57||6|2023|Monaco
+341,28|Williams|Sargeant|6.07|23||6|2023|Monaco
+342,29|McLaren|Norris|6.36|54||6|2023|Monaco
+343,30|Alpine|Gasly|7.79|54||6|2023|Monaco
+344,31|Alfa Romeo|Bottas|8.40|51||6|2023|Monaco
+345,32|Mercedes|Russell|8.85|54||6|2023|Monaco
+346,33|Haas|Hulkenberg|10.91|1||6|2023|Monaco
+347,34|Red Bull|Perez|11.01|34||6|2023|Monaco
+348,35|AlphaTauri|Tsunoda|11.50|53||6|2023|Monaco
+349,36|Haas|Hulkenberg|12.33|54||6|2023|Monaco
+350,37|Haas|Magnussen|24.80|56||6|2023|Monaco
+351,1|Ferrari|Sainz|2.21|18|25|5|2023|Miami
+352,2|Red Bull|Perez|2.27|20|18|5|2023|Miami
+353,3|McLaren|Piastri|2.31|5|15|5|2023|Miami
+354,4|Mercedes|Hamilton|2.52|37|12|5|2023|Miami
+355,5|Alpine|Gasly|2.57|15|10|5|2023|Miami
+356,6|Ferrari|Leclerc|2.61|17|8|5|2023|Miami
+357,7|Alpine|Ocon|2.62|39|6|5|2023|Miami
+358,8|Williams|Albon|2.64|22|4|5|2023|Miami
+359,9|Mercedes|Russell|2.71|17|2|5|2023|Miami
+360,10|Aston Martin|Alonso|2.78|24|1|5|2023|Miami
+361,11|Haas|Magnussen|2.79|14||5|2023|Miami
+362,12|Alfa Romeo|Bottas|2.89|15||5|2023|Miami
+363,13|Haas|Hulkenberg|2.99|33||5|2023|Miami
+364,14|Alfa Romeo|Zhou|3.02|31||5|2023|Miami
+365,15|Aston Martin|Stroll|3.04|42||5|2023|Miami
+366,16|Red Bull|Verstappen|3.13|45||5|2023|Miami
+367,17|AlphaTauri|Tsunoda|3.32|36||5|2023|Miami
+368,18|AlphaTauri|de Vries|3.57|15||5|2023|Miami
+369,19|McLaren|Norris|4.35|4||5|2023|Miami
+370,20|Williams|Sargeant|28.71|2||5|2023|Miami
+371,1|Red Bull|Perez|2.30|11|25|4|2023|Baku
+372,2|McLaren|Norris|2.35|9|18|4|2023|Baku
+373,3|Ferrari|Leclerc|2.49|11|15|4|2023|Baku
+374,4|AlphaTauri|Tsunoda|2.55|8|12|4|2023|Baku
+375,5|Alpine|Gasly|2.56|5|10|4|2023|Baku
+376,6|Mercedes|Hamilton|2.68|9|8|4|2023|Baku
+377,7|Alfa Romeo|Bottas|2.68|34|6|4|2023|Baku
+378,8|Alpine|Ocon|2.74|50|4|4|2023|Baku
+379,9|Mercedes|Russell|2.79|11|2|4|2023|Baku
+380,10|Williams|Sargeant|2.81|8|1|4|2023|Baku
+381,11|Alfa Romeo|Bottas|2.86|6||4|2023|Baku
+382,12|Red Bull|Verstappen|2.92|10||4|2023|Baku
+383,13|Ferrari|Sainz|2.96|11||4|2023|Baku
+384,14|McLaren|Piastri|3.02|8||4|2023|Baku
+385,15|Williams|Albon|3.05|7||4|2023|Baku
+386,16|Alpine|Gasly|3.40|23||4|2023|Baku
+387,17|Aston Martin|Stroll|3.57|11||4|2023|Baku
+388,18|Mercedes|Russell|3.73|49||4|2023|Baku
+389,19|Alfa Romeo|Bottas|3.87|12||4|2023|Baku
+390,20|Alfa Romeo|Zhou|4.21|11||4|2023|Baku
+391,21|Aston Martin|Alonso|4.74|11||4|2023|Baku
+392,22|Haas|Hulkenberg|6.47|49||4|2023|Baku
+393,23|Haas|Magnussen|13.12|10||4|2023|Baku
+394,1|Red Bull|Perez|2.11|1|25|3|2023|Australia
+395,2|Red Bull|Perez|2.62|2||3|2023|Australia
+396,3|Alpine|Ocon|2.65|1|18|3|2023|Australia
+397,4|Ferrari|Sainz|2.71|7|15|3|2023|Australia
+398,5|Williams|Sargeant|2.93|1|12|3|2023|Australia
+399,6|AlphaTauri|de Vries|2.94|45|10|3|2023|Australia
+400,7|Williams|Sargeant|2.98|2||3|2023|Australia
+401,8|AlphaTauri|Tsunoda|2.99|54|8|3|2023|Australia
+402,9|Alfa Romeo|Zhou|3.37|1|6|3|2023|Australia
+403,10|Williams|Sargeant|3.63|36||3|2023|Australia
+404,11|Alfa Romeo|Bottas|3.65|1|4|3|2023|Australia
+405,12|Mercedes|Russell|3.69|7|2|3|2023|Australia
+406,13|McLaren|Piastri|3.96|54|1|3|2023|Australia
+407,14|Alfa Romeo|Bottas|4.31|53||3|2023|Australia
+408,15|Haas|Magnussen|5.48|7||3|2023|Australia
+409,16|Alfa Romeo|Zhou|6.90|54||3|2023|Australia
+410,1|Ferrari|Leclerc|2.10|16|25|2|2023|Jeddah
+411,2|Alpine|Ocon|2.36|16|18|2|2023|Jeddah
+412,3|Red Bull|Perez|2.50|18|15|2|2023|Jeddah
+413,4|Mercedes|Russell|2.55|18|12|2|2023|Jeddah
+414,5|Alpine|Gasly|2.73|14|10|2|2023|Jeddah
+415,6|Ferrari|Sainz|2.73|15|8|2|2023|Jeddah
+416,7|Red Bull|Verstappen|2.74|18|6|2|2023|Jeddah
+417,8|Haas|Magnussen|2.76|8|4|2|2023|Jeddah
+418,9|McLaren|Norris|2.88|19|2|2|2023|Jeddah
+419,10|Aston Martin|Stroll|2.90|13|1|2|2023|Jeddah
+420,11|Williams|Sargeant|2.90|18||2|2023|Jeddah
+421,12|AlphaTauri|de Vries|2.93|17||2|2023|Jeddah
+422,13|AlphaTauri|Tsunoda|2.95|17||2|2023|Jeddah
+423,14|Mercedes|Hamilton|3.06|18||2|2023|Jeddah
+424,15|Williams|Albon|3.17|17||2|2023|Jeddah
+425,16|Alfa Romeo|Bottas|3.35|9||2|2023|Jeddah
+426,17|Haas|Hulkenberg|3.52|11||2|2023|Jeddah
+427,18|Alfa Romeo|Bottas|3.55|35||2|2023|Jeddah
+428,19|Alfa Romeo|Bottas|3.65|17||2|2023|Jeddah
+429,20|Alfa Romeo|Zhou|3.83|18||2|2023|Jeddah
+430,21|Alfa Romeo|Zhou|4.01|11||2|2023|Jeddah
+431,22|Aston Martin|Alonso|8.56|18||2|2023|Jeddah
+432,23|McLaren|Norris|11.10|2||2|2023|Jeddah
+433,24|McLaren|Piastri|13.20|1||2|2023|Jeddah
+434,1|Ferrari|Leclerc|2.22|13|25|1|2023|Bahrain
+435,2|Red Bull|Verstappen|2.25|14|18|1|2023|Bahrain
+436,3|Ferrari|Sainz|2.31|31|15|1|2023|Bahrain
+437,4|Ferrari|Sainz|2.36|13||1|2023|Bahrain
+438,5|Mercedes|Hamilton|2.40|12|12|1|2023|Bahrain
+439,6|Red Bull|Perez|2.43|17|10|1|2023|Bahrain
+440,7|Aston Martin|Stroll|2.48|30|8|1|2023|Bahrain
+441,8|Red Bull|Verstappen|2.50|36||1|2023|Bahrain
+442,9|Mercedes|Hamilton|2.53|30||1|2023|Bahrain
+443,10|Mercedes|Russell|2.55|31|6|1|2023|Bahrain
+444,11|AlphaTauri|Tsunoda|2.62|26|4|1|2023|Bahrain
+445,12|Aston Martin|Alonso|2.64|34|2|1|2023|Bahrain
+446,13|Williams|Albon|2.64|40|1|1|2023|Bahrain
+447,14|Red Bull|Perez|2.74|34||1|2023|Bahrain
+448,15|Alpine|Ocon|2.76|12||1|2023|Bahrain
+449,16|Williams|Albon|2.78|26||1|2023|Bahrain
+450,17|Alpine|Gasly|2.80|40||1|2023|Bahrain
+451,18|Alfa Romeo|Bottas|2.81|11||1|2023|Bahrain
+452,19|Alpine|Gasly|2.88|25||1|2023|Bahrain
+453,20|Ferrari|Leclerc|2.96|33||1|2023|Bahrain
+454,21|AlphaTauri|de Vries|2.96|27||1|2023|Bahrain
+455,22|AlphaTauri|de Vries|2.98|11||1|2023|Bahrain
+456,23|Haas|Magnussen|3.07|40||1|2023|Bahrain
+457,24|Williams|Albon|3.10|11||1|2023|Bahrain
+458,25|Haas|Magnussen|3.15|15||1|2023|Bahrain
+459,26|Aston Martin|Stroll|3.18|15||1|2023|Bahrain
+460,27|Haas|Magnussen|3.20|29||1|2023|Bahrain
+461,28|Alfa Romeo|Bottas|3.21|29||1|2023|Bahrain
+462,29|Williams|Sargeant|3.21|40||1|2023|Bahrain
+463,30|Haas|Hulkenberg|3.36|40||1|2023|Bahrain
+464,31|AlphaTauri|Tsunoda|3.46|10||1|2023|Bahrain
+465,32|Alfa Romeo|Zhou|3.50|32||1|2023|Bahrain
+466,33|Aston Martin|Alonso|3.50|14||1|2023|Bahrain
+467,34|Williams|Sargeant|3.57|30||1|2023|Bahrain
+468,35|Haas|Hulkenberg|3.61|11||1|2023|Bahrain
+469,36|Williams|Sargeant|3.65|12||1|2023|Bahrain
+470,37|Alpine|Gasly|3.79|9||1|2023|Bahrain
+471,38|Alfa Romeo|Zhou|3.84|12||1|2023|Bahrain
+472,39|AlphaTauri|Tsunoda|4.22|40||1|2023|Bahrain
+473,40|Mercedes|Russell|5.04|13||1|2023|Bahrain
+474,41|Alfa Romeo|Zhou|8.38|54||1|2023|Bahrain
+475,42|McLaren|Norris|8.78|47||1|2023|Bahrain
+476,43|McLaren|Norris|9.25|54||1|2023|Bahrain
+477,44|McLaren|Norris|10.60|10||1|2023|Bahrain
+478,45|Alpine|Ocon|10.95|0||1|2023|Bahrain
+479,46|McLaren|Norris|11.10|37||1|2023|Bahrain
+480,47|McLaren|Norris|11.46|27||1|2023|Bahrain
+481,48|McLaren|Norris|11.77|17||1|2023|Bahrain
+482,49|Haas|Hulkenberg|15.39|26||1|2023|Bahrain
+483,50|Alpine|Ocon|19.59|15||1|2023|Bahrain
+484,51|Alpine|Ocon|22.04|32||1|2023|Bahrain
+485,52|McLaren|Piastri|42.57|0||1|2023|Bahrain
+486,1|Red Bull|Perez|2.32|39|25|15|2023|Singapore
+487,2|McLaren|Norris|2.46|20|18|15|2023|Singapore
+488,3|Ferrari|Sainz|2.51|20|15|15|2023|Singapore
+489,4|McLaren|Piastri|2.54|20|12|15|2023|Singapore
+490,5|Alpine|Ocon|2.65|20|10|15|2023|Singapore
+491,6|Alfa Romeo|Zhou|2.88|2|8|15|2023|Singapore
+492,7|Williams|Albon|2.99|43|6|15|2023|Singapore
+493,8|Mercedes|Russell|3.01|20|4|15|2023|Singapore
+494,9|Mercedes|Russell|3.01|44||15|2023|Singapore
+495,10|Red Bull|Verstappen|3.02|40|2|15|2023|Singapore
+496,11|Mercedes|Hamilton|3.18|44|1|15|2023|Singapore
+497,12|Williams|Albon|3.27|20||15|2023|Singapore
+498,13|Alfa Romeo|Bottas|3.41|40||15|2023|Singapore
+499,14|Alfa Romeo|Zhou|3.55|20||15|2023|Singapore
+500,15|Aston Martin|Alonso|3.66|20||15|2023|Singapore
+501,16|Mercedes|Hamilton|3.73|20||15|2023|Singapore
+502,17|Haas|Magnussen|3.92|20||15|2023|Singapore
+503,18|Williams|Sargeant|4.12|43||15|2023|Singapore
+504,19|Alpine|Gasly|4.69|20||15|2023|Singapore
+505,20|Haas|Hulkenberg|4.92|20||15|2023|Singapore
+506,21|AlphaTauri|Lawson|5.19|20||15|2023|Singapore
+507,22|Ferrari|Leclerc|5.70|20||15|2023|Singapore
+508,23|Haas|Magnussen|6.19|43||15|2023|Singapore
+509,24|Aston Martin|Alonso|25.89|44||15|2023|Singapore
+510,25|Williams|Sargeant|35.33|19||15|2023|Singapore
+511,1|Ferrari|Leclerc|2.23|34|25|16|2023|Japan
+512,2|Ferrari|Sainz|2.30|18|18|16|2023|Japan
+513,3|AlphaTauri|Tsunoda|2.40|9|15|16|2023|Japan
+514,4|Ferrari|Leclerc|2.40|17||16|2023|Japan
+515,5|Aston Martin|Stroll|2.47|14|12|16|2023|Japan
+516,6|McLaren|Norris|2.48|36|10|16|2023|Japan
+517,7|McLaren|Norris|2.54|17||16|2023|Japan
+518,8|AlphaTauri|Lawson|2.60|10|8|16|2023|Japan
+519,9|McLaren|Piastri|2.60|35|6|16|2023|Japan
+520,10|Red Bull|Verstappen|2.64|37|4|16|2023|Japan
+521,11|AlphaTauri|Tsunoda|2.69|30||16|2023|Japan
+522,12|Haas|Hulkenberg|2.79|37|2|16|2023|Japan
+523,13|Haas|Magnussen|2.82|12|1|16|2023|Japan
+524,14|Ferrari|Sainz|2.82|38||16|2023|Japan
+525,15|Haas|Hulkenberg|2.84|8||16|2023|Japan
+526,16|Alpine|Ocon|2.94|28||16|2023|Japan
+527,17|Mercedes|Russell|2.96|24||16|2023|Japan
+528,18|Aston Martin|Alonso|2.99|11||16|2023|Japan
+529,19|Haas|Magnussen|2.99|31||16|2023|Japan
+530,20|Mercedes|Hamilton|3.00|34||16|2023|Japan
+531,21|Alfa Romeo|Zhou|3.04|29||16|2023|Japan
+532,22|AlphaTauri|Lawson|3.06|25||16|2023|Japan
+533,23|Alfa Romeo|Zhou|3.22|10||16|2023|Japan
+534,24|Red Bull|Verstappen|3.30|16||16|2023|Japan
+535,25|Alpine|Gasly|3.44|18||16|2023|Japan
+536,26|Aston Martin|Alonso|3.45|25||16|2023|Japan
+537,27|Haas|Hulkenberg|3.54|21||16|2023|Japan
+538,28|Alpine|Gasly|3.57|34||16|2023|Japan
+539,29|McLaren|Piastri|3.85|13||16|2023|Japan
+540,30|Mercedes|Hamilton|4.07|16||16|2023|Japan
+541,31|Alpine|Ocon|4.82|1||16|2023|Japan
+542,32|Red Bull|Perez|9.07|14||16|2023|Japan
+543,33|Red Bull|Perez|11.20|2||16|2023|Japan
+544,34|Williams|Sargeant|11.64|2||16|2023|Japan
+545,35|Williams|Sargeant|13.83|21||16|2023|Japan
+546,36|Red Bull|Perez|18.23|12||16|2023|Japan
+547,37|Alfa Romeo|Zhou|18.97|1||16|2023|Japan
+548,38|Williams|Sargeant|23.04|5||16|2023|Japan
+549,39|Williams|Albon|28.83|1||16|2023|Japan
+550,40|Williams|Albon|31.41|13||16|2023|Japan
+551,41|Alfa Romeo|Bottas|32.08|6||16|2023|Japan
+552,42|Alfa Romeo|Bottas|33.97|1||16|2023|Japan
+553,1|McLaren|Norris|1.80|27|25|17|2023|Qatar
+554,2|Ferrari|Leclerc|1.93|43|18|17|2023|Qatar
+555,3|McLaren|Piastri|2.00|43|15|17|2023|Qatar
+556,4|McLaren|Norris|2.14|44||17|2023|Qatar
+557,5|McLaren|Piastri|2.15|25||17|2023|Qatar
+558,6|AlphaTauri|Tsunoda|2.19|22|12|17|2023|Qatar
+559,7|Red Bull|Perez|2.24|17|10|17|2023|Qatar
+560,8|Ferrari|Leclerc|2.29|25||17|2023|Qatar
+561,9|AlphaTauri|Tsunoda|2.30|40||17|2023|Qatar
+562,10|Aston Martin|Alonso|2.33|11|8|17|2023|Qatar
+563,11|Aston Martin|Alonso|2.35|26||17|2023|Qatar
+564,12|Aston Martin|Alonso|2.39|44||17|2023|Qatar
+565,13|AlphaTauri|Tsunoda|2.40|9||17|2023|Qatar
+566,14|Red Bull|Verstappen|2.43|17|6|17|2023|Qatar
+567,15|Ferrari|Leclerc|2.45|12||17|2023|Qatar
+568,16|Aston Martin|Stroll|2.49|21|4|17|2023|Qatar
+569,17|Red Bull|Verstappen|2.51|34||17|2023|Qatar
+570,18|Alpine|Gasly|2.56|11|2|17|2023|Qatar
+571,19|Aston Martin|Stroll|2.56|3||17|2023|Qatar
+572,20|McLaren|Norris|2.56|13||17|2023|Qatar
+573,21|Mercedes|Russell|2.59|50|1|17|2023|Qatar
+574,22|AlphaTauri|Lawson|2.60|39||17|2023|Qatar
+575,23|Mercedes|Russell|2.63|32||17|2023|Qatar
+576,24|Haas|Magnussen|2.68|3||17|2023|Qatar
+577,25|Mercedes|Russell|2.68|14||17|2023|Qatar
+578,26|Alfa Romeo|Zhou|2.73|18||17|2023|Qatar
+579,27|Alfa Romeo|Zhou|2.82|35||17|2023|Qatar
+580,28|Alpine|Ocon|2.97|10||17|2023|Qatar
+581,29|Alfa Romeo|Zhou|3.00|0||17|2023|Qatar
+582,30|Haas|Hulkenberg|3.06|27||17|2023|Qatar
+583,31|Alpine|Ocon|3.07|25||17|2023|Qatar
+584,32|AlphaTauri|Lawson|3.08|21||17|2023|Qatar
+585,33|Williams|Albon|3.08|31||17|2023|Qatar
+586,34|Alfa Romeo|Bottas|3.10|3||17|2023|Qatar
+587,35|Haas|Magnussen|3.11|21||17|2023|Qatar
+588,36|Alfa Romeo|Bottas|3.11|39||17|2023|Qatar
+589,37|Haas|Hulkenberg|3.12|39||17|2023|Qatar
+590,38|Williams|Albon|3.12|44||17|2023|Qatar
+591,39|McLaren|Piastri|3.15|12||17|2023|Qatar
+592,40|AlphaTauri|Lawson|3.23|3||17|2023|Qatar
+593,41|Alfa Romeo|Bottas|3.27|21||17|2023|Qatar
+594,42|Alpine|Ocon|3.32|43||17|2023|Qatar
+595,43|Williams|Sargeant|3.37|13||17|2023|Qatar
+596,44|Williams|Sargeant|3.39|26||17|2023|Qatar
+597,45|Williams|Albon|3.46|18||17|2023|Qatar
+598,46|Aston Martin|Stroll|3.79|39||17|2023|Qatar
+599,47|Alpine|Gasly|4.07|26||17|2023|Qatar
+600,48|Red Bull|Verstappen|4.18|51||17|2023|Qatar
+601,49|Haas|Magnussen|4.60|39||17|2023|Qatar
+602,50|Red Bull|Perez|7.88|31||17|2023|Qatar
+603,51|Red Bull|Perez|7.93|43||17|2023|Qatar
+604,52|Alpine|Gasly|9.03|44||17|2023|Qatar
+605,53|Mercedes|Russell|12.53|1||17|2023|Qatar
+606,54|Haas|Hulkenberg|14.10|13||17|2023|Qatar
+607,1|McLaren|Norris|2.07|34|25|18|2023|COTA
+608,2|Alpine|Gasly|2.22|18|18|18|2023|COTA
+609,3|Ferrari|Sainz|2.23|35|15|18|2023|COTA
+610,4|AlphaTauri|Tsunoda|2.30|54|12|18|2023|COTA
+611,5|Red Bull|Perez|2.45|37|10|18|2023|COTA
+612,6|Aston Martin|Stroll|2.45|40|8|18|2023|COTA
+613,7|Red Bull|Verstappen|2.53|16|6|18|2023|COTA
+614,8|Ferrari|Sainz|2.54|17||18|2023|COTA
+615,9|Mercedes|Russell|2.58|39|4|18|2023|COTA
+616,10|Aston Martin|Stroll|2.81|20||18|2023|COTA
+617,11|AlphaTauri|Ricciardo|2.82|22|2|18|2023|COTA
+618,12|AlphaTauri|Tsunoda|2.82|17||18|2023|COTA
+619,13|Mercedes|Russell|2.82|21||18|2023|COTA
+620,14|McLaren|Norris|2.83|17||18|2023|COTA
+621,15|Red Bull|Perez|2.88|17||18|2023|COTA
+622,16|AlphaTauri|Tsunoda|2.98|34||18|2023|COTA
+623,17|Haas|Hulkenberg|3.07|34|1|18|2023|COTA
+624,18|Ferrari|Leclerc|3.09|23||18|2023|COTA
+625,19|Alfa Romeo|Bottas|3.11|10||18|2023|COTA
+626,20|Aston Martin|Alonso|3.12|42||18|2023|COTA
+627,21|Alfa Romeo|Zhou|3.17|27||18|2023|COTA
+628,22|Williams|Albon|3.18|10||18|2023|COTA
+629,23|Aston Martin|Alonso|3.26|19||18|2023|COTA
+630,24|Haas|Magnussen|3.33|29||18|2023|COTA
+631,25|Alpine|Gasly|3.38|37||18|2023|COTA
+632,26|Red Bull|Verstappen|3.39|35||18|2023|COTA
+633,27|Mercedes|Hamilton|3.41|38||18|2023|COTA
+634,28|Williams|Albon|3.44|29||18|2023|COTA
+635,29|Alfa Romeo|Bottas|3.50|28||18|2023|COTA
+636,30|Haas|Magnussen|3.56|10||18|2023|COTA
+637,31|Mercedes|Hamilton|3.64|20||18|2023|COTA
+638,32|Williams|Sargeant|3.67|11||18|2023|COTA
+639,33|Alfa Romeo|Zhou|4.12|9||18|2023|COTA
+640,34|Haas|Hulkenberg|4.35|19||18|2023|COTA
+641,35|Williams|Sargeant|4.40|32||18|2023|COTA
+642,36|AlphaTauri|Ricciardo|4.80|47||18|2023|COTA
+643,1|Ferrari|Sainz|2.35|30|25|19|2023|Mexico
+644,2|AlphaTauri|Ricciardo|2.37|27|18|19|2023|Mexico
+645,3|Red Bull|Verstappen|2.42|33|15|19|2023|Mexico
+646,4|Red Bull|Verstappen|2.46|19||19|2023|Mexico
+647,5|Ferrari|Leclerc|2.49|31|12|19|2023|Mexico
+648,6|Aston Martin|Stroll|2.55|30|10|19|2023|Mexico
+649,7|Mercedes|Hamilton|2.56|24|8|19|2023|Mexico
+650,8|McLaren|Norris|2.60|33|6|19|2023|Mexico
+651,9|Mercedes|Russell|2.62|26|4|19|2023|Mexico
+652,10|Alpine|Gasly|2.81|28|2|19|2023|Mexico
+653,11|Aston Martin|Alonso|2.83|29|1|19|2023|Mexico
+654,12|McLaren|Norris|2.85|11||19|2023|Mexico
+655,13|Alfa Romeo|Zhou|2.92|21||19|2023|Mexico
+656,14|Haas|Hulkenberg|3.31|23||19|2023|Mexico
+657,15|McLaren|Piastri|3.37|25||19|2023|Mexico
+658,16|Haas|Magnussen|3.48|23||19|2023|Mexico
+659,17|Williams|Albon|3.58|33||19|2023|Mexico
+660,18|Alfa Romeo|Bottas|3.62|31||19|2023|Mexico
+661,19|Williams|Sargeant|4.23|22||19|2023|Mexico
+662,20|AlphaTauri|Tsunoda|10.15|9||19|2023|Mexico
+663,1|Red Bull|Verstappen|2.22|27|25|20|2023|Brazil
+664,2|McLaren|Piastri|2.25|23|18|20|2023|Brazil
+665,3|Red Bull|Perez|2.27|20|15|20|2023|Brazil
+666,4|AlphaTauri|Tsunoda|2.29|55|12|20|2023|Brazil
+667,5|Ferrari|Sainz|2.35|26|10|20|2023|Brazil
+668,6|Red Bull|Perez|2.37|46||20|2023|Brazil
+669,7|AlphaTauri|Tsunoda|2.40|26||20|2023|Brazil
+670,8|Aston Martin|Stroll|2.51|22|8|20|2023|Brazil
+671,9|McLaren|Piastri|2.52|52||20|2023|Brazil
+672,10|Red Bull|Verstappen|2.53|56||20|2023|Brazil
+673,11|Aston Martin|Alonso|2.58|47|6|20|2023|Brazil
+674,12|McLaren|Norris|2.58|59|4|20|2023|Brazil
+675,13|Alpine|Gasly|2.59|46|2|20|2023|Brazil
+676,14|AlphaTauri|Ricciardo|2.60|55|1|20|2023|Brazil
+677,15|Alfa Romeo|Zhou|2.61|15||20|2023|Brazil
+678,16|McLaren|Norris|2.62|27||20|2023|Brazil
+679,17|Mercedes|Hamilton|2.70|18||20|2023|Brazil
+680,18|Aston Martin|Alonso|2.81|25||20|2023|Brazil
+681,19|AlphaTauri|Ricciardo|2.83|26||20|2023|Brazil
+682,20|Alpine|Ocon|2.88|51||20|2023|Brazil
+683,21|Ferrari|Sainz|2.88|51||20|2023|Brazil
+684,22|Mercedes|Russell|2.92|19||20|2023|Brazil
+685,23|Alfa Romeo|Bottas|2.96|18||20|2023|Brazil
+686,24|Mercedes|Russell|3.08|45||20|2023|Brazil
+687,25|Mercedes|Hamilton|3.13|46||20|2023|Brazil
+688,26|Haas|Hulkenberg|3.15|46||20|2023|Brazil
+689,27|Alpine|Ocon|3.18|14||20|2023|Brazil
+690,28|Alpine|Ocon|3.20|31||20|2023|Brazil
+691,29|Haas|Hulkenberg|3.38|21||20|2023|Brazil
+692,30|Williams|Sargeant|3.43|44||20|2023|Brazil
+693,31|Williams|Sargeant|3.50|17||20|2023|Brazil
+694,32|Williams|Sargeant|3.57|1||20|2023|Brazil
+695,33|Alpine|Gasly|4.14|26||20|2023|Brazil
+696,34|Aston Martin|Stroll|4.32|52||20|2023|Brazil
+697,35|Haas|Hulkenberg|9.09|1||20|2023|Brazil
+698,1|McLaren|Piastri|1.99|43|25|21|2023|Vegas
+699,2|AlphaTauri|Tsunoda|2.20|10|18|21|2023|Vegas
+700,3|Ferrari|Sainz|2.25|3|15|21|2023|Vegas
+701,4|Red Bull|Perez|2.45|26|12|21|2023|Vegas
+702,5|AlphaTauri|Tsunoda|2.49|21||21|2023|Vegas
+703,6|Mercedes|Russell|2.58|15|10|21|2023|Vegas
+704,7|Williams|Sargeant|2.60|15|8|21|2023|Vegas
+705,8|Williams|Albon|2.61|16|6|21|2023|Vegas
+706,9|Alfa Romeo|Bottas|2.63|24|4|21|2023|Vegas
+707,10|Red Bull|Verstappen|2.71|26|2|21|2023|Vegas
+708,11|Haas|Magnussen|2.89|14|1|21|2023|Vegas
+709,12|Alpine|Ocon|2.95|20||21|2023|Vegas
+710,13|Mercedes|Russell|2.99|26||21|2023|Vegas
+711,14|Haas|Magnussen|3.07|26||21|2023|Vegas
+712,15|Alfa Romeo|Zhou|3.08|26||21|2023|Vegas
+713,16|AlphaTauri|Ricciardo|3.16|17||21|2023|Vegas
+714,17|Ferrari|Sainz|3.17|26||21|2023|Vegas
+715,18|Alpine|Gasly|3.25|17||21|2023|Vegas
+716,19|Haas|Hulkenberg|3.33|12||21|2023|Vegas
+717,20|Aston Martin|Stroll|3.35|26||21|2023|Vegas
+718,21|Haas|Hulkenberg|3.62|26||21|2023|Vegas
+719,22|Aston Martin|Stroll|3.65|3||21|2023|Vegas
+720,23|Mercedes|Hamilton|3.77|26||21|2023|Vegas
+721,24|Ferrari|Leclerc|3.91|21||21|2023|Vegas
+722,25|Aston Martin|Alonso|4.02|26||21|2023|Vegas
+723,26|McLaren|Piastri|4.41|16||21|2023|Vegas
+724,27|Mercedes|Hamilton|6.36|17||21|2023|Vegas
+725,28|Red Bull|Verstappen|7.74|16||21|2023|Vegas
+726,29|Aston Martin|Alonso|9.46|1||21|2023|Vegas
+727,30|Red Bull|Perez|11.48|1||21|2023|Vegas
+728,31|Alfa Romeo|Bottas|24.73|1||21|2023|Vegas
+729,1|Ferrari|Sainz|2.16|23|25|22|2023|Abu Dhabi
+730,2|McLaren|Norris|2.22|33|18|22|2023|Abu Dhabi
+731,3|McLaren|Piastri|2.22|36|15|22|2023|Abu Dhabi
+732,4|Ferrari|Sainz|2.25|56||22|2023|Abu Dhabi
+733,5|Red Bull|Perez|2.27|42|12|22|2023|Abu Dhabi
+734,6|Red Bull|Verstappen|2.32|43|10|22|2023|Abu Dhabi
+735,7|AlphaTauri|Ricciardo|2.36|7|8|22|2023|Abu Dhabi
+736,8|Ferrari|Leclerc|2.37|35|6|22|2023|Abu Dhabi
+737,9|Red Bull|Perez|2.46|17||22|2023|Abu Dhabi
+738,10|AlphaTauri|Tsunoda|2.53|22|4|22|2023|Abu Dhabi
+739,11|Aston Martin|Alonso|2.53|36|2|22|2023|Abu Dhabi
+740,12|AlphaTauri|Ricciardo|2.59|31||22|2023|Abu Dhabi
+741,13|McLaren|Piastri|2.64|13||22|2023|Abu Dhabi
+742,14|Alpine|Ocon|2.71|15|1|22|2023|Abu Dhabi
+743,15|Williams|Sargeant|2.75|41||22|2023|Abu Dhabi
+744,16|Ferrari|Leclerc|2.77|17||22|2023|Abu Dhabi
+745,17|Alfa Romeo|Zhou|2.84|37||22|2023|Abu Dhabi
+746,18|Haas|Hulkenberg|2.85|13||22|2023|Abu Dhabi
+747,19|Williams|Albon|2.89|43||22|2023|Abu Dhabi
+748,20|Aston Martin|Stroll|2.90|22||22|2023|Abu Dhabi
+749,21|Red Bull|Verstappen|2.91|16||22|2023|Abu Dhabi
+750,22|Aston Martin|Stroll|2.91|42||22|2023|Abu Dhabi
+751,23|Haas|Magnussen|2.92|22||22|2023|Abu Dhabi
+752,24|Mercedes|Russell|2.97|14||22|2023|Abu Dhabi
+753,25|Williams|Sargeant|2.98|15||22|2023|Abu Dhabi
+754,26|Alfa Romeo|Bottas|3.07|29||22|2023|Abu Dhabi
+755,27|Aston Martin|Alonso|3.10|12||22|2023|Abu Dhabi
+756,28|Mercedes|Russell|3.10|34||22|2023|Abu Dhabi
+757,29|Haas|Hulkenberg|3.12|33||22|2023|Abu Dhabi
+758,30|Mercedes|Hamilton|3.21|15||22|2023|Abu Dhabi
+759,31|Alfa Romeo|Zhou|3.33|13||22|2023|Abu Dhabi
+760,32|Williams|Albon|3.36|16||22|2023|Abu Dhabi
+761,33|Mercedes|Hamilton|3.41|35||22|2023|Abu Dhabi
+762,34|Haas|Magnussen|3.50|5||22|2023|Abu Dhabi
+763,35|Alpine|Gasly|3.54|17||22|2023|Abu Dhabi
+764,36|Alpine|Gasly|4.13|32||22|2023|Abu Dhabi
+765,37|McLaren|Norris|5.16|14||22|2023|Abu Dhabi

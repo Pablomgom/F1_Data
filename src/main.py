@@ -8,6 +8,7 @@ from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 
 from src.awards.awards import awards_2023
+from src.db.db import Database
 from src.ergast_api.my_ergast import My_Ergast
 from src.menu.menu import get_funcs
 
@@ -27,6 +28,9 @@ session = None
 previous_input = ""
 
 if __name__ == '__main__':
+
+    database = Database()
+    database.auto_incremental_id()
 
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
