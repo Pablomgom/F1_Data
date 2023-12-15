@@ -860,7 +860,7 @@ def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
     annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False, round=round_decimals)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Location + " " + session.name}',
-                  font='Fira Sans', fontsize=16)
+                  font='Fira Sans', fontsize=14)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
     if 'Speed' in column:
         y_label = 'Max speed'
