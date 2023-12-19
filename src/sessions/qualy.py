@@ -398,3 +398,41 @@ def qualy_diff_teammates(team, rounds):
     plt.tight_layout()
     plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=500)
     plt.show()
+
+
+def percentage_qualy_ahead(start=2001, end=2024):
+
+    ergast = My_Ergast()
+    circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve']
+    qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
+    drivers_dict = {}
+    for q in qualy:
+        if len(q[q['circuitRef'].isin(circuits)]) > 0:
+            drivers_in_q = q['fullName'].unique()
+            for d in drivers_in_q:
+                driver_data = q[q['fullName'] == d]
+                driver_pos = min(driver_data['position'])
+                driver_teams = driver_data['constructorName'].unique()
+                for driver_team in driver_teams:
+                    team_data = q[q['constructorName'] == driver_team]
+                    team_data = team_data[team_data['fullName'] != d]
+                    for teammate in team_data['fullName'].unique():
+                        teammate_pos = min(q[q['fullName'] == teammate]['position'])
+                        win = 1
+                        if driver_pos > teammate_pos:
+                            win = 0
+                        if d not in drivers_dict:
+                            drivers_dict[d] = [win]
+                        else:
+                            drivers_dict[d].append(win)
+            print(f'{q["year"].loc[0]}: {q["circuitName"].loc[0]}')
+    final_dict = {}
+    h2h_dict = {}
+    for d, w in drivers_dict.items():
+        percentage = round((sum(w) / len(w)) * 100, 2)
+        final_dict[d] = percentage
+        h2h_dict[d] = f'({sum(w)}/{len(w)})'
+
+    final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
+    for d, w in final_dict.items():
+        print(f'{d}: {w}% {h2h_dict[d]}')

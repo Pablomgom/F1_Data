@@ -12,8 +12,7 @@ from src.db.db import Database
 from src.ergast_api.my_ergast import My_Ergast
 from src.menu.menu import get_funcs
 
-from src.utils.utils import parse_args
-
+from src.utils.utils import parse_args, is_session_first_arg
 
 setup_mpl(misc_mpl_mods=False)
 pd.set_option('display.max_columns', None)
@@ -29,6 +28,10 @@ previous_input = ""
 
 if __name__ == '__main__':
 
+    # a = My_Ergast().get_qualy_results([1998])
+    # # My_Ergast().insert_qualy_data(1997, 17)
+    # Database().auto_incremental_id_my_ergast()
+
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
         func_name = func.split('(')[0]
@@ -38,6 +41,9 @@ if __name__ == '__main__':
         try:
             args_input = func.split('(')[1].replace(')', '')
             args, kwargs = parse_args(args_input, FUNCTION_MAP, session)
+            func = FUNCTION_MAP[func_name]
+            if is_session_first_arg(func):
+                args.insert(0, session)
             result = FUNCTION_MAP[func_name](*args, **kwargs)
             if func_name.lower() == 'load_session':
                 session = result
@@ -45,4 +51,3 @@ if __name__ == '__main__':
                 print(f"Result: {result}")
         except Exception as e:
             traceback.print_exc()
-            # print(e)

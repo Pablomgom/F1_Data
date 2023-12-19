@@ -513,8 +513,45 @@ def victories_per_driver_team(start=2014, end=2024):
     df['Team'] = [f'{driver} ({count})' for driver, count in zip(df['Team'], df['Count Teams'])]
     df = df.sort_values(by='Count Teams', ascending=True)
     df = df.drop(['Count Teams', 'Count Driver'], axis=1)
-    sankey.sankey(df['Driver'], df['Team'], aspect=1, fontsize=11)
+    sankey.sankey(df['Driver'], df['Team'], aspect=1000, fontsize=10.5)
     plt.title(f'WINS PER TEAM ({start}-{end-1})', font='Fira Sans', fontsize=18, color='white')
     plt.tight_layout()
     plt.savefig(f'../PNGs/WINNERS-TEAM IN PERIOD.png', dpi=450)
     plt.show()
+
+
+def mapped_grid_final_pos(driver, start=1950, end=2024):
+
+    races = My_Ergast().get_race_results([i for i in range(start, end)]).content
+    df = pd.DataFrame(columns=['GRID', 'RESULT'])
+    for r in races:
+        r = r[r['fullName'] == driver]
+        if len(r) > 0:
+            grid_pos = r['grid'].loc[0]
+            status = r['status'].loc[0]
+            final_result = r['position'].loc[0]
+            if re.search(r'(Spun off|Accident|Collision|Damage|Fatal)', status):
+                final_result = 'Crash'
+            elif not re.search(r'Finished|\+', status):
+                final_result = 'Mech DNF'
+            else:
+                final_result = f'P{final_result}'
+            if grid_pos == 0:
+                grid_pos = 'PIT LANE'
+            else:
+                grid_pos = f'P{grid_pos}'
+            df.loc[len(df), 'GRID'] = grid_pos
+            df.loc[len(df) - 1, 'RESULT'] = final_result
+
+    df['Count GRID'] = df.groupby('GRID')['GRID'].transform('count')
+    df['Count RESULT'] = df.groupby('RESULT')['RESULT'].transform('count')
+    df['GRID'] = [f'{driver} ({count})' for driver, count in zip(df['GRID'], df['Count GRID'])]
+    df['RESULT'] = [f'{driver} ({count})' for driver, count in zip(df['RESULT'], df['Count RESULT'])]
+    df = df.sort_values(by='Count RESULT', ascending=True)
+    df = df.drop(['Count GRID', 'Count RESULT'], axis=1)
+    sankey.sankey(df['GRID'], df['RESULT'], aspect=1, fontsize=11)
+    plt.title(f'{driver.upper()} RESULTS FROM GRID POSITION', font='Fira Sans', fontsize=18, color='white')
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{driver} MAPPED POSITIONS.png', dpi=450)
+    plt.show()
+

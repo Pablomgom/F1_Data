@@ -8,7 +8,7 @@ import matplotlib.patheffects as path_effects
 
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import round_bars, annotate_bars, get_font_properties
-from src.utils.utils import update_name
+from src.utils.utils import update_name, name_count, restart_name_count
 from src.variables.team_colors import team_colors_2023
 from src.plots.plots import lighten_color
 
@@ -83,6 +83,7 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     if round is not None and groupBy == 'Driver':
         pitstops = pitstops.sort_values(by='Lap', ascending=True)
         pitstops['Driver'] = pitstops['Driver'].apply(update_name)
+        restart_name_count()
         pitstops = pitstops.sort_values(by='Time', ascending=True)
 
     if exclude is not None:

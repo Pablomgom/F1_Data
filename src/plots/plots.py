@@ -167,7 +167,8 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
 
 
 def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate='default', ceil_values=False, round=0,
-                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0, add_character=''):
+                  y_negative_offset=0.04, annotate_zero=False, negative_offset=0, add_character='', linewidth=1,
+                  egdecolor='black'):
     i = 0
     for bar in bars:
         height = bar.get_height()
@@ -198,7 +199,7 @@ def annotate_bars(bars, ax, y_offset_annotate, annotate_fontsize, text_annotate=
                 text = ax.text(bar.get_x() + bar.get_width() / 2, height + y_offset, plot_text, ha='center',
                                va='bottom',
                                font='Fira Sans', fontsize=annotate_fontsize)
-            text.set_path_effects([path_effects.withStroke(linewidth=1, foreground='black')])
+            text.set_path_effects([path_effects.withStroke(linewidth=linewidth, foreground=egdecolor)])
         else:
             bar.set_visible(False)
         i += 1

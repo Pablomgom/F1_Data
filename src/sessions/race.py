@@ -2,6 +2,7 @@ import statistics
 
 from tabulate import tabulate
 
+from src.ergast_api.my_ergast import My_Ergast
 from src.exceptions import race_same_team_exceptions
 from src.exceptions.custom_exceptions import RaceException
 from src.plots.plots import get_font_properties
@@ -418,6 +419,19 @@ def race_diff(year):
 
     session_names = append_duplicate_number(session_names)
 
+    df = pd.DataFrame(mean_delta_by_team)
+    df['Year'] = year
+    df['Session'] = df.index + 1
+    df['Track'] = session_names
+    df = df.melt(id_vars=['Year', 'Session', 'Track'], var_name='Team', value_name='Delta')
+    existing_data = pd.read_csv('../resources/csv/Raw_race_pace_delta.csv')
+    composite_pk_columns = ['Year', 'Session', 'Team']
+    merged = pd.merge(existing_data[composite_pk_columns], df, how='outer', on=composite_pk_columns, indicator=True)
+    unique_rows = merged[merged['_merge'] == 'right_only'].drop(columns=['_merge']).reset_index(drop=True)
+    unique_rows['ID'] = unique_rows.index + max(existing_data['ID']) + 1
+    unique_rows = unique_rows[existing_data.columns]
+    unique_rows.to_csv('../resources/csv/Raw_race_pace_delta.csv', mode='a', header=False, index=False)
+
     fig, ax1 = plt.subplots(figsize=(12, 8))
     plt.rcParams["font.family"] = "Fira Sans"
     for team, deltas in mean_delta_by_team.items():
@@ -619,7 +633,17 @@ def fuel_correct_factor(year):
         else:
             delta_dict[session] = np.NaN
 
-    a = 1
+    df = pd.DataFrame([delta_dict]).T.reset_index(drop=True)
+    df.columns = ['FuelFactor']
+    df['Year'] = year
+    df['Round'] = df.index + 1
+    existing_data = pd.read_csv('../resources/csv/Fuel_factor.csv')
+    composite_pk_columns = ['Year', 'Round']
+    merged = pd.merge(existing_data[composite_pk_columns], df, how='outer', on=composite_pk_columns, indicator=True)
+    unique_rows = merged[merged['_merge'] == 'right_only'].drop(columns=['_merge']).reset_index(drop=True)
+    unique_rows['ID'] = unique_rows.index + max(existing_data['ID']) + 1
+    unique_rows = unique_rows[['ID', 'Year', 'Round', 'FuelFactor']]
+    unique_rows.to_csv('../resources/csv/Fuel_factor.csv', mode='a', header=False, index=False)
 
 
 def driver_fuel_corrected_laps(session, driver):
@@ -655,10 +679,10 @@ def race_diff_v2(year, save=False):
     delta_by_race = {}
     sessions_names = []
     for i in range(len(schedule)):
-        session = fastf1.get_session(year, 'Belgium', 'R')
+        session = fastf1.get_session(year, 'Baku', 'R')
         session.load(messages=False)
         sessions_names.append(session.event['Location'].split('-')[0])
-        race_fuel_factor = fuel_factors[fuel_factors['Round'] == str(session)]['FuelFactor']
+        race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == i+1)]['FuelFactor']
         total_laps = pd.DataFrame(columns=['Team', 'LapTime', 'LapNumber', 'TyreLife', 'Driver'])
         if not pd.isna(race_fuel_factor.loc[0]):
             race_fuel_factor = race_fuel_factor.loc[0]
@@ -705,12 +729,8 @@ def race_diff_v2(year, save=False):
 
     if save:
         df_save = pd.DataFrame(delta_by_race)
-        tracks = ['Bahrain', 'Jeddah', 'Australia', 'Baku', 'Miami', 'Monaco',
-       'Spain', 'Montreal', 'Austria', 'Silverstone', 'Budapest', 'Spa',
-       'Zandvoort', 'Monza', 'Singapore', 'Suzuka', 'Qatar', 'COTA',
-       'Mexico', 'Brazil', 'Vegas', 'Abu Dhabi']
-        df_save['Track'] = tracks
         df_save['Year'] = year
+        df_save['Track'] = np.NaN
         df_save['Session'] = df_save.index + 1
         df_save = df_save.melt(id_vars=['Year', 'Session', 'Track'], var_name='Team', value_name='Delta')
         df_save = df_save[['Team', 'Delta', 'Year', 'Session', 'Track']]
@@ -735,3 +755,45 @@ def race_diff_v2(year, save=False):
     plt.tight_layout()
     plt.savefig(f"../PNGs/{year} race time difference.png", dpi=400)
     plt.show()
+
+
+def percentage_race_ahead(start=2001, end=2024):
+
+    ergast = My_Ergast()
+    races = ergast.get_race_results([i for i in range(start, end)]).content
+    circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve']
+    drivers_dict = {}
+    for r in races:
+        if len(r[r['circuitRef'].isin(circuits)]) > 0:
+            drivers_in_q = r['fullName'].unique()
+            for d in drivers_in_q:
+                driver_data = r[r['fullName'] == d]
+                driver_pos = min(driver_data['position'])
+                driver_status = driver_data[driver_data['position'] == driver_pos]['status'].loc[0]
+                if 'Finished' in driver_status or '+' in driver_status:
+                    driver_teams = driver_data['constructorName'].unique()
+                    for driver_team in driver_teams:
+                        team_data = r[r['constructorName'] == driver_team]
+                        team_data = team_data[team_data['fullName'] != d]
+                        for teammate in team_data['fullName'].unique():
+                            teammate_pos = min(r[r['fullName'] == teammate]['position'])
+                            teammate_status = r[(r['fullName'] == teammate) & (r['position'] == teammate_pos)]['status'].loc[0]
+                            if 'Finished' in teammate_status or '+' in teammate_status:
+                                win = 1
+                                if driver_pos > teammate_pos:
+                                    win = 0
+                                if d not in drivers_dict:
+                                    drivers_dict[d] = [win]
+                                else:
+                                    drivers_dict[d].append(win)
+            print(f'{r["year"].loc[0]}: {r["circuitName"].loc[0]}')
+    final_dict = {}
+    h2h_dict = {}
+    for d, w in drivers_dict.items():
+        percentage = round((sum(w) / len(w)) * 100, 2)
+        final_dict[d] = percentage
+        h2h_dict[d] = f'({sum(w)}/{len(w)})'
+
+    final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
+    for d, w in final_dict.items():
+        print(f'{d}: {w}% {h2h_dict[d]}')

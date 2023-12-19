@@ -1,9 +1,20 @@
+import inspect
+
 import fastf1
 import numpy as np
 import matplotlib.colors as mcolors
 
 name_count = {}
 
+
+def restart_name_count():
+    name_count = {}
+
+
+def is_session_first_arg(func):
+    signature = inspect.signature(func)
+    parameters = list(signature.parameters)
+    return parameters[0] == 'session' if parameters else False
 
 def find_similar_func(name, functions):
     func_list = list(functions.keys())
@@ -147,9 +158,10 @@ def get_quartiles(data):
 
 
 def delta_time(reference_lap, compare_lap):
-    ref = reference_lap.get_car_data(interpolate_edges=True).add_distance()
-    comp = compare_lap.get_car_data(interpolate_edges=True).add_distance()
-
+    # ref = reference_lap.get_car_data(interpolate_edges=True).add_distance()
+    # comp = compare_lap.get_car_data(interpolate_edges=True).add_distance()
+    ref = reference_lap.telemetry
+    comp = compare_lap.telemetry
     def mini_pro(stream):
         # Ensure that all samples are interpolated
         dstream_start = stream[1] - stream[0]

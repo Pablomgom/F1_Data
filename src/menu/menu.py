@@ -56,7 +56,6 @@ def get_funcs():
         'bar_season': bar_season,
         'get_retirements': get_retirements,
         'wdc_comparation': wdc_comparation,
-        'get_topspeed': get_topspeed,
         'get_driver_results_circuit': get_driver_results_circuit,
         'race_qualy_avg_metrics': race_qualy_avg_metrics,
         'qualy_margin': qualy_margin,
@@ -95,6 +94,10 @@ def get_funcs():
         'pitstops_per_year': pitstops_per_year,
         'pitstops_pirelli_era': pitstops_pirelli_era,
         'drs_efficiency': drs_efficiency,
+        'percentage_qualy_ahead': percentage_qualy_ahead,
+        'percentage_race_ahead': percentage_race_ahead,
+        'get_fastest_sectors': get_fastest_sectors,
+        'mapped_grid_final_pos': mapped_grid_final_pos,
         'help': help
     }
 
