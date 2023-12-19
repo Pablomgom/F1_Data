@@ -429,6 +429,7 @@ def race_diff(year):
     merged = pd.merge(existing_data[composite_pk_columns], df, how='outer', on=composite_pk_columns, indicator=True)
     unique_rows = merged[merged['_merge'] == 'right_only'].drop(columns=['_merge']).reset_index(drop=True)
     unique_rows['ID'] = unique_rows.index + max(existing_data['ID']) + 1
+    unique_rows['Track'] = session_names
     unique_rows = unique_rows[existing_data.columns]
     unique_rows.to_csv('../resources/csv/Raw_race_pace_delta.csv', mode='a', header=False, index=False)
 
@@ -679,7 +680,7 @@ def race_diff_v2(year, save=False):
     delta_by_race = {}
     sessions_names = []
     for i in range(len(schedule)):
-        session = fastf1.get_session(year, 'Baku', 'R')
+        session = fastf1.get_session(year, i + 1, 'R')
         session.load(messages=False)
         sessions_names.append(session.event['Location'].split('-')[0])
         race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == i+1)]['FuelFactor']
@@ -708,9 +709,12 @@ def race_diff_v2(year, save=False):
             total_laps = (total_laps.groupby('Team')['FuelCorrected'].min().reset_index()
                           .sort_values(by='FuelCorrected', ascending=True)).reset_index(drop=True)
             fastest_pace = total_laps['FuelCorrected'].loc[0]
-            for t in total_laps['Team']:
-                team_pace = total_laps[total_laps['Team'] == t]['FuelCorrected'].loc[0]
-                delta_diff = ((team_pace - fastest_pace) / fastest_pace) * 100
+            for t in session.laps['Team'].unique():
+                try:
+                    team_pace = total_laps[total_laps['Team'] == t]['FuelCorrected'].loc[0]
+                    delta_diff = ((team_pace - fastest_pace) / fastest_pace) * 100
+                except IndexError:
+                    delta_diff = np.NaN
                 if t not in delta_by_race:
                     delta_by_race[t] = [delta_diff]
                 else:
@@ -739,9 +743,7 @@ def race_diff_v2(year, save=False):
     fig, ax1 = plt.subplots(figsize=(12, 8))
     plt.rcParams["font.family"] = "Fira Sans"
     for team, deltas in delta_by_race.items():
-        deltas_array = np.array(deltas)
-        not_nan_indices = ~np.isnan(deltas_array)
-        plt.plot(np.array(session_names)[not_nan_indices], deltas_array[not_nan_indices],
+        plt.plot(session_names, deltas,
                  label=team, marker='o', color=team_colors_2023.get(team), markersize=7, linewidth=3)
     plt.gca().invert_yaxis()
     plt.legend(loc='lower right', fontsize='medium')
