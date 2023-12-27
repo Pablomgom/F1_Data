@@ -149,7 +149,7 @@ def qualy_results(session):
             color = plotting.team_color(lap['Team'])
         team_colors.append(color)
 
-    fig, ax = plt.subplots(figsize=(8,8))
+    fig, ax = plt.subplots(figsize=(8, 8))
     ax.barh(fastest_laps.index, fastest_laps['LapTimeDelta'],
             color=team_colors, edgecolor='grey')
 
@@ -162,7 +162,7 @@ def qualy_results(session):
     lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
 
     plt.title(f"{session.event['EventName']} {session.event.year} Qualifying\n"
-                 f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})", font='Fira Sans', fontsize=20)
+              f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})", font='Fira Sans', fontsize=20)
 
     plt.xlabel("Diff in seconds (s)", font='Fira Sans', fontsize=17)
     plt.ylabel("Driver", font='Fira Sans', fontsize=17)
@@ -242,12 +242,9 @@ def qualy_diff(year):
         plt.plot(session_names, deltas, label=team, marker='o',
                  color=team_colors_2023.get(team), markersize=7, linewidth=3)
 
-        # Find the indices right before and after the NaNs to plot dashed lines
         for i, delta in enumerate(deltas):
             if np.isnan(delta):
-                # Find the previous non-NaN index
                 prev_index = max([j for j in range(i - 1, -1, -1) if not np.isnan(deltas[j])], default=None)
-                # Find the next non-NaN index
                 next_index = min([j for j in range(i + 1, len(deltas)) if not np.isnan(deltas[j])], default=None)
 
                 # If both indices are found, plot a dashed line between them
@@ -318,90 +315,7 @@ def qualy_margin(circuit, start=None, end=None):
         print(f'{key}: {value}s {drivers}')
 
 
-def qualy_diff_teammates(team, rounds):
-    """
-         Prints the qualy diff between teammates
-
-         Parameters:
-         team (str): Team
-         rounds (int): Rounds to be analyzed
-
-    """
-    from src.utils.utils import call_function_from_module
-    circuits = []
-    legend = []
-    color = []
-    differences = []
-
-    for i in range(rounds):
-
-        qualy = fastf1.get_session(2023, i + 1, 'Q')
-        qualy.load()
-        circuits.append(qualy.event.Location.split('-')[0])
-        drivers = list(np.unique(qualy.laps.pick_team(team)['Driver'].values))
-        q1, q2, q3 = qualy.laps.split_qualifying_sessions()
-        if drivers[0] in q3['Driver'].unique() and drivers[1] in q3['Driver'].unique():
-            session = q3
-        elif drivers[0] in q2['Driver'].unique() and drivers[1] in q2['Driver'].unique():
-            session = q2
-        else:
-            session = q1
-        try:
-            d0_time = session.pick_driver(drivers[0]).pick_fastest()['LapTime'].total_seconds()
-            d1_time = session.pick_driver(drivers[1]).pick_fastest()['LapTime'].total_seconds()
-
-            if d0_time > d1_time:
-                legend.append(f'{drivers[1]} faster')
-                color.append('#0000FF')
-            else:
-                legend.append(f'{drivers[0]} faster')
-                color.append('#FFA500')
-
-            delta_diff = ((d0_time - d1_time) / d1_time) * 100
-            differences.append(round(-delta_diff, 2))
-        except AttributeError:
-            print('No hay vuelta disponible')
-            differences.append(np.nan)
-            color.append('#0000FF')
-
-    print(f'MEAN: {statistics.mean([i for i in differences if not np.isnan(i)])}')
-    print(f'MEDIAN: {statistics.median([i for i in differences if not np.isnan(i)])}')
-
-    fig, ax1 = plt.subplots(figsize=(7.2, 6.5), dpi=150)
-    bars = plt.bar(circuits, differences, color=color)
-
-    round_bars(bars, ax1, color)
-    annotate_bars(bars, ax1, 0.01, 8, text_annotate='{height}%', ceil_values=False)
-
-    legend_lines = []
-    unique_colors = []
-    unique_drivers = []
-    i = 0
-    for c_color in color:
-        if c_color not in unique_colors:
-            unique_colors.append(c_color)
-            unique_drivers.append(legend[i])
-            legend_p = Line2D([0], [0], color=c_color, lw=4)
-            legend_lines.append(legend_p)
-        i += 1
-
-    plt.legend(legend_lines, unique_drivers,
-               loc='lower left', fontsize='large')
-
-    plt.axhline(0, color='white', linewidth=0.8)
-    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'QUALY DIFFERENCE COMPARISON BETWEEN {team.upper()} TEAMMATES', font='Fira Sans', fontsize=2)
-    plt.xticks(ticks=range(len(circuits)), labels=circuits,
-               rotation=90, fontsize=12, fontname='Fira Sans')
-    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
-    plt.ylabel('Time diff (percentage)', font='Fira Sans', fontsize=16)
-    plt.tight_layout()
-    plt.savefig(f'../PNGs/PACE DIFF BETWEEN {team} TEAMMATES.png', dpi=500)
-    plt.show()
-
-
 def percentage_qualy_ahead(start=2001, end=2024):
-
     ergast = My_Ergast()
     circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
@@ -436,3 +350,79 @@ def percentage_qualy_ahead(start=2001, end=2024):
     final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
     for d, w in final_dict.items():
         print(f'{d}: {w}% {h2h_dict[d]}')
+
+
+
+def qualy_diff_teammates(start, end, d1):
+
+    qualys = My_Ergast().get_qualy_results([i for i in range(start, end)]).content
+    delta_per_year = {}
+    sessions = ['q2']
+    total_laps_d1 = []
+    total_laps_d2 = []
+    for q in qualys:
+        match_found = False
+        year = q['year'].loc[0]
+        team_data = q[q['fullName'] == d1]
+        if len(team_data) == 1:
+            team = team_data['constructorName'].loc[0]
+            d2 = q[q['constructorName'] == team]
+            d2 = d2[d2['fullName'] != d1]['fullName'].loc[0]
+            full_data = q[q['fullName'].isin([d1, d2])]
+            if year in [2003, 2004, 2005]:
+                d1_time = min(full_data[full_data['fullName'] == d1]['q1'].loc[0],
+                              full_data[full_data['fullName'] == d1]['q2'].loc[0]).total_seconds()
+                d2_time = min(full_data[full_data['fullName'] == d2]['q1'].loc[0],
+                              full_data[full_data['fullName'] == d2]['q2'].loc[0]).total_seconds()
+                diff = round(d1_time - d2_time, 3)
+                if abs(diff) < 5:
+                    if d1_time > d2_time:
+                        print(f'{full_data[full_data["fullName"] == d2]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
+                              f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")}')
+                    else:
+                        print(f'{full_data[full_data["fullName"] == d1]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
+                              f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")}')
+                    total_laps_d1.append(d1_time)
+                    total_laps_d2.append(d2_time)
+                    if year not in delta_per_year:
+                        delta_per_year[year] = [diff]
+                    else:
+                        delta_per_year[year].append(diff)
+            else:
+                for s in sessions:
+                    if match_found:
+                        break
+                    s_data = full_data[~np.isnan(full_data[s])]
+                    if len(s_data) == 2:
+                        d1_time = s_data[s_data['fullName'] == d1][s].loc[0].total_seconds()
+                        d2_time = s_data[s_data['fullName'] == d2][s].loc[0].total_seconds()
+                        diff = round(d1_time - d2_time, 3)
+                        if abs(diff) < 5:
+                            if d1_time > d2_time:
+                                print(f'{s_data[s_data["fullName"] == d2]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
+                                      f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")} in {s.upper()}')
+                            else:
+                                print(f'{s_data[s_data["fullName"] == d1]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
+                                      f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")} in {s.upper()}')
+                            total_laps_d1.append(d1_time)
+                            total_laps_d2.append(d2_time)
+                            match_found = True
+                            if year not in delta_per_year:
+                                delta_per_year[year] = [diff]
+                            else:
+                                delta_per_year[year].append(diff)
+                        else:
+                            print(f'{year} {q["raceName"].loc[0]} NO DATA')
+
+    for y, d in delta_per_year.items():
+        print(f'{y} - MEAN: {statistics.mean(d):.3f}s MEDIAN: {statistics.median(d):.3f}s')
+
+    total_difference = []
+    for l1, l2 in zip(total_laps_d1, total_laps_d2):
+        delta_diff = (l1 - l2) / ((l1 + l2) / 2) * 100
+        total_difference.append(delta_diff)
+
+    median = statistics.median(total_difference)
+    mean = statistics.mean(total_difference)
+    print(f'MEDIAN DIFF {d1 if median < 0 else "TEAMMATE"} FASTER: {median:.3f}%')
+    print(f'MEAN DIFF {d1 if mean < 0 else "TEAMMATE"} FASTER: {mean:.3f}%')

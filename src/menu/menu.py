@@ -98,6 +98,10 @@ def get_funcs():
         'percentage_race_ahead': percentage_race_ahead,
         'get_fastest_sectors': get_fastest_sectors,
         'mapped_grid_final_pos': mapped_grid_final_pos,
+        'difference_q1': difference_q1,
+        'difference_second_team': difference_second_team,
+        'difference_P2': difference_P2,
+        'delta_reference_team': delta_reference_team,
         'help': help
     }
 
