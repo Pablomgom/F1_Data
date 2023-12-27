@@ -28,9 +28,6 @@ previous_input = ""
 
 if __name__ == '__main__':
 
-    # a = My_Ergast().get_qualy_results([1998])
-    # # My_Ergast().insert_qualy_data(1997, 17)
-    # Database().auto_incremental_id_my_ergast()
 
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")

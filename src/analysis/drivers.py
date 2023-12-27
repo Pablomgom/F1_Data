@@ -397,7 +397,7 @@ def compare_drivers_season(d_1, d_2, season, DNFs=False):
 
     for qualy in qualys.content:
         best_pos = qualy[qualy['familyName'].isin([d_1, d_2])]['position'].min()
-        if len(best_pos) == 2:
+        if len(qualy[qualy['familyName'].isin([d_1, d_2])]) == 2:
             driver = qualy[qualy['position'] == best_pos]['driverCode'].min()
             qualy_result.append(driver)
 

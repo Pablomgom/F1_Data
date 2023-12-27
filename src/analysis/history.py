@@ -1,4 +1,5 @@
 import re
+import statistics
 from collections import Counter
 
 import fastf1
@@ -472,7 +473,6 @@ def laps_led(start, end):
 
 
 def points_percentage_diff():
-
     data_dict = {}
     ergast = Ergast()
     for year in range(1950, 2024):
@@ -485,7 +485,8 @@ def points_percentage_diff():
         sub_champion_name = f'{wdc.loc[1, "givenName"]} {wdc.loc[1, "familyName"]}'
         champion_points = wdc.loc[0, "points"]
         sub_champion_points = wdc.loc[1, "points"]
-        data_dict[f'{year}: {champion_name} ({champion_points}) to {sub_champion_name} ({sub_champion_points})'] = points_diff
+        data_dict[
+            f'{year}: {champion_name} ({champion_points}) to {sub_champion_name} ({sub_champion_points})'] = points_diff
         print(year)
 
     data_dict = dict(sorted(data_dict.items(), key=lambda item: item[1], reverse=False))
@@ -495,8 +496,6 @@ def points_percentage_diff():
 
 
 def victories_per_driver_team(start=2014, end=2024):
-
-
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)])
     df = pd.DataFrame(columns=['Driver', 'Team'])
@@ -514,14 +513,13 @@ def victories_per_driver_team(start=2014, end=2024):
     df = df.sort_values(by='Count Teams', ascending=True)
     df = df.drop(['Count Teams', 'Count Driver'], axis=1)
     sankey.sankey(df['Driver'], df['Team'], aspect=1000, fontsize=10.5)
-    plt.title(f'WINS PER TEAM ({start}-{end-1})', font='Fira Sans', fontsize=18, color='white')
+    plt.title(f'WINS PER TEAM ({start}-{end - 1})', font='Fira Sans', fontsize=18, color='white')
     plt.tight_layout()
     plt.savefig(f'../PNGs/WINNERS-TEAM IN PERIOD.png', dpi=450)
     plt.show()
 
 
 def mapped_grid_final_pos(driver, start=1950, end=2024):
-
     races = My_Ergast().get_race_results([i for i in range(start, end)]).content
     df = pd.DataFrame(columns=['GRID', 'RESULT'])
     for r in races:
@@ -554,4 +552,71 @@ def mapped_grid_final_pos(driver, start=1950, end=2024):
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver} MAPPED POSITIONS.png', dpi=450)
     plt.show()
+
+
+def difference_q1():
+    ergast = My_Ergast()
+    qualys = ergast.get_qualy_results([i for i in range(2014, 2024)]).content
+    delta_diff = {}
+    for q in qualys:
+        q = q[~pd.isna(q['q1'])]
+        year = q["year"].loc[0]
+        min_time = min(q['q1'])
+        max_time = max(q['q1'])
+        delta = (max_time - min_time) / min_time
+        if year not in delta_diff:
+            delta_diff[year] = [delta]
+        else:
+            delta_diff[year].append(delta)
+    for y, d in delta_diff.items():
+        print(f'{y}: '
+              f'MEDIAN: {round(statistics.median(d), 3)}'
+              f' MEAN: {round(statistics.mean(d), 3)}')
+
+
+def difference_second_team():
+    ergast = My_Ergast()
+    qualys = ergast.get_qualy_results([i for i in range(2014, 2024)]).content
+    delta_diff = {}
+    for q in qualys:
+        col = 'q3'
+        year = q["year"].loc[0]
+        if q["year"].loc[0] == 2015 and q["round"].loc[0] == 16:
+            col = 'q2'
+        fastest_team = q['constructorName'].loc[0]
+        fastest_lap = q[col].loc[0]
+        q = q[q['constructorName'] != fastest_team]
+        second_fast_lap = q[col].loc[0]
+        delta = ((second_fast_lap - fastest_lap) / fastest_lap) * 100
+        if year not in delta_diff:
+            delta_diff[year] = [delta]
+        else:
+            delta_diff[year].append(delta)
+    for y, d in delta_diff.items():
+        print(f'{y}: '
+              f'MEDIAN: {round(statistics.median(d), 3)}%'
+              f' MEAN: {round(statistics.mean(d), 3)}%')
+
+
+def difference_P2():
+    ergast = My_Ergast()
+    qualys = ergast.get_qualy_results([i for i in range(2014, 2024)]).content
+    delta_diff = {}
+    for q in qualys:
+        col = 'q3'
+        race_name = q["raceName"].loc[0]
+        year = q["year"].loc[0]
+        if q["year"].loc[0] == 2015 and q["round"].loc[0] == 16:
+            col = 'q2'
+        driver = q['fullName'].loc[0]
+        fastest_lap = q[col].loc[0]
+        driver_p2 = q[q['position'] == 2]['fullName'].loc[0]
+        second_fast_lap = q[q['position'] == 2][col].loc[0]
+        delta = (second_fast_lap - fastest_lap).total_seconds()
+        full_race_name = f'{year} {race_name}'
+        delta_diff[full_race_name] = f'{delta} from {driver} to {driver_p2}'
+
+    delta_diff = dict(sorted(delta_diff.items(), key=lambda item: item[1], reverse=True))
+    for r, d, in delta_diff.items():
+        print(f'{r}: {d}')
 

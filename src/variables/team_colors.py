@@ -35,6 +35,7 @@ team_colors_2023 = {
     'Alpine F1 Team': '#FF69B4',
     'Aston Martin': '#006f62',
     'Alfa Romeo': '#900000',
+    'Alfa Romeo Racing': '#900000',
     'AlphaTauri': '#2b4562',
     'Haas': '#ffffff',
     'Haas F1 Team': '#ffffff',

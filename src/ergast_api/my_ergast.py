@@ -1,9 +1,11 @@
 from datetime import timedelta
 
+import nltk
 import pandas as pd
 
 from src.ergast_api.ergast_struct import ergast_struct
 from src.exceptions.pit_stops_exceptions import filter_pit_stops
+from src.utils.utils import get_country_names
 
 
 def string_to_timedelta(time_str):
@@ -147,13 +149,35 @@ class My_Ergast:
         qualy_results = ergast_struct(qualy_list)
         return qualy_results
 
-    def insert_qualy_data(self, year, round):
+    def insert_qualy_data(self, year, round, data):
 
         self.qualifying = load_csv('qualifying', False)
-
-
         raceId = self.races[(self.races['year'] == year) & (self.races['round'] == round)]['raceId'].values[0]
-        data_to_append = load_csv('take_data', False)
+        nltk.download('maxent_ne_chunker')
+        nltk.download('words')
+        nltk.download('punkt')
+        nltk.download('averaged_perceptron_tagger')
+        data_lines = data.strip().split("\n")
+        processed_data = []
+        for line in data_lines:
+            columns = line.split("\t")
+            country = f'{get_country_names(columns[2])}'
+            full_name = columns[2].replace(country, '')
+            full_name = full_name.replace('United States ', '')
+            constructor_name = columns[3].split("-")[0]
+            for i in range(4, len(columns)):
+                if columns[i] in ['None', '—']:
+                    columns[i] = ''
+            if full_name == 'JJ Lehto':
+                full_name = 'Jyrki Järvilehto'
+            if constructor_name == 'Venturi':
+                constructor_name = 'Lambo'
+            processed_line = [columns[0], columns[1], full_name, constructor_name, columns[4], columns[5]]
+            processed_data.append(processed_line)
+
+        data_to_append = pd.DataFrame(processed_data, columns=["position", "number", "fullName",
+                                                               "constructorName", "q1", "q2"])
+
         og_len = len(data_to_append)
         qualyId = self.qualifying['qualifyId'].max() + 1
         self.drivers['fullName'] = self.drivers['givenName'] + ' ' + self.drivers['familyName']
@@ -169,8 +193,9 @@ class My_Ergast:
             else:
                 data_to_append[q] = None
         print(data_to_append.groupby('constructorName').size())
+        data_to_append['Valid'] = True
         data_to_append = data_to_append[['qualifyId', 'raceId', 'driverId', 'constructorId',
-                                         'number', 'position', 'q1', 'q2', 'q3']]
+                                         'number', 'position', 'q1', 'q2', 'q3', 'Valid']]
         new_len = len(data_to_append)
         combined_data = pd.concat([self.qualifying, data_to_append], ignore_index=True)
         if og_len != new_len:

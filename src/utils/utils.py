@@ -3,6 +3,9 @@ import inspect
 import fastf1
 import numpy as np
 import matplotlib.colors as mcolors
+import nltk
+from nltk import ne_chunk, pos_tag, word_tokenize
+from nltk.tree import Tree
 
 name_count = {}
 
@@ -15,6 +18,7 @@ def is_session_first_arg(func):
     signature = inspect.signature(func)
     parameters = list(signature.parameters)
     return parameters[0] == 'session' if parameters else False
+
 
 def find_similar_func(name, functions):
     func_list = list(functions.keys())
@@ -157,11 +161,27 @@ def get_quartiles(data):
     return q1, median, q3, avg
 
 
+def split_at_discontinuities(arr, threshold=1):
+    result = []
+    current_segment = [arr[0]]
+
+    for i in range(1, len(arr)):
+        if arr[i] - arr[i - 1] > threshold:
+            result.append(current_segment)
+            current_segment = [arr[i]]
+        else:
+            current_segment.append(arr[i])
+
+    result.append(current_segment)
+    return result
+
+
 def delta_time(reference_lap, compare_lap):
     # ref = reference_lap.get_car_data(interpolate_edges=True).add_distance()
     # comp = compare_lap.get_car_data(interpolate_edges=True).add_distance()
     ref = reference_lap.telemetry
     comp = compare_lap.telemetry
+
     def mini_pro(stream):
         # Ensure that all samples are interpolated
         dstream_start = stream[1] - stream[0]
@@ -178,7 +198,6 @@ def delta_time(reference_lap, compare_lap):
 
 
 def darken_color(color, amount=0.5):
-
     try:
         c = mcolors.cnames[color]
     except:
@@ -190,7 +209,7 @@ def darken_color(color, amount=0.5):
 
 def find_nearest_non_repeating(array1, array2):
     used_indices = set()  # To keep track of used indices from array2
-    nearest_values = []   # To store the nearest values for each element in array1
+    nearest_values = []  # To store the nearest values for each element in array1
 
     for value in array1:
         nearest = None
@@ -222,3 +241,14 @@ def remove_close_rows(df):
     # Drop the rows
     df = df.drop(index=drop_indices)
     return df
+
+
+def get_country_names(text):
+    chunked = ne_chunk(pos_tag(word_tokenize(text)))
+    country = ''
+    for i in range(len(chunked[0])):
+        country += f'{chunked[0][i][0]} '
+    # return [leaf[0] for leaf in chunked if isinstance(leaf, Tree) and leaf.label() in ['GPE', 'GSP']]
+    if country == 'United ':
+        country = 'United Kingdom '
+    return country

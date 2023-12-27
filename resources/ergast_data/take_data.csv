@@ -1,23 +1,21 @@
 position,number,fullName,constructorName,q1,Delta
-1,3,Jacques Villeneuve,Williams,1:21.072,—
-2,5,Michael Schumacher,Ferrari,1:21.072,+0.000
-3,4,Heinz-Harald Frentzen,Williams,1:21.072,+0.000
-4,1,Damon Hill,Arrows,1:21.130,+0.058
-5,9,Mika Häkkinen,McLaren,1:21.369,+0.297
-6,10,David Coulthard,McLaren,1:21.476,+0.404
-7,6,Eddie Irvine,Ferrari,1:21.610,+0.538
-8,8,Gerhard Berger,Benetton,1:21.656,+0.584
-9,14,Olivier Panis,Prost,1:21.735,+0.663
-10,7,Jean Alesi,Benetton,1:22.011,+0.939
-11,23,Jan Magnussen,Stewart,1:22.167,+1.095
-12,22,Rubens Barrichello,Stewart,1:22.222,+1.150
-13,2,Pedro Diniz,Arrows,1:22.234,+1.162
-14,16,Johnny Herbert,Sauber,1:22.263,+1.191
-15,15,Shinji Nakano,Prost,1:22.351,+1.279
-16,11,Ralf Schumacher,Jordan,1:22.740,+1.668
-17,12,Giancarlo Fisichella,Jordan,1:22.804,+1.732
-18,17,Norberto Fontana,Sauber,1:23.281,+2.209
-19,20,Ukyo Katayama,Minardi,1:23.409,+2.337
-20,21,Tarso Marques,Minardi,1:23.854,+2.782
-21,19,Mika Salo,Tyrrell,1:24.222,+3.150
-22,18,Jos Verstappen,Tyrrell,1:24.301,+3.229
+1	6	Canada Jacques Villeneuve	Williams-Renault	1:38.909
+2	5	United Kingdom Damon Hill	Williams-Renault	1:39.370	+0.461
+3	1	Germany Michael Schumacher	Ferrari	1:40.071	+1.162
+4	4	Austria Gerhard Berger	Benetton-Renault	1:40.364	+1.455
+5	7	Finland Mika Häkkinen	McLaren-Mercedes	1:40.458	+1.549
+6	2	United Kingdom Eddie Irvine	Ferrari	1:41.005	+2.096
+7	15	Germany Heinz-Harald Frentzen	Sauber-Ford	1:41.277	+2.368
+8	8	United Kingdom David Coulthard	McLaren-Mercedes	1:41.384	+2.475
+9	3	France Jean Alesi	Benetton-Renault	1:41.562	+2.653
+10	12	United Kingdom Martin Brundle	Jordan-Peugeot	1:41.600	+2.691
+11	11	Brazil Rubens Barrichello	Jordan-Peugeot	1:41.919	+3.010
+12	9	France Olivier Panis	Ligier-Mugen-Honda	1:42.206	+3.297
+13	14	United Kingdom Johnny Herbert	Sauber-Ford	1:42.658	+3.749
+14	18	Japan Ukyo Katayama	Tyrrell-Yamaha	1:42.711	+3.802
+15	19	Finland Mika Salo	Tyrrell-Yamaha	1:42.840	+3.931
+16	10	Brazil Pedro Diniz	Ligier-Mugen-Honda	1:43.196	+4.287
+17	17	Netherlands Jos Verstappen	Footwork-Hart	1:43.383	+4.474
+18	20	Portugal Pedro Lamy	Minardi-Ford	1:44.874	+5.965
+19	16	Brazil Ricardo Rosset	Footwork-Hart	1:45.412	+6.503
+20	21	Italy Giovanni Lavaggi	Minardi-Ford	1:46.795	+7.886
