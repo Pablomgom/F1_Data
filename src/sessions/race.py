@@ -802,65 +802,81 @@ def percentage_race_ahead(start=2001, end=2024):
         print(f'{d}: {w}% {h2h_dict[d]}')
 
 
-def delta_reference_team(session, save=False):
-
+def delta_reference_team(year, save=False):
     tyres = ['SOFT', 'MEDIUM', 'HARD']
     fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
-    delta_by_race = {}
-    year = session.event['EventDate'].year
-    round = session.event.RoundNumber
-    teams = session.laps['Team'].unique()
-    teams = [t for t in teams if not pd.isna(t)]
-    race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == round)]['FuelFactor']
-    total_laps = pd.DataFrame(columns=['Team', 'LapTime', 'LapNumber', 'TyreLife', 'Driver'])
-    if not pd.isna(race_fuel_factor.loc[0]):
-        race_fuel_factor = race_fuel_factor.loc[0]
-    else:
-        race_fuel_factor = fuel_factors['FuelFactor'].median()
-    for t1 in teams:
-        for t2 in teams:
-            if t1 != t2:
-                for tyre in tyres:
-                    laps = session.laps.pick_teams([t1, t2]).pick_quicklaps().pick_wo_box()
-                    laps_per_tyre = laps[laps['Compound'] == tyre][['Team', 'LapTime', 'LapNumber', 'TyreLife', 'Driver']]
-                    common_laps = laps_per_tyre.groupby('Team')['TyreLife'].apply(set)
-                    if len(common_laps) > 0:
-                        common_tyre_life = set.intersection(*common_laps)
-                        laps_per_tyre = laps_per_tyre[laps_per_tyre['TyreLife'].isin(common_tyre_life)]
-                        total_laps = pd.concat([laps_per_tyre, total_laps], ignore_index=True)
+    final_delta = {}
+    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    sessions_names = []
+    for i in range(len(schedule)):
+        delta_by_race = {}
+        session = fastf1.get_session(year, i + 1, 'R')
+        session.load(messages=False)
+        sessions_names.append(session.event['Location'].split('-')[0])
+        teams = session.laps['Team'].unique()
+        teams = [t for t in teams if not pd.isna(t)]
+        race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == i + 1)]['FuelFactor']
+        total_laps = pd.DataFrame(columns=['Team', 'LapTime', 'LapNumber', 'TyreLife', 'Driver', 'Compound'])
+        if not pd.isna(race_fuel_factor.loc[0]):
+            race_fuel_factor = race_fuel_factor.loc[0]
+        else:
+            race_fuel_factor = fuel_factors['FuelFactor'].median()
+        for t1 in teams:
+            for t2 in teams:
+                if t1 != t2:
+                    for tyre in tyres:
+                        laps = session.laps.pick_teams([t1, t2]).pick_quicklaps().pick_wo_box()
+                        laps_per_tyre = laps[laps['Compound'] == tyre][
+                            ['Team', 'LapTime', 'LapNumber', 'TyreLife', 'Driver', 'Compound']]
+                        common_laps = laps_per_tyre.groupby('Team')['TyreLife'].apply(set)
+                        if len(common_laps) > 0:
+                            common_tyre_life = set.intersection(*common_laps)
+                            laps_per_tyre = laps_per_tyre[laps_per_tyre['TyreLife'].isin(common_tyre_life)]
+                            total_laps = pd.concat([laps_per_tyre, total_laps], ignore_index=True)
 
-                total_laps['LapTime'] = total_laps['LapTime'].dt.total_seconds()
-                total_laps['FuelCorrected'] = total_laps['LapTime'] - race_fuel_factor * (
-                        session.total_laps - total_laps['LapNumber'])
-                total_laps['FuelCorrected'] = pd.to_timedelta(total_laps['FuelCorrected'], unit='s')
-                total_laps = total_laps.groupby(['Team', 'Driver'])['FuelCorrected'].mean().reset_index()
-                total_laps = (total_laps.groupby('Team')['FuelCorrected'].min().reset_index()
-                              .sort_values(by='FuelCorrected', ascending=True)).reset_index(drop=True)
-                fastest_pace = total_laps[total_laps['Team'] != t1]['FuelCorrected'].loc[0]
-                try:
-                    team_pace = total_laps[total_laps['Team'] == t1]['FuelCorrected'].loc[0]
-                    delta_diff = ((team_pace - fastest_pace) / fastest_pace) * 100
-                except IndexError:
-                    delta_diff = np.NaN
-                if t1 not in delta_by_race:
-                    delta_by_race[t1] = [delta_diff]
-                else:
-                    delta_by_race[t1].append(delta_diff)
+        total_laps = total_laps.drop_duplicates()
+        max_tyre_age = pd.Series(total_laps.groupby('TyreLife').size())
+        cut_value = np.mean(max_tyre_age)
+        cut_value = max(max_tyre_age[max_tyre_age >= cut_value].index.values)
+        total_laps = total_laps[total_laps['TyreLife'] <= cut_value]
+        total_laps['LapTime'] = total_laps['LapTime'].dt.total_seconds()
+        total_laps['FuelCorrected'] = total_laps['LapTime'] - race_fuel_factor * (
+                session.total_laps - total_laps['LapNumber'])
+        total_laps['FuelCorrected'] = pd.to_timedelta(total_laps['FuelCorrected'], unit='s')
+        total_laps = total_laps.groupby(['Team', 'Driver'])['FuelCorrected'].median().reset_index()
+        teams_data = (total_laps.groupby('Team')['FuelCorrected'].min().reset_index()
+                      .sort_values(by='FuelCorrected', ascending=True)).reset_index(drop=True)
+        for t in teams:
+            try:
+                fastest_pace = teams_data['FuelCorrected'].loc[0]
+                team_pace = teams_data[teams_data['Team'] == t]['FuelCorrected'].loc[0]
+                delta_diff = ((team_pace - fastest_pace) / fastest_pace) * 100
+            except IndexError:
+                delta_diff = np.NaN
 
-    for t, d, in delta_by_race.items():
-        print(f'{t}: {statistics.mean(d)}')
+            delta_by_race[t] = delta_diff
+        delta_by_race = dict(sorted(delta_by_race.items(), key=lambda x: x[1]))
+        fastest_time = teams_data['FuelCorrected'].min()
+        teams_data['Diff_in_seconds'] = teams_data['FuelCorrected'] - fastest_time
+        teams_data['Diff_in_seconds'] = teams_data['Diff_in_seconds'].dt.total_seconds()
+        fastest_time_seconds = fastest_time.total_seconds()
+        teams_data['Percentage_diff'] = (teams_data['Diff_in_seconds'] / fastest_time_seconds) * 100
+        for t, d, in delta_by_race.items():
+            if t not in final_delta:
+                final_delta[t] = [d]
+            else:
+                final_delta[t].append(d)
 
-    lowest_value = min(delta_by_race.values())
-    adjusted_values = {team: value + abs(lowest_value) for team, value in delta_by_race.items()}
-    print(adjusted_values)
+        print(teams_data)
 
+
+    sessions_names = append_duplicate_number(sessions_names)
 
     if save:
-        df_save = pd.DataFrame(delta_by_race)
+        df_save = pd.DataFrame(final_delta)
         df_save['Year'] = year
-        df_save['Track'] = np.NaN
+        df_save['Track'] = sessions_names
         df_save['Session'] = df_save.index + 1
         df_save = df_save.melt(id_vars=['Year', 'Session', 'Track'], var_name='Team', value_name='Delta')
         df_save = df_save[['Team', 'Delta', 'Year', 'Session', 'Track']]
-        df_save.to_csv('../resources/csv/Intermediate_race_pace_delta.csv', index=False)
-
+        df_save.to_csv('../resources/csv/Race_pace_delta.csv', index=False)

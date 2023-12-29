@@ -30,7 +30,6 @@ def string_to_timedelta(time_str):
 
 
 def load_csv(csv, is_qualy=True):
-
     data = pd.read_csv(f'../resources/ergast_data/{csv}.csv', sep=',')
     if is_qualy:
         for col in data.columns:
@@ -75,6 +74,7 @@ qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', '
                         'location', 'country', 'circuitRef']
 
 pit_stop_schema = ['year', 'round', 'raceName', 'fullName', 'stop', 'lap', 'pitTime', 'duration']
+
 
 class My_Ergast:
 
@@ -229,7 +229,6 @@ class My_Ergast:
             {qualyId},{raceId},{driverId},{constructorId},{number},{grid},/N,/N,/N
         """)
 
-
     def get_pit_stops(self, year, race_id=None):
         pitstops = self.pit_stops
         pitstops = pd.merge(pitstops, self.drivers, on='driverId', how='inner')
@@ -243,4 +242,3 @@ class My_Ergast:
         pitstops_list = ergast_struct(pitstops_list)
         pitstops_list = filter_pit_stops(pitstops_list)
         return pitstops_list
-

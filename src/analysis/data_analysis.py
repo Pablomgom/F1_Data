@@ -201,6 +201,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         raise Exception('No data for that year/track combination')
     next_race_data = {
         'Year': year,
+        'ID': predict_data['ID'].max() + 1,
         'Corner Density': prev_year_data['Corner Density'].loc[0],
         'Top Speed': prev_year_data['Top Speed'].loc[0],
         'Full Gas': prev_year_data['Full Gas'].loc[0],
@@ -209,8 +210,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         'Median Corner Speed': prev_year_data['Median Corner Speed'].loc[0],
         'Q3 Corner Speed': prev_year_data['Q3 Corner Speed'].loc[0],
         'Average Corner Speed': prev_year_data['Average Corner Speed'].loc[0],
-        'Corner Speed Variance': prev_year_data['Corner Speed Variance'].loc[0],
-        'ID': predict_data['ID'].max() + 1
+        'Corner Speed Variance': prev_year_data['Corner Speed Variance'].loc[0]
     }
 
     next_race_df = pd.DataFrame([next_race_data])

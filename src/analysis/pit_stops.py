@@ -25,7 +25,7 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         points(bool, optional): Plot DHL system points. Default: False
 
    """
-    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
+    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv')
     pitstops = pitstops[pitstops['Year'] == year]
     colors = []
     if round is None:
@@ -176,7 +176,7 @@ def fastest_pit_stop_by_team(year):
 
 def pitstops_per_year(year):
 
-    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
+    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv')
     pitstops = pitstops[pitstops['Year'] == year].sort_values(by='Race_ID')
     pitstops_year = pitstops.groupby(['Race_Name', 'Race_ID']).size().reset_index().sort_values(by='Race_ID')
     pitstops_year.columns = ['Race', 'Id', 'Count']

@@ -7,7 +7,7 @@ from fastf1.core import Laps
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 from fastf1 import utils, plotting
-from matplotlib.lines import Line2D
+from pyod.models.knn import KNN
 from matplotlib.ticker import FuncFormatter
 from timple.timedelta import strftimedelta
 import matplotlib.patches as mpatches
@@ -17,6 +17,7 @@ from src.exceptions.custom_exceptions import QualyException
 from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
 from src.utils.utils import append_duplicate_number
 from src.variables.team_colors import team_colors_2023
+from scipy import stats
 
 
 def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
@@ -222,6 +223,7 @@ def qualy_diff(year):
                     qualy_delta_diffs[t] = fastest_laps[fastest_laps['Team'] == t]['DeltaPercent'].loc[0]
 
             for t, v in qualy_delta_diffs.items():
+                print(f'{t}: {v}')
                 if t not in delta_diff:
                     delta_diff[t] = [v]
                 else:
@@ -357,7 +359,8 @@ def qualy_diff_teammates(start, end, d1):
 
     qualys = My_Ergast().get_qualy_results([i for i in range(start, end)]).content
     delta_per_year = {}
-    sessions = ['q2']
+    teammates_per_year = {}
+    sessions = ['q3', 'q2', 'q1']
     total_laps_d1 = []
     total_laps_d2 = []
     for q in qualys:
@@ -368,8 +371,12 @@ def qualy_diff_teammates(start, end, d1):
             team = team_data['constructorName'].loc[0]
             d2 = q[q['constructorName'] == team]
             d2 = d2[d2['fullName'] != d1]['fullName'].loc[0]
+            if year not in teammates_per_year:
+                teammates_per_year[year] = [d2]
+            else:
+                teammates_per_year[year].append(d2)
             full_data = q[q['fullName'].isin([d1, d2])]
-            if year in [2003, 2004, 2005]:
+            if year in [1991, 1992, 1993, 1994, 1995, 2003, 2004, 2005]:
                 d1_time = min(full_data[full_data['fullName'] == d1]['q1'].loc[0],
                               full_data[full_data['fullName'] == d1]['q2'].loc[0]).total_seconds()
                 d2_time = min(full_data[full_data['fullName'] == d2]['q1'].loc[0],
@@ -415,7 +422,21 @@ def qualy_diff_teammates(start, end, d1):
                             print(f'{year} {q["raceName"].loc[0]} NO DATA')
 
     for y, d in delta_per_year.items():
-        print(f'{y} - MEAN: {statistics.mean(d):.3f}s MEDIAN: {statistics.median(d):.3f}s')
+        clf = KNN()
+        data = np.array([[i] for i in d])
+        clf.fit(data)
+        scores = clf.decision_scores_
+        threshold = np.percentile(scores, 95)
+        outlier_mask = scores >= threshold
+        new_data = data[~outlier_mask, :]
+        new_data_flat = new_data.flatten()
+        print(f'{y} - MEAN: {statistics.mean(d):.3f}s '
+              f'MEDIAN: {statistics.median(d):.3f}s ')
+              # f'TRUNCATED: {stats.trim_mean(d, 0.1):.3f}s\n'
+              # f'MEAN OUTLIERS: {statistics.mean(new_data_flat):.3f}s '
+              # f'MEDIAN OUTLIERS: {statistics.median(new_data_flat):.3f}s '
+              # f'TRUNCATED OUTLIERS: {stats.trim_mean(new_data_flat, 0.1):.3f}s '
+              # f'{set(teammates_per_year[y])}')
 
     total_difference = []
     for l1, l2 in zip(total_laps_d1, total_laps_d2):

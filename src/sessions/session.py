@@ -348,17 +348,17 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
             d2_lap = i[1]
 
     else:
-        d1_lap = session.laps.pick_driver('HAM')
-        count = 1
-        for i in d1_lap.iterlaps():
-            if count == 20:
-                d1_lap = i[1]
-            elif count == 19:
-                d2_lap = i[1]
-            count += 1
-        # # d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver('NOR').pick_quicklaps()
-        # d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
-        # d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
+        # d1_lap = session.laps.pick_driver('HAM')
+        # count = 1
+        # for i in d1_lap.iterlaps():
+        #     if count == 20:
+        #         d1_lap = i[1]
+        #     elif count == 19:
+        #         d2_lap = i[1]
+        #     count += 1
+        # # # d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver('NOR').pick_quicklaps()
+        d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
+        d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
     delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap)
 
