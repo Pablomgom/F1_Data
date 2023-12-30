@@ -29,59 +29,55 @@ previous_input = ""
 if __name__ == '__main__':
 
 
-#     data = """
-# 1	1	Brazil Ayrton Senna	McLaren-Honda	1:14.210	1:14.041	—
-# 2	2	Austria Gerhard Berger	McLaren-Honda	1:14.385	1:15.563	+0.344
-# 3	5	United Kingdom Nigel Mansell	Williams-Renault	1:14.822	1:14.897	+0.781
-# 4	6	Italy Riccardo Patrese	Williams-Renault	1:15.633	1:15.057	+1.016
-# 5	20	Brazil Nelson Piquet	Benetton-Ford	1:16.552	1:15.291	+1.250
-# 6	19	Germany Michael Schumacher	Benetton-Ford	1:15.840	1:15.508	+1.467
-# 7	28	France Jean Alesi	Ferrari	1:17.014	1:15.545	+1.504
-# 8	27	Italy Gianni Morbidelli	Ferrari	1:16.203	1:17.679	+2.162
-# 9	4	Italy Stefano Modena	Tyrrell-Honda	1:16.253	45:56.547	+2.212
-# 10	23	Italy Pierluigi Martini	Minardi-Ferrari	1:17.614	1:16.359	+2.318
-# 11	22	Finland JJ Lehto	Dallara-Judd	1:17.665	1:16.871	+2.830
-# 12	33	Italy Andrea de Cesaris	Jordan-Ford	1:17.073	1:17.050	+3.009
-# 13	21	Italy Emanuele Pirro	Dallara-Judd	1:17.342	1:18.233	+3.301
-# 14	15	Brazil Maurício Gugelmin	Leyton House-Ilmor	1:17.344	1:17.431	+3.303
-# 15	9	Italy Michele Alboreto	Footwork-Ford	1:18.214	1:17.355	+3.314
-# 16	32	Italy Alessandro Zanardi	Jordan-Ford	1:17.362	1:17.723	+3.321
-# 17	8	United Kingdom Mark Blundell	Brabham-Yamaha	1:17.867	1:17.365	+3.324
-# 18	24	Brazil Roberto Moreno	Minardi-Ferrari	1:19.752	1:17.639	+3.598
-# 19	34	Italy Nicola Larini	Lambo-Lamborghini	1:19.076	1:17.936	+3.895
-# 20	25	Belgium Thierry Boutsen	Ligier-Lamborghini	1:18.992	1:17.969	+3.958
-# 21	12	United Kingdom Johnny Herbert	Lotus-Judd	1:19.177	1:18.091	+4.050
-# 22	26	France Érik Comas	Ligier-Lamborghini	1:19.678	1:18.112	+4.071
-# 23	10	Italy Alex Caffi	Footwork-Ford	1:18.783	1:18.157	+4.116
-# 24	3	Japan Satoru Nakajima	Tyrrell-Honda	1:18.216	1:18.307	+4.175
-# 25	11	Finland Mika Häkkinen	Lotus-Judd	1:19.199	1:18.271	+4.230
-# 26	16	Austria Karl Wendlinger	Leyton House-Ilmor	1:18.282	2:12.369	+4.241
-# 27	30	Japan Aguri Suzuki	Lola-Ford	26:19.244	1:18.393	+4.352
-# 28	7	United Kingdom Martin Brundle	Brabham-Yamaha	1:18.887	1:18.855	+4.814
-# 29	35	Belgium Eric van de Poele	Lambo-Lamborghini	1:20.123	1:19.000	+4.959
-# 30	29	Belgium Bertrand Gachot	Lola-Ford	1:20.163	1:19.274	+5.233
-#
-#
-#     """
-#
-#     My_Ergast().insert_qualy_data(1991, 16, data)
+    data = """
+1	1	Brazil Nelson Piquet	Brabham-BMW	1:30.889	1:21.703	 —
+2	7	France Alain Prost	McLaren-TAG	1:28.276	1:21.774	+0.071
+3	19	Brazil Ayrton Senna	Toleman-Hart	1:30.077	1:21.936	+0.233
+4	6	Finland Keke Rosberg	Williams-Honda	1:32.269	1:22.049	+0.346
+5	11	Italy Elio de Angelis	Lotus-Renault	1:28.428	1:22.291	+0.588
+6	12	United Kingdom Nigel Mansell	Lotus-Renault	1:32.986	1:22.319	+0.616
+7	15	France Patrick Tambay	Renault	1:29.409	1:22.583	+0.880
+8	27	Italy Michele Alboreto	Ferrari	1:31.192	1:22.686	+0.983
+9	16	United Kingdom Derek Warwick	Renault	1:35.913	1:22.801	+1.098
+10	20	Sweden Stefan Johansson	Toleman-Hart	1:28.991	1:22.942	+1.239
+11	8	Austria Niki Lauda	McLaren-TAG	1:28.837	1:23.183	+1.480
+12	22	Italy Riccardo Patrese	Alfa Romeo	1:37.154	1:24.048	+2.345
+13	33	France Philippe Streiff	Renault	1:37.280	1:24.089	+2.386
+14	23	United States Eddie Cheever	Alfa Romeo	1:34.809	1:24.235	+2.532
+15	5	France Jacques Laffite	Williams-Honda	1:39.696	1:24.437	+2.734
+16	17	Switzerland Marc Surer	Arrows-BMW	1:34.003	1:24.688	+2.985
+17	28	France René Arnoux	Ferrari	1:36.634	1:24.848	+3.145
+18	18	Belgium Thierry Boutsen	Arrows-BMW	1:32.530	1:25.115	+3.412
+19	2	West Germany Manfred Winkelhock	Brabham-BMW	no time	1:25.289	+3.586
+20	26	Italy Andrea de Cesaris	Ligier-Renault	1:33.398	1:26.082	+4.379
+21	25	France François Hesnault	Ligier-Renault	1:34.233	1:26.701	+4.998
+22	24	Italy Piercarlo Ghinzani	Osella-Alfa Romeo	1:31.336	1:26.840	+5.137
+23	14	Austria Gerhard Berger	ATS-BMW	1:44.966	1:28.106	+6.403
+24	30	Austria Jo Gartner	Osella-Alfa Romeo	1:33.540	1:28.229	+6.526
+25	21	Italy Mauro Baldi	Spirit-Hart	1:36.483	1:29.001	+7.298
+26	10	United Kingdom Jonathan Palmer	RAM-Hart	1:40.344	1:29.397	+7.694
+27	9	France Philippe Alliot	RAM-Hart	1:34.839	1:30.406	+8.703
 
-    while True:
-        func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
-        func_name = func.split('(')[0]
-        if func_name.lower() == 'exit':
-            print("Exiting...")
-            sys.exit()
-        try:
-            args_input = func.split('(')[1].replace(')', '')
-            args, kwargs = parse_args(args_input, FUNCTION_MAP, session)
-            func = FUNCTION_MAP[func_name]
-            if is_session_first_arg(func):
-                args.insert(0, session)
-            result = FUNCTION_MAP[func_name](*args, **kwargs)
-            if func_name.lower() == 'load_session':
-                session = result
-            if result is not None:
-                print(f"Result: {result}")
-        except Exception as e:
-            traceback.print_exc()
+    """
+
+    My_Ergast().insert_qualy_data(1984, 16, data)
+
+    # while True:
+    #     func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
+    #     func_name = func.split('(')[0]
+    #     if func_name.lower() == 'exit':
+    #         print("Exiting...")
+    #         sys.exit()
+    #     try:
+    #         args_input = func.split('(')[1].replace(')', '')
+    #         args, kwargs = parse_args(args_input, FUNCTION_MAP, session)
+    #         func = FUNCTION_MAP[func_name]
+    #         if is_session_first_arg(func):
+    #             args.insert(0, session)
+    #         result = FUNCTION_MAP[func_name](*args, **kwargs)
+    #         if func_name.lower() == 'load_session':
+    #             session = result
+    #         if result is not None:
+    #             print(f"Result: {result}")
+    #     except Exception as e:
+    #         traceback.print_exc()

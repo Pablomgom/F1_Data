@@ -871,6 +871,23 @@ def delta_reference_team(year, save=False):
 
 
     sessions_names = append_duplicate_number(sessions_names)
+    fig, ax1 = plt.subplots(figsize=(12, 8))
+    plt.rcParams["font.family"] = "Fira Sans"
+    for team, deltas in final_delta.items():
+        plt.plot(sessions_names, deltas,
+                 label=team, marker='o', color=team_colors_2023.get(team), markersize=7, linewidth=3)
+    plt.gca().invert_yaxis()
+    plt.legend(loc='lower right', fontsize='medium')
+    plt.title(f'{year} AVERAGE RACE PACE PER CIRCUIT', font='Fira Sans', fontsize=20)
+    plt.ylabel('Percentage time difference (%)', font='Fira Sans', fontsize=16)
+    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
+    ax1.yaxis.grid(True, linestyle='--')
+    ax1.xaxis.grid(True, linestyle='--', alpha=0.2)
+    plt.xticks(rotation=90, fontsize=12, fontname='Fira Sans')
+    plt.yticks(fontsize=12, fontname='Fira Sans')
+    plt.tight_layout()
+    plt.savefig(f"../PNGs/{year} race time difference.png", dpi=400)
+    plt.show()
 
     if save:
         df_save = pd.DataFrame(final_delta)

@@ -159,10 +159,12 @@ class My_Ergast:
         nltk.download('averaged_perceptron_tagger')
         data_lines = data.strip().split("\n")
         processed_data = []
+        pos_counter = 1
         for line in data_lines:
             columns = line.split("\t")
             country = f'{get_country_names(columns[2])}'
-            full_name = columns[2].replace(country, '')
+            full_name = (columns[2].replace(country, '').replace('West ', '')
+                         .replace('Germany ', '').replace('Zealand ', ''))
             full_name = full_name.replace('United States ', '')
             constructor_name = columns[3].split("-")[0]
             for i in range(4, len(columns)):
@@ -170,10 +172,15 @@ class My_Ergast:
                     columns[i] = ''
             if full_name == 'JJ Lehto':
                 full_name = 'Jyrki Järvilehto'
+            elif full_name == 'Adrian Campos':
+                full_name = 'Adrián Campos'
             if constructor_name == 'Venturi':
                 constructor_name = 'Lambo'
-            processed_line = [columns[0], columns[1], full_name, constructor_name, columns[4], columns[5]]
+            elif constructor_name == 'EuroBrun':
+                constructor_name = 'Euro Brun'
+            processed_line = [pos_counter, columns[1], full_name, constructor_name, columns[4], columns[5]]
             processed_data.append(processed_line)
+            pos_counter += 1
 
         data_to_append = pd.DataFrame(processed_data, columns=["position", "number", "fullName",
                                                                "constructorName", "q1", "q2"])

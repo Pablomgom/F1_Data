@@ -376,7 +376,7 @@ def qualy_diff_teammates(start, end, d1):
             else:
                 teammates_per_year[year].append(d2)
             full_data = q[q['fullName'].isin([d1, d2])]
-            if year in [1991, 1992, 1993, 1994, 1995, 2003, 2004, 2005]:
+            if year in [1977, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 2003, 2004, 2005]:
                 d1_time = min(full_data[full_data['fullName'] == d1]['q1'].loc[0],
                               full_data[full_data['fullName'] == d1]['q2'].loc[0]).total_seconds()
                 d2_time = min(full_data[full_data['fullName'] == d2]['q1'].loc[0],
@@ -422,21 +422,21 @@ def qualy_diff_teammates(start, end, d1):
                             print(f'{year} {q["raceName"].loc[0]} NO DATA')
 
     for y, d in delta_per_year.items():
-        clf = KNN()
-        data = np.array([[i] for i in d])
-        clf.fit(data)
-        scores = clf.decision_scores_
-        threshold = np.percentile(scores, 95)
-        outlier_mask = scores >= threshold
-        new_data = data[~outlier_mask, :]
-        new_data_flat = new_data.flatten()
+        # clf = KNN()
+        # data = np.array([[i] for i in d])
+        # clf.fit(data)
+        # scores = clf.decision_scores_
+        # threshold = np.percentile(scores, 95)
+        # outlier_mask = scores >= threshold
+        # new_data = data[~outlier_mask, :]
+        # new_data_flat = new_data.flatten()
         print(f'{y} - MEAN: {statistics.mean(d):.3f}s '
-              f'MEDIAN: {statistics.median(d):.3f}s ')
+              f'MEDIAN: {statistics.median(d):.3f}s '
               # f'TRUNCATED: {stats.trim_mean(d, 0.1):.3f}s\n'
               # f'MEAN OUTLIERS: {statistics.mean(new_data_flat):.3f}s '
               # f'MEDIAN OUTLIERS: {statistics.median(new_data_flat):.3f}s '
               # f'TRUNCATED OUTLIERS: {stats.trim_mean(new_data_flat, 0.1):.3f}s '
-              # f'{set(teammates_per_year[y])}')
+              f'{set(teammates_per_year[y])}')
 
     total_difference = []
     for l1, l2 in zip(total_laps_d1, total_laps_d2):
