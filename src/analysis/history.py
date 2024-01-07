@@ -251,11 +251,11 @@ def lucky_drivers(start=None, end=None):
         start = 1950
     if end is None:
         end = 2024
-    ergast = Ergast()
+    ergast = My_Ergast()
     drivers_array = []
     all_races = []
     for i in range(start, end):
-        races = ergast.get_race_results(season=i, limit=1000).content
+        races = ergast.get_race_results([i]).content
         for race in races:
             all_races.append(race)
             drivers_names = (race['givenName'] + ' ' + race['familyName']).values
@@ -273,9 +273,9 @@ def lucky_drivers(start=None, end=None):
             race_data = race[
                 (race['givenName'] == driver.split(' ')[0]) & (race['familyName'] == driver.split(' ', 1)[1])]
             if len(race_data) > 0:
-                teams = set(race_data['constructorId'])
+                teams = set(race_data['constructorName'])
                 for team in teams:
-                    teammate = race[race['constructorId'] == team]
+                    teammate = race[race['constructorName'] == team]
                     teammate = list(teammate['givenName'] + ' ' + teammate['familyName'].values)
                     if len(teammate) > 1:
                         loops = teammate.count(driver)
@@ -285,8 +285,8 @@ def lucky_drivers(start=None, end=None):
                             for team_name in teammate:
                                 teammate_data = race[(race['givenName'] == team_name.split(' ')[0]) & (
                                         race['familyName'] == team_name.split(' ', 1)[1])]
-                                teammate_data = teammate_data[teammate_data['constructorId'] == team]
-                                status_d1 = race_data[race_data['constructorId'] == team]['status'].values[i]
+                                teammate_data = teammate_data[teammate_data['constructorName'] == team]
+                                status_d1 = race_data[race_data['constructorName'] == team]['status'].values[i]
                                 if len(teammate_data) > 0:
                                     for j in range(len(teammate_data)):
                                         status_d2 = teammate_data['status'].values[j]
@@ -308,7 +308,7 @@ def lucky_drivers(start=None, end=None):
 
     values = 0
     for key, value in sorted_data.items():
-        print(f"{key}: {value}")
+        print(f"{key}: {value}/{drivers_array.count(key)} ({value/drivers_array.count(key)*100:.3f}%)")
         values += value
     print(values)
 
@@ -619,4 +619,34 @@ def difference_P2():
     delta_diff = dict(sorted(delta_diff.items(), key=lambda item: item[1], reverse=True))
     for r, d, in delta_diff.items():
         print(f'{r}: {d}')
+
+
+def team_gap_to_next_or_fastest(team, start=2014, end=2024):
+    ergast = My_Ergast()
+    qualys = ergast.get_qualy_results([i for i in range(start, end)]).content
+    sessions = ['q3', 'q2', 'q1']
+    for q in qualys:
+        year = q['year'].loc[0]
+        race_name = q['raceName'].loc[0].replace('Grand Prix', 'GP')
+        for s in sessions:
+            if year in [1989]:
+                team_data = q[q['constructorName'] == team]
+                team_lap = min(min(team_data['q1']), min(team_data['q2'])).total_seconds()
+                rivals = q[q['constructorName'] != team]
+                rivals_lap = min(rivals['q2'].loc[0], rivals['q1'].loc[0]).total_seconds()
+                rival_team = rivals['constructorName'].loc[0]
+                diff = rivals_lap - team_lap
+                print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {rival_team} in {race_name}')
+                break
+            else:
+                team_data = q[(~pd.isna(q[s])) & (q['constructorName'] == team)]
+                if len(team_data) > 0:
+                    fastest_from_team = team_data[s].loc[0].total_seconds()
+                    rivals = q[(~pd.isna(q[s])) & (q['constructorName'] != team)]
+                    rivals = rivals.sort_values(by=s, ascending=True)
+                    next_team_lap = rivals[s].loc[0].total_seconds()
+                    next_team = rivals['constructorName'].loc[0]
+                    diff = next_team_lap - fastest_from_team
+                    print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {next_team} in {race_name}')
+                    break
 

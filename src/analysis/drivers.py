@@ -289,10 +289,6 @@ def get_retirements_per_driver(driver, start=None, end=None):
                 elif re.search(r'(Finished|\+)', race['status'].max()):
                     positions = pd.concat([positions, pd.Series(['P' + str(race['position'].max())])],
                                           ignore_index=True)
-
-                    if race['position'].max() == 18:
-                        print(race)
-
                 else:
                     positions = pd.concat([positions, pd.Series(['Mech DNF'])], ignore_index=True)
         print(i)
@@ -355,7 +351,7 @@ def get_retirements_per_driver(driver, start=None, end=None):
     print(printed_data)
 
 
-def compare_drivers_season(d_1, d_2, season, DNFs=False):
+def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
     """
         Compare a season for 2 drivers
 
@@ -366,45 +362,60 @@ def compare_drivers_season(d_1, d_2, season, DNFs=False):
 
    """
 
-    ergast = Ergast()
-
-    races = ergast.get_race_results(season=season, limit=1000)
-    sprints = ergast.get_sprint_results(season=season, limit=1000)
-    qualys = ergast.get_qualifying_results(season=season, limit=1000)
+    ergast = My_Ergast()
+    years = [i for i in range(start, end)]
+    races = ergast.get_race_results(years)
     total_races = races.content
 
-    race_result = []
-    qualy_result = []
-    d1_points = 0
-    d2_points = 0
+    race_result = {}
+    d1_points = {}
+    d2_points = {}
 
     def process_drivers(array, race_type, d1_points, d2_points):
         for race in array:
-            best_pos = race[race['familyName'].isin([d_1, d_2])]['position'].min()
-            status = race[race['familyName'].isin([d_1, d_2])]['status'].values
-            status = [i for i in status if '+' in i or 'Finished' in i]
-            driver = race[race['position'] == best_pos]['driverCode'].min()
-            if (DNFs and len(status) == 2) or not DNFs:
-                race_result.append(driver + f' - {race_type}')
-                d1_points += race[race['familyName'] == d_1]['points'][0]
-                d2_points += race[race['familyName'] == d_2]['points'][0]
-
-
+            if len(race[race['fullName'] == d_1]) == 1:
+                year = race['year'].loc[0]
+                team = race[race['fullName'] == d_1]['constructorName'].loc[0]
+                teammates = race[(race['constructorName'] == team) & (race['fullName'] != d_1)]['fullName'].values
+                for d_2 in teammates:
+                    best_pos = race[race['fullName'].isin([d_1, d_2])]['position'].min()
+                    status = race[race['fullName'].isin([d_1, d_2])]['status'].values
+                    status = [i for i in status if '+' in i or 'Finished' in i]
+                    driver = race[race['position'] == best_pos]['fullName'].loc[0]
+                    if (DNFs and len(status) == 2) or not DNFs:
+                        if race_type == 'Race':
+                            if year not in race_result:
+                                race_result[year] = {}
+                                d1_points[year] = {}
+                                d2_points[year] = {}
+                            if d_2 not in race_result[year]:
+                                race_result[year][d_2] = []
+                                d1_points[year][d_2] = 0
+                                d2_points[year][d_2] = 0
+                            race_result[year][d_2].append(driver)
+                            d1_points[year][d_2] += race[race['fullName'] == d_1]['points'][0]
+                            d2_points[year][d_2] += race[race['fullName'] == d_2]['points'][0]
         return d1_points, d2_points
 
     d1_points, d2_points = process_drivers(total_races, 'Race', d1_points, d2_points)
-    d1_points, d2_points = process_drivers(sprints.content, 'Sprint', d1_points, d2_points)
 
-    for qualy in qualys.content:
-        best_pos = qualy[qualy['familyName'].isin([d_1, d_2])]['position'].min()
-        if len(qualy[qualy['familyName'].isin([d_1, d_2])]) == 2:
-            driver = qualy[qualy['position'] == best_pos]['driverCode'].min()
-            qualy_result.append(driver)
+    def print_results(data):
+        driver_ahead = 0
+        teammate_ahead = 0
+        for year, results in data.items():
+            for teammate, h2h in results.items():
+                count = Counter(h2h)
+                print(f"{year} against {teammate}:")
+                for name, count in count.items():
+                    if name == d_1:
+                        driver_ahead += count
+                    else:
+                        teammate_ahead += count
+                    print(f"  {name}: {count}")
 
-    print(Counter(race_result))
-    print(f'QUALYS: {Counter(qualy_result)}')
-    print(f'{d_1} points: {d1_points}')
-    print(f'{d_2} points: {d2_points}')
+        print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
+
+    print_results(race_result)
 
 
 def get_driver_results_circuit(driver, circuit, start=None, end=None):

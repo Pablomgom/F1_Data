@@ -571,8 +571,7 @@ def fastest_by_point(session, team_1, team_2, scope='Team'):
     lc_comp.set_array(delta_time)
     lc_comp.set_linewidth(7)
 
-
-    plt.subplots(figsize=(10, 10))
+    plt.subplots(figsize=(10, 8))
     plt.gca().add_collection(lc_comp)
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
@@ -595,7 +594,7 @@ def fastest_by_point(session, team_1, team_2, scope='Team'):
     plt.tight_layout()
     path = (f"../PNGs/Dif by point {team_1} vs {team_2} - {str(session.session_info['StartDate'].year)}"
             f" {session.event.EventName + ' ' + session.name}.png")
-    plt.savefig(path, dpi=150)
+    plt.savefig(path, dpi=450)
     plt.show()
 
 

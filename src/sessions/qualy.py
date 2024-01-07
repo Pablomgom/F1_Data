@@ -354,89 +354,84 @@ def percentage_qualy_ahead(start=2001, end=2024):
         print(f'{d}: {w}% {h2h_dict[d]}')
 
 
+def qualy_diff_teammates(d1, start=1900, end=3000):
+    def get_min_times(full_data, d1, d2):
+        d1_time = min(full_data[full_data['fullName'] == d1]['q1'].loc[0],
+                      full_data[full_data['fullName'] == d1]['q2'].loc[0]).total_seconds()
+        d2_time = min(full_data[full_data['fullName'] == d2]['q1'].loc[0],
+                      full_data[full_data['fullName'] == d2]['q2'].loc[0]).total_seconds()
+        return d1_time, d2_time
 
-def qualy_diff_teammates(start, end, d1):
+    def process_times(year, q, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year, d1, d2):
+        diff = round(d1_time - d2_time, 3)
+        if abs(diff) < 5:
+            display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2)
+            total_laps_d1.append(d1_time)
+            total_laps_d2.append(d2_time)
+            delta_per_year.setdefault((year, d2), []).append(diff)
 
-    qualys = My_Ergast().get_qualy_results([i for i in range(start, end)]).content
+    def process_sessions(year, q, full_data, d1, d2, sessions, total_laps_d1, total_laps_d2, delta_per_year):
+        for s in sessions:
+            s_data = full_data.dropna(subset=[s])
+            if len(s_data) != 2:
+                continue
+            d1_time, d2_time = s_data[s_data['fullName'] == d1][s].iloc[0].total_seconds(), \
+                s_data[s_data['fullName'] == d2][s].iloc[0].total_seconds()
+            diff = round(d1_time - d2_time, 3)
+            if abs(diff) < 5:
+                display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, s)
+                total_laps_d1.append(d1_time)
+                total_laps_d2.append(d2_time)
+                delta_per_year.setdefault((year, d2), []).append(diff)
+                break
+            else:
+                print(f'No data for {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")} {s.upper()}')
+
+    def display_time_comparison(year, q, d1_time, d2_time, diff, code_1, code_2, session=None):
+        session_info = f" in {session.upper()}" if session else ""
+        if d1_time > d2_time:
+            faster_driver = code_2
+            slowest_driver = code_1
+        else:
+            faster_driver = code_1
+            slowest_driver = code_2
+
+        print(
+            f'{faster_driver} {abs(diff):.3f}s faster than {slowest_driver} in {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")}{session_info}')
+
+    qualys = My_Ergast().get_qualy_results(list(range(start, end))).content
     delta_per_year = {}
     teammates_per_year = {}
     sessions = ['q3', 'q2', 'q1']
-    total_laps_d1 = []
-    total_laps_d2 = []
+    total_laps_d1, total_laps_d2 = [], []
+
     for q in qualys:
-        match_found = False
-        year = q['year'].loc[0]
+        year = q['year'].iloc[0]
+        race = q['round'].iloc[0]
+        if race == 13:
+            a = 1
         team_data = q[q['fullName'] == d1]
-        if len(team_data) == 1:
-            team = team_data['constructorName'].loc[0]
-            d2 = q[q['constructorName'] == team]
-            d2 = d2[d2['fullName'] != d1]['fullName'].loc[0]
-            if year not in teammates_per_year:
-                teammates_per_year[year] = [d2]
-            else:
-                teammates_per_year[year].append(d2)
+        if len(team_data) != 1:
+            continue
+
+        team = team_data['constructorName'].iloc[0]
+        teammates = q[q['constructorName'] == team].query("fullName != @d1")['fullName'].values
+
+        for d2 in teammates:
+            teammates_per_year.setdefault(year, []).append(d2)
             full_data = q[q['fullName'].isin([d1, d2])]
-            if year in [1977, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 2003, 2004, 2005]:
-                d1_time = min(full_data[full_data['fullName'] == d1]['q1'].loc[0],
-                              full_data[full_data['fullName'] == d1]['q2'].loc[0]).total_seconds()
-                d2_time = min(full_data[full_data['fullName'] == d2]['q1'].loc[0],
-                              full_data[full_data['fullName'] == d2]['q2'].loc[0]).total_seconds()
-                diff = round(d1_time - d2_time, 3)
-                if abs(diff) < 5:
-                    if d1_time > d2_time:
-                        print(f'{full_data[full_data["fullName"] == d2]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
-                              f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")}')
-                    else:
-                        print(f'{full_data[full_data["fullName"] == d1]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
-                              f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")}')
-                    total_laps_d1.append(d1_time)
-                    total_laps_d2.append(d2_time)
-                    if year not in delta_per_year:
-                        delta_per_year[year] = [diff]
-                    else:
-                        delta_per_year[year].append(diff)
+            comparison_years = set(range(1984, 1996)) | {2003, 2004, 2005}
+
+            if year in comparison_years:
+                d1_time, d2_time = get_min_times(full_data, d1, d2)
+                process_times(year, q, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year, d1, d2)
             else:
-                for s in sessions:
-                    if match_found:
-                        break
-                    s_data = full_data[~np.isnan(full_data[s])]
-                    if len(s_data) == 2:
-                        d1_time = s_data[s_data['fullName'] == d1][s].loc[0].total_seconds()
-                        d2_time = s_data[s_data['fullName'] == d2][s].loc[0].total_seconds()
-                        diff = round(d1_time - d2_time, 3)
-                        if abs(diff) < 5:
-                            if d1_time > d2_time:
-                                print(f'{s_data[s_data["fullName"] == d2]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
-                                      f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")} in {s.upper()}')
-                            else:
-                                print(f'{s_data[s_data["fullName"] == d1]["driverCode"].loc[0]} {abs(diff):.3f}s faster in '
-                                      f'{year} {q["raceName"].loc[0].replace("Grand Prix", "GP")} in {s.upper()}')
-                            total_laps_d1.append(d1_time)
-                            total_laps_d2.append(d2_time)
-                            match_found = True
-                            if year not in delta_per_year:
-                                delta_per_year[year] = [diff]
-                            else:
-                                delta_per_year[year].append(diff)
-                        else:
-                            print(f'{year} {q["raceName"].loc[0]} NO DATA')
+                process_sessions(year, q, full_data, d1, d2, sessions, total_laps_d1, total_laps_d2, delta_per_year)
 
     for y, d in delta_per_year.items():
-        # clf = KNN()
-        # data = np.array([[i] for i in d])
-        # clf.fit(data)
-        # scores = clf.decision_scores_
-        # threshold = np.percentile(scores, 95)
-        # outlier_mask = scores >= threshold
-        # new_data = data[~outlier_mask, :]
-        # new_data_flat = new_data.flatten()
-        print(f'{y} - MEAN: {statistics.mean(d):.3f}s '
-              f'MEDIAN: {statistics.median(d):.3f}s '
-              # f'TRUNCATED: {stats.trim_mean(d, 0.1):.3f}s\n'
-              # f'MEAN OUTLIERS: {statistics.mean(new_data_flat):.3f}s '
-              # f'MEDIAN OUTLIERS: {statistics.median(new_data_flat):.3f}s '
-              # f'TRUNCATED OUTLIERS: {stats.trim_mean(new_data_flat, 0.1):.3f}s '
-              f'{set(teammates_per_year[y])}')
+        print(f'{y[0]} MEDIAN: {statistics.median(d):.3f}s '
+              f'TRUNC MEAN: {stats.trim_mean(d, 0.1):.3f}s '
+              f'{y[1]}')
 
     total_difference = []
     for l1, l2 in zip(total_laps_d1, total_laps_d2):
@@ -447,3 +442,5 @@ def qualy_diff_teammates(start, end, d1):
     mean = statistics.mean(total_difference)
     print(f'MEDIAN DIFF {d1 if median < 0 else "TEAMMATE"} FASTER: {median:.3f}%')
     print(f'MEAN DIFF {d1 if mean < 0 else "TEAMMATE"} FASTER: {mean:.3f}%')
+
+

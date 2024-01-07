@@ -47,7 +47,7 @@ def get_funcs():
         'plot_overtakes': plot_overtakes,
         'get_historical_race_days': get_historical_race_days,
         'wins_and_poles_circuit': wins_and_poles_circuit,
-        'compare_drivers_season': compare_drivers_season,
+        'race_qualy_h2h': race_qualy_h2h,
         'qualy_results_ergast': qualy_results_ergast,
         'get_position_changes': get_position_changes,
         'get_circuitos': get_circuitos,
@@ -76,7 +76,6 @@ def get_funcs():
         'highest_qualy': highest_qualy,
         'long_runs_scatter': long_runs_scatter,
         'last_result_grid_pos': last_result_grid_pos,
-        'teams_diff_session': teams_diff_session,
         'air_track_temps': air_track_temps,
         'comebacks_in_circuit': comebacks_in_circuit,
         'session_results': session_results,
@@ -102,6 +101,7 @@ def get_funcs():
         'difference_second_team': difference_second_team,
         'difference_P2': difference_P2,
         'delta_reference_team': delta_reference_team,
+        'team_gap_to_next_or_fastest': team_gap_to_next_or_fastest,
         'help': help
     }
 

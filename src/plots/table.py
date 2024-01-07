@@ -3,7 +3,7 @@ import six
 from matplotlib import pyplot as plt
 
 
-def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
+def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=24,
                      header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
                      bbox=[0, 0, 1, 1], header_columns=0,
                      ax=None, title="", diff_column=None, col_Widths=None, **kwargs):
@@ -44,7 +44,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
             else:
                 cell.set_facecolor(row_colors[k[0] % len(row_colors)])
 
-    ax.set_title(title, fontsize=20)
+    plt.title(title, fontsize=1)
 
     mpl_table.auto_set_font_size(False)
     mpl_table.set_fontsize(font_size)
@@ -56,7 +56,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
             cell.set_facecolor(header_color)
         # Don't set_facecolor() for non-header rows - color is already set by cellColours
 
-    mpl_table.scale(1, 1.5)  # Change this line to adjust the width of the borders
+    mpl_table.scale(1, 1.25)  # Change this line to adjust the width of the borders
 
     # Hide the axes borders
     for key, spine in ax.spines.items():

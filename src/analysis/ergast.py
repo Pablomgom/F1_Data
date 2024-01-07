@@ -144,9 +144,9 @@ def get_position_changes(year, round):
 
     finish = finish[['Finish', 'Driver', 'Team', 'Starting position', 'Status', 'Grid change']]
 
-    fig, axs = plt.subplots(1, 1, figsize=(14, 21))
     render_mpl_table(finish)
-    plt.title(f"Race Results - {race.description['raceName'].min()} - {race.description['season'].min()}", fontsize=20)
+    plt.title(f"Race Results - {race.description['raceName'].min()} - {race.description['season'].min()}",
+              font='Fira Sans', fontsize=40)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f"../PNGs/Race Results - {race.description['raceName'].min()} - {race.description['season'].min()}",
