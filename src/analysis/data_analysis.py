@@ -224,6 +224,8 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     ref_session.load()
     fastest_team = next_race_prediction.index[len(next_race_prediction) - 1]
     delta_time = ref_session.laps.pick_team(fastest_team).pick_quicklaps().pick_wo_box()['LapTime'].median()
+    if session == 'Q':
+        delta_time = ref_session.laps.pick_team(fastest_team).pick_fastest()['LapTime']
 
     fig, ax = plt.subplots(figsize=(10, 8))
     colors = [team_colors_2023.get(t) for t in next_race_prediction.index]
@@ -235,9 +237,9 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         ax.text(label_x_pos, bar.get_y() + bar.get_height() / 2, f'{width:.2f}% (+{diff_in_seconds:.3f}s)',
                 va='center', ha='left', font='Fira Sans', fontsize=16)
     if session == 'R':
-        plt.title(f'{track.upper()} {year} RACE PACE PREDICTION', font='Fira Sans', fontsize=24)
+        plt.title(f'{track.upper()} {year} RACE PACE SIMULATION', font='Fira Sans', fontsize=28)
     else:
-        plt.title(f'{track.upper()} {year} QUALY PREDICTION', font='Fira Sans', fontsize=24)
+        plt.title(f'{track.upper()} {year} QUALY SIMULATION', font='Fira Sans', fontsize=30)
     plt.yticks(font='Fira Sans', fontsize=16)
     plt.xticks(font='Fira Sans', fontsize=16)
     plt.xlabel('Percentage difference', font='Fira Sans', fontsize=18)

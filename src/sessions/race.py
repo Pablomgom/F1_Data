@@ -807,9 +807,10 @@ def delta_reference_team(year, save=False, round=None):
         session = fastf1.get_session(year, i + 1 if round is None else round, 'R')
         session.load(messages=False)
         sessions_names.append(session.event['Location'].split('-')[0])
+        round_number = session.event.RoundNumber
         teams = session.laps['Team'].unique()
         teams = [t for t in teams if not pd.isna(t)]
-        race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == i + 1)]['FuelFactor']
+        race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == round_number)]['FuelFactor']
         total_laps = pd.DataFrame(columns=['Team', 'LapTime', 'LapNumber', 'TyreLife', 'Driver', 'Compound'])
         if not pd.isna(race_fuel_factor.loc[0]):
             race_fuel_factor = race_fuel_factor.loc[0]
@@ -831,8 +832,8 @@ def delta_reference_team(year, save=False, round=None):
         total_laps = total_laps.drop_duplicates()
         max_tyre_age = pd.Series(total_laps.groupby('TyreLife').size())
         cut_value = np.mean(max_tyre_age)
-        cut_value = max(max_tyre_age[max_tyre_age >= cut_value].index.values)
-        total_laps = total_laps[total_laps['TyreLife'] <= cut_value]
+        # cut_value = max(max_tyre_age[max_tyre_age >= cut_value].index.values)
+        total_laps = total_laps[total_laps['TyreLife'].isin(max_tyre_age[max_tyre_age >= cut_value].index.values)]
         total_laps['LapTime'] = total_laps['LapTime'].dt.total_seconds()
         total_laps['FuelCorrected'] = total_laps['LapTime'] - race_fuel_factor * (
                 session.total_laps - total_laps['LapNumber'])

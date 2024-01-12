@@ -622,31 +622,49 @@ def difference_P2():
 
 
 def team_gap_to_next_or_fastest(team, start=2014, end=2024):
+
+    def get_team_order(teams):
+        order = []
+        for element in teams:
+            if element not in order:
+                order.append(element)
+        return order
+
     ergast = My_Ergast()
     qualys = ergast.get_qualy_results([i for i in range(start, end)]).content
+    races = ergast.get_race_results([i for i in range(start, end)]).content
     sessions = ['q3', 'q2', 'q1']
-    for q in qualys:
+    for q, r in zip(qualys, races):
         year = q['year'].loc[0]
         race_name = q['raceName'].loc[0].replace('Grand Prix', 'GP')
         for s in sessions:
             if year in [1989]:
+                teams = q['constructorName'].values
+                team_order = get_team_order(teams)
                 team_data = q[q['constructorName'] == team]
                 team_lap = min(min(team_data['q1']), min(team_data['q2'])).total_seconds()
                 rivals = q[q['constructorName'] != team]
                 rivals_lap = min(rivals['q2'].loc[0], rivals['q1'].loc[0]).total_seconds()
                 rival_team = rivals['constructorName'].loc[0]
                 diff = rivals_lap - team_lap
-                print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {rival_team} in {race_name}')
+                print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {rival_team} in {race_name}'
+                      f' (P{team_order.index(team) + 1})')
                 break
             else:
                 team_data = q[(~pd.isna(q[s])) & (q['constructorName'] == team)]
                 if len(team_data) > 0:
+                    teams = q.sort_values(by=s, ascending=True)['constructorName'].values
+                    team_order = get_team_order(teams)
+                    team_order_race = get_team_order(r['constructorName'].values)
                     fastest_from_team = team_data[s].loc[0].total_seconds()
                     rivals = q[(~pd.isna(q[s])) & (q['constructorName'] != team)]
                     rivals = rivals.sort_values(by=s, ascending=True)
                     next_team_lap = rivals[s].loc[0].total_seconds()
                     next_team = rivals['constructorName'].loc[0]
                     diff = next_team_lap - fastest_from_team
-                    print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {next_team} in {race_name}')
+                    print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {next_team} in the {race_name} '
+                          f'(P{team_order.index(team) + 1})\n'
+                          f'From P{team_order.index(team) + 1} to P{team_order_race.index(team) + 1} '
+                          f'in the {race_name}')
                     break
 

@@ -81,7 +81,7 @@ def parse_args(args_input, function_map, session):
 
 
 def load_session(year, gp, race_type):
-    session = fastf1.get_session(year, gp, race_type)
+    session = fastf1.get_testing_session(year, gp, race_type)
     print(session.api_path)
     session.load()
     return session

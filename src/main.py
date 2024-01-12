@@ -14,7 +14,7 @@ from src.menu.menu import get_funcs
 
 from src.utils.utils import parse_args, is_session_first_arg
 
-# setup_mpl(misc_mpl_mods=False)
+setup_mpl(misc_mpl_mods=False)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.width', None)
@@ -30,37 +30,48 @@ if __name__ == '__main__':
 
 
 #     data = """
-# 1	1	Brazil Nelson Piquet	Brabham-BMW	1:30.889	1:21.703	 —
-# 2	7	France Alain Prost	McLaren-TAG	1:28.276	1:21.774	+0.071
-# 3	19	Brazil Ayrton Senna	Toleman-Hart	1:30.077	1:21.936	+0.233
-# 4	6	Finland Keke Rosberg	Williams-Honda	1:32.269	1:22.049	+0.346
-# 5	11	Italy Elio de Angelis	Lotus-Renault	1:28.428	1:22.291	+0.588
-# 6	12	United Kingdom Nigel Mansell	Lotus-Renault	1:32.986	1:22.319	+0.616
-# 7	15	France Patrick Tambay	Renault	1:29.409	1:22.583	+0.880
-# 8	27	Italy Michele Alboreto	Ferrari	1:31.192	1:22.686	+0.983
-# 9	16	United Kingdom Derek Warwick	Renault	1:35.913	1:22.801	+1.098
-# 10	20	Sweden Stefan Johansson	Toleman-Hart	1:28.991	1:22.942	+1.239
-# 11	8	Austria Niki Lauda	McLaren-TAG	1:28.837	1:23.183	+1.480
-# 12	22	Italy Riccardo Patrese	Alfa Romeo	1:37.154	1:24.048	+2.345
-# 13	33	France Philippe Streiff	Renault	1:37.280	1:24.089	+2.386
-# 14	23	United States Eddie Cheever	Alfa Romeo	1:34.809	1:24.235	+2.532
-# 15	5	France Jacques Laffite	Williams-Honda	1:39.696	1:24.437	+2.734
-# 16	17	Switzerland Marc Surer	Arrows-BMW	1:34.003	1:24.688	+2.985
-# 17	28	France René Arnoux	Ferrari	1:36.634	1:24.848	+3.145
-# 18	18	Belgium Thierry Boutsen	Arrows-BMW	1:32.530	1:25.115	+3.412
-# 19	2	West Germany Manfred Winkelhock	Brabham-BMW	no time	1:25.289	+3.586
-# 20	26	Italy Andrea de Cesaris	Ligier-Renault	1:33.398	1:26.082	+4.379
-# 21	25	France François Hesnault	Ligier-Renault	1:34.233	1:26.701	+4.998
-# 22	24	Italy Piercarlo Ghinzani	Osella-Alfa Romeo	1:31.336	1:26.840	+5.137
-# 23	14	Austria Gerhard Berger	ATS-BMW	1:44.966	1:28.106	+6.403
-# 24	30	Austria Jo Gartner	Osella-Alfa Romeo	1:33.540	1:28.229	+6.526
-# 25	21	Italy Mauro Baldi	Spirit-Hart	1:36.483	1:29.001	+7.298
-# 26	10	United Kingdom Jonathan Palmer	RAM-Hart	1:40.344	1:29.397	+7.694
-# 27	9	France Philippe Alliot	RAM-Hart	1:34.839	1:30.406	+8.703
+# 1	18	Argentina Juan Manuel Fangio	Alfa Romeo	1:58.6	 –
+# 2	16	Italy Alberto Ascari	Ferrari	1:58.8	+ 0.2
+# 3	10	Italy Nino Farina	Alfa Romeo	2:00.2	+ 1.6
+# 4	46	Italy Consalvo Sanesi	Alfa Romeo	2:00.4	+ 1.8
+# 5	36	Italy Luigi Fagioli	Alfa Romeo	2:04.0	+ 5.4
+# 6	48	Italy Dorino Serafini	Ferrari	2:05.6	+ 7.0
+# 7	60	Italy Piero Taruffi	Alfa Romeo	2:05.8	+ 7.2
+# 8	12	France Raymond Sommer	Talbot-Lago-Talbot	2:08.6	+ 10.0
+# 9	4	Italy Franco Rol	Maserati	2:10.0	+ 11.4
+# 10	44	France Robert Manzon	Simca-Gordini	2:12.4	+ 13.8
+# 11	40	France Guy Mairesse	Talbot-Lago-Talbot	2:13.2	+ 14.6
+# 12	42	France Maurice Trintignant	Simca-Gordini	2:13.4	+ 14.8
+# 13	58	France Louis Rosier	Talbot-Lago-Talbot	2:13.4	+ 14.8
+# 14	64	France Henri Louveau	Talbot-Lago-Talbot	2:13.8	+ 15.2
+# 15	30	Thailand Prince Bira	Maserati	2:14.0	+ 15.4
+# 16	24	France Philippe Étancelin	Talbot-Lago-Talbot	2:14.4	+ 15.8
+# 17	38	Switzerland Toulo de Graffenried	Maserati	2:14.4	+ 15.8
+# 18	8	United Kingdom Peter Whitehead	Ferrari	2:16.2	+ 17.6
+# 19	6	Monaco Louis Chiron	Maserati	2:17.2	+ 18.6
+# 20	56	France Pierre Levegh	Talbot-Lago-Talbot	2:17.2	+ 18.6
+# 21	32	United Kingdom Cuth Harrison	ERA	2:18.4	+ 19.8
+# 22	2	Belgium Johnny Claes	Talbot-Lago-Talbot	2:18.6	+ 20.0
+# 23	52	Italy Felice Bonetto	Milano-Speluzzi	2:19.8	+ 21.2
+# 24	50	United Kingdom David Murray	Maserati	2:22.0	+ 23.4
+# 25	22	Italy Clemente Biondetti	Ferrari-Jaguar	2:30.6	+ 32.0
+# 26	62	Italy Franco Comotti	Maserati-Milano	2:33.6	+ 35.0
+# 27	28	Germany Paul Pietsch	Maserati	3:00.2	+ 61.9
+# """
 #
-#     """
-#
-#     My_Ergast().insert_qualy_data(1984, 16, data)
+#     My_Ergast().insert_qualy_data(1950, 7, data,
+#                                   offset=0, character_sep='-', have_country=True, number=1)
+
+
+    # a = My_Ergast().get_qualy_results([i for i in range(1950, 2024)])
+    # years = {}
+    # for q in a.content:
+    #     year = q['year'].loc[0]
+    #     print(f'{year}: {len(q)}')
+    #
+    # a = My_Ergast().get_qualy_results([2009], 1)
+    # b = 1
+
 
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")

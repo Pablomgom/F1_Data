@@ -37,7 +37,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=24,
                         cell.set_facecolor('gray')
                     else:
                         cell.set_facecolor('red')
-                elif k[0] <= 3 :  # Apply medal colors to the first 3 rows for columns other than 'grid_change'
+                elif k[0] <= 3 :
                     cell.set_facecolor(medal_colors[k[0] - 1])
                 else:
                     cell.set_facecolor(row_colors[k[0] % len(row_colors)])
@@ -51,18 +51,15 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=24,
 
     for k, cell in six.iteritems(mpl_table._cells):
         cell.set_edgecolor('black')
-        if k[0] == 0:  # this is the header row
+        if k[0] == 0:
             cell.set_text_props(weight='bold', color='w')
             cell.set_facecolor(header_color)
-        # Don't set_facecolor() for non-header rows - color is already set by cellColours
 
-    mpl_table.scale(1, 1.25)  # Change this line to adjust the width of the borders
+    mpl_table.scale(1, 1.25)
 
-    # Hide the axes borders
     for key, spine in ax.spines.items():
         spine.set_visible(False)
 
-    # Hide the tick labels
     ax.set_xticks([])
     ax.set_yticks([])
 

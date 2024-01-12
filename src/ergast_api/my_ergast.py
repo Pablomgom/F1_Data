@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import nltk
 import pandas as pd
@@ -8,9 +8,11 @@ from src.exceptions.pit_stops_exceptions import filter_pit_stops
 from src.utils.utils import get_country_names
 
 
-def string_to_timedelta(time_str):
+def string_to_timedelta(time_str, convert=True):
     try:
         time_parts = time_str.replace('+', '').split(':')
+        if convert:
+            time_parts[1] = time_parts[1].ljust(6, '0')
         if len(time_parts) == 3:
             hours = int(time_parts[0])
             minutes = int(time_parts[1])
@@ -107,7 +109,7 @@ class My_Ergast:
         results = pd.merge(results, self.status, on='statusId', how='inner')
         results = pd.merge(results, self.circuits, on='circuitId', how='inner')
         results['fastestLapTime'] = results['fastestLapTime'].apply(string_to_timedelta)
-        results['totalRaceTime'] = results['totalRaceTime'].apply(string_to_timedelta)
+        results['totalRaceTime'] = results['totalRaceTime'].apply(string_to_timedelta, convert=False)
         results['fullName'] = results['givenName'] + ' ' + results['familyName']
         races_list = get_list_dataframes(results, race_results_schema)
         race_results = ergast_struct(races_list)
@@ -149,10 +151,12 @@ class My_Ergast:
         qualy_results = ergast_struct(qualy_list)
         return qualy_results
 
-    def insert_qualy_data(self, year, round, data):
+    def insert_qualy_data(self, year, round, data, offset=0, character_sep='–', have_country=True,
+                          number=0):
 
         self.qualifying = load_csv('qualifying', False)
         raceId = self.races[(self.races['year'] == year) & (self.races['round'] == round)]['raceId'].values[0]
+        team_data = My_Ergast().get_race_results([year], round).content[0]
         nltk.download('maxent_ne_chunker')
         nltk.download('words')
         nltk.download('punkt')
@@ -160,30 +164,87 @@ class My_Ergast:
         data_lines = data.strip().split("\n")
         processed_data = []
         pos_counter = 1
+        fastest_lap = None
         for line in data_lines:
             columns = line.split("\t")
-            country = f'{get_country_names(columns[2])}'
-            full_name = (columns[2].replace(country, '').replace('West ', '')
+            if have_country:
+                country = f'{get_country_names(columns[2 - offset])}'
+            else:
+                country = ''
+            full_name = (columns[2-offset].replace(country, '').replace('West ', '')
                          .replace('Germany ', '').replace('Zealand ', ''))
-            full_name = full_name.replace('United States ', '')
-            constructor_name = columns[3].split("-")[0]
+            full_name = (full_name.replace('United States ', '').replace('of Ireland ', '')
+                         .replace('Africa ', '').replace('Sweden ', ''))
+
             for i in range(4, len(columns)):
                 if columns[i] in ['None', '—']:
                     columns[i] = ''
+
             if full_name == 'JJ Lehto':
                 full_name = 'Jyrki Järvilehto'
             elif full_name == 'Adrian Campos':
                 full_name = 'Adrián Campos'
-            if constructor_name == 'Venturi':
-                constructor_name = 'Lambo'
-            elif constructor_name == 'EuroBrun':
-                constructor_name = 'Euro Brun'
-            processed_line = [pos_counter, columns[1], full_name, constructor_name, columns[4], columns[5]]
+            elif full_name == 'Miguel Angel Guerra':
+                full_name = 'Miguel Ángel Guerra'
+            elif full_name == 'Héctor Rebaque':
+                full_name = 'Hector Rebaque'
+            elif full_name == 'David Kennedy':
+                full_name = 'Dave Kennedy'
+            elif full_name == 'Boy Hayje':
+                full_name = 'Boy Lunger'
+            elif full_name == 'Hans Joachim Stuck':
+                full_name = 'Hans-Joachim Stuck'
+            elif full_name == 'Denis Hulme':
+                full_name = 'Denny Hulme'
+            elif full_name == 'Dave Walker':
+                full_name = 'David Walker'
+            elif full_name == 'Kurt Ahrens Jr.':
+                full_name = 'Kurt Ahrens'
+            elif full_name == 'Geki':
+                full_name = 'Giacomo Russo'
+            elif full_name == 'Robert Drake':
+                full_name = 'Bob Drake'
+            elif full_name == 'Maria Teresa de Filippis':
+                full_name = 'Maria de Filippis'
+            elif full_name == 'Juan Manuel Fangio':
+                full_name = 'Juan Fangio'
+            elif full_name == 'Hermano da Silva Ramos':
+                full_name = 'Hernando da Silva Ramos'
+            elif full_name == 'Giuseppe Farina':
+                full_name = 'Nino Farina'
+            elif full_name == 'Oscar Alfredo Gálvez':
+                full_name = 'Oscar Gálvez'
+            elif full_name == 'Adolfo Schwelm Cruz':
+                full_name = 'Adolfo Cruz'
+            elif full_name == 'Yves Giraud-Cabantous':
+                full_name = 'Yves Cabantous'
+            elif full_name == 'Hans Stuck':
+                full_name = 'Hans von Stuck'
+            elif full_name == 'Brian Shawe-Taylor':
+                full_name = 'Brian Shawe Taylor'
+            elif full_name == 'Geoffrey Crossley':
+                full_name = 'Geoff Crossley'
+
+            constructor_name = team_data[team_data['fullName'] == full_name]['constructorName']
+            if len(constructor_name) == 0:
+                print(f'{full_name}')
+                print(constructor_name.values)
+                if len(constructor_name.values) != 1:
+                    raise Exception
+            else:
+                constructor_name = constructor_name.loc[0]
+
+            if columns[4-offset][0] == '+':
+                additional_seconds = float(columns[4-offset].replace('+', ''))
+                new_time = fastest_lap + timedelta(seconds=additional_seconds)
+                columns[4-offset] = new_time.strftime('%M:%S.%f')[:-3]
+            processed_line = [pos_counter, 0 if number == 0 else columns[1], full_name, constructor_name,
+                              columns[4-offset].replace(',', '.')]
             processed_data.append(processed_line)
             pos_counter += 1
 
         data_to_append = pd.DataFrame(processed_data, columns=["position", "number", "fullName",
-                                                               "constructorName", "q1", "q2"])
+                                                               "constructorName", "q1"])
 
         og_len = len(data_to_append)
         qualyId = self.qualifying['qualifyId'].max() + 1

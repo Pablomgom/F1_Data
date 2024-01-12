@@ -137,7 +137,7 @@ def long_runs_scatter(session, threshold=1.07):
         driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold).pick_wo_box()
         stint_index = 1
         try:
-            while len(driver_laps_filter) < 5:
+            while len(driver_laps_filter) < 5 or 'UNKNOWN' in driver_laps_filter['Compound'].loc[0]:
                 max_stint = d_laps['Stint'].value_counts().index[stint_index]
                 driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold).pick_wo_box()
                 stint_index += 1
@@ -162,8 +162,11 @@ def long_runs_scatter(session, threshold=1.07):
         driver = row['Driver']
         laps = row['Laps']
         tyre = row['Compound']
-        hex_color = plotting.COMPOUND_COLORS[tyre]
-        color_factor = np.linspace(0, 0.6, len(laps))
+        try:
+            hex_color = plotting.COMPOUND_COLORS[tyre]
+        except KeyError:
+            hex_color = '#434649'
+        color_factor = np.linspace(0, 0.7, len(laps))
         color_index = 0
         for lap in laps:
             color = darken_color(hex_color, amount=round(color_factor[color_index], 1))
@@ -184,7 +187,7 @@ def long_runs_scatter(session, threshold=1.07):
     plt.show()
 
 
-def session_diff_last_year(year, round_id, circuit=None, session='Q'):
+def session_diff_last_year(year, round_id, prev_year, circuit=None, session='Q'):
     """
        Plot the performance of all teams against last year qualify in a specific circuit
 
@@ -194,24 +197,9 @@ def session_diff_last_year(year, round_id, circuit=None, session='Q'):
        circuit (str, optional): Only to get the teams in case of error. Default = None
 
     """
-    ergast = Ergast()
-    current = ergast.get_qualifying_results(season=2023, round=round_id, limit=1000)
-    previous = ergast.get_qualifying_results(season=year, limit=1000)
-    if circuit is not None:
-        get_teams = ergast.get_qualifying_results(season=2023, round=1, limit=1000)
-        current_circuit = circuit
-        teams = get_teams.content[0]['constructorId'].values
-    else:
-        current_circuit = current.description['circuitId'].values[0]
-        teams = current.content[0]['constructorId'].values
-    index_pre_circuit = previous.description[previous.description['circuitId'] == current_circuit]['circuitId'].index[0]
-
-    teams = pd.Series(teams).drop_duplicates(keep='first').values
-    teams[teams == 'alfa'] = 'alfa romeo'
-
-    previous = fastf1.get_session(year, index_pre_circuit + 1, session)
+    previous = fastf1.get_session(prev_year, round_id, session)
     previous.load()
-    current = fastf1.get_session(2023, round_id, session)
+    current = fastf1.get_session(year, round_id, session)
     current.load()
 
     teams_to_plot = current.results['TeamName'].values
@@ -228,15 +216,16 @@ def session_diff_last_year(year, round_id, circuit=None, session='Q'):
 
     for team in teams_to_plot:
         fast_current = current.laps.pick_team(team).pick_fastest()['LapTime']
+        current_top_speed = max(current.laps.pick_team(team).pick_fastest().telemetry['Speed'])
         if team == 'Alfa Romeo' and year == 2021:
             team_prev = 'Alfa Romeo Racing'
         else:
             team_prev = team
         fast_prev = previous.laps.pick_team(team_prev).pick_fastest()['LapTime']
-
+        prev_top_speed = max(previous.laps.pick_team(team).pick_fastest().telemetry['Speed'])
         delta_time = fast_current.total_seconds() - fast_prev.total_seconds()
         delta_times.append(round(delta_time, 3))
-
+        print(f'{team} {current_top_speed - prev_top_speed}')
         color = '#' + current.results[current.results['TeamName'] == team]['TeamColor'].values[0]
         if team == 'Alpine':
             colors.append('#FF69B4')
@@ -247,12 +236,12 @@ def session_diff_last_year(year, round_id, circuit=None, session='Q'):
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
     round_bars(bars, ax, colors, y_offset_rounded=0)
-    annotate_bars(bars, ax, 0.02, 12.25, '+{height}s',
+    annotate_bars(bars, ax, 0.02, 13, '+{height}s',
                   ceil_values=False, round=3, y_negative_offset=-0.06)
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'{current.event.Location.upper()} {current.name.upper()} COMPARISON: {year} vs. 2023', font='Fira Sans',
+    plt.title(f'{current.event.Location.upper()} {current.name.upper()} COMPARISON: {year} vs. {prev_year}', font='Fira Sans',
               fontsize=18)
     plt.xlabel('Team', font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
