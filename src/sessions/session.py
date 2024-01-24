@@ -7,7 +7,7 @@ import pandas as pd
 from adjustText import adjust_text
 from fastf1 import plotting
 from fastf1.ergast import Ergast
-from matplotlib import pyplot as plt, ticker, cm
+from matplotlib import pyplot as plt, ticker, cm, patches
 from matplotlib.collections import LineCollection
 from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
 from matplotlib.font_manager import FontProperties
@@ -18,7 +18,7 @@ import matplotlib.patheffects as path_effects
 from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.utils import utils
-from src.plots.plots import round_bars, annotate_bars
+from src.plots.plots import round_bars, annotate_bars, lighten_color
 from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows
 import seaborn as sns
 from src.variables.team_colors import team_colors_2023
@@ -363,7 +363,7 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     fig, ax = plt.subplots(nrows=3, figsize=(9, 8), gridspec_kw={'height_ratios': [4, 1, 1]}, dpi=150)
 
     ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
-               color='#0000FF',
+               color='#3399FF',
                label=driver_1, linewidth=2.75)
     ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
                color='#FFA500',
@@ -396,15 +396,15 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     handles1, labels1 = ax[0].get_legend_handles_labels()
     handles1 = handles1 + legend_elements
     labels1 = labels1 + [entry.get_label() for entry in legend_elements]
-    ax[0].legend(handles1, labels1, loc='lower left')
+    ax[0].legend(handles1, labels1, loc='lower right')
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
 
     ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],
-               color='#0000FF',
-               label=driver_1)
+               color='#3399FF',
+               label=driver_1, linewidth=2)
     ax[1].plot(compare_tel['Distance'], compare_tel['Brake'],
                color='#FFA500',
-               label=driver_2)
+               label=driver_2, linewidth=2)
 
     ax[1].set_xlabel('Distance')
     ax[1].set_ylabel('Brakes')
@@ -413,11 +413,11 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     ax[1].set_yticklabels(['OFF', 'ON'])
 
     ax[2].plot(ref_tel['Distance'], ref_tel['Throttle'],
-               color='#0000FF',
-               label=driver_1)
+               color='#3399FF',
+               label=driver_1, linewidth=2)
     ax[2].plot(compare_tel['Distance'], compare_tel['Throttle'],
                color='#FFA500',
-               label=driver_2)
+               label=driver_2, linewidth=2)
 
     ax[2].set_xlabel('Distance')
     ax[2].set_ylabel('Throttle')
@@ -479,7 +479,7 @@ def plot_circuit_with_data(session, col='nGear'):
 
     fig, ax = plt.subplots(figsize=(7.2, 7.2))
     lc_comp.set_array(data)
-    lc_comp.set_linewidth(4)
+    lc_comp.set_linewidth(8)
 
     plt.gca().add_collection(lc_comp)
     plt.axis('equal')
@@ -505,7 +505,7 @@ def plot_circuit_with_data(session, col='nGear'):
     plt.show()
 
 
-def fastest_by_point(session, team_1, team_2, scope='Team'):
+def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
     """
        Plot the circuit with the time diff between 2 laps at each points
 
@@ -522,9 +522,17 @@ def fastest_by_point(session, team_1, team_2, scope='Team'):
         tel_team_1 = lap_team_1.get_telemetry()
         lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     else:
-        lap_team_1 = session.laps.pick_driver(team_1).pick_fastest()
-        tel_team_1 = lap_team_1.get_telemetry()
-        lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
+        if lap is not None:
+            for i in session.laps.pick_driver(team_1).pick_lap(lap).iterlaps():
+                lap_team_1 = i[1]
+
+            for i in session.laps.pick_driver(team_2).pick_lap(lap).iterlaps():
+                lap_team_2 = i[1]
+            tel_team_1 = lap_team_1.get_telemetry()
+        else:
+            lap_team_1 = session.laps.pick_driver(team_1).pick_fastest()
+            tel_team_1 = lap_team_1.get_telemetry()
+            lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
 
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
@@ -556,11 +564,13 @@ def fastest_by_point(session, team_1, team_2, scope='Team'):
     norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
     segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
-    lc_comp = LineCollection(segments, norm=norm, cmap=cmap)
+    border_width = 15
+    border_color = 'white'
+    lc_comp = LineCollection(segments, norm=norm, cmap=cmap, linewidths=border_width)
     lc_comp.set_array(delta_time)
-    lc_comp.set_linewidth(7)
+    lc_comp.set_linewidth(13)
 
-    plt.subplots(figsize=(10, 8))
+    plt.subplots(figsize=(8, 9))
     plt.gca().add_collection(lc_comp)
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
@@ -644,10 +654,10 @@ def track_dominance(session, team_1, team_2):
     cmap = LinearSegmentedColormap.from_list("custom_cmap", colors, N=2)
     lc_comp = LineCollection(segments, cmap=cmap, joinstyle='bevel')
     lc_comp.set_array(delta_time_team)
-    lc_comp.set_linewidth(10)
+    lc_comp.set_linewidth(13)
 
-    plt.subplots(figsize=(10, 8))
-    border_width = 12
+    plt.subplots(figsize=(8, 8))
+    border_width = 15
     border_color = 'white'
     lc_border = LineCollection(segments, colors=border_color, linewidths=border_width)
     plt.gca().add_collection(lc_border)
@@ -661,9 +671,9 @@ def track_dominance(session, team_1, team_2):
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='lower left', fontsize='x-large')
 
-    plt.suptitle(f"TRACK DOMINANCE {team_1} vs {team_2}:"
-                 f" {str(session.session_info['StartDate'].year) + ' ' + session.event.EventName} \n", font='Fira Sans',
-                 fontsize=20)
+    plt.suptitle(f"{team_1} vs {team_2}:"
+                 f" {session.session_info['StartDate'].year}  {session.event.EventName}", font='Fira Sans',
+                 fontsize=18)
     plt.tight_layout()
     path = (f"../PNGs/TRACK DOMINANCE{team_1} vs {team_2} - {str(session.session_info['StartDate'].year)}"
             f" {session.event.EventName}.png")
@@ -674,7 +684,7 @@ def track_dominance(session, team_1, team_2):
 
 
 
-def get_fastest_data(session, column='Speed', fastest_lap=False, DRS=True):
+def get_fastest_data(session, fastest_lap=False, DRS=True):
     """
         Get the fastest data in a session
 
@@ -976,45 +986,52 @@ def get_fastest_sectors(session):
         except KeyError:
             print(f'No data for {driver}')
 
-    y_fix = 0.015
-    annotate_fontsize = 13.25
-    y_offset_rounded = 0.085
-    round_decimals = 3
+    def create_rounded_barh(ax, data, sector_time, color_col, height=0.8):
+        times = data.sort_values(by=sector_time, ascending=True)
+        colors = times[color_col].values
+        y_positions = range(len(times))
 
-    fig, ax = plt.subplots(nrows=3, figsize=(12, 8), gridspec_kw={'height_ratios': [2, 2, 2]}, dpi=150)
-    fig.suptitle(f'SECTOR TIMES IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
+        for y, time, color in zip(y_positions, times[sector_time], colors):
+            lighter_color = lighten_color(color, factor=0.6)
+            rect = patches.FancyBboxPatch((0, y - height / 2), time, height,
+                                          boxstyle="round,pad=0.02,rounding_size=0.2",
+                                          linewidth=2.75,
+                                          edgecolor=lighter_color,
+                                          facecolor=color)
+            ax.add_patch(rect)
+            ax.text(time + 0.1, y, f'{time:.3f}s', va='center', ha='left', color='white', fontsize=14.5)
+
+        ax.set_ylim(-1, len(times))
+        ax.set_yticks(y_positions)
+        ax.set_yticklabels(times.index.values)
+        ax.set_xlim(min(times[sector_time]) - 0.5, max(times[sector_time]) + 0.5)
+
+
+    fig, ax = plt.subplots(ncols=3, figsize=(8, 8), dpi=150)
+    fig.suptitle(f'SECTOR TIMES IN {session.event.year} {str(session.event.Country).upper()} '
+                f'{str(session.name).upper()}',
                  font='Fira Sans', fontsize=20, fontweight='bold')
     for i in range(3):
-        times = sector_times.sort_values(by=f'Sector{i+1}Time', ascending=True)
-        colors = times['Color'].values
-        bars = ax[i].bar(times.index.values, times[f'Sector{i+1}Time'], color=colors)
-
-        round_bars(bars, ax[i], colors, y_offset_rounded=y_offset_rounded, linewidth=2.75)
-        annotate_bars(bars, ax[i], y_fix, annotate_fontsize, text_annotate='default',
-                      ceil_values=False, round=round_decimals, linewidth=1.5, egdecolor='#004764')
-
-        ax[i].set_title(f'Sector {i+1} Times', font='Fira Sans', fontsize=18)
-        ax[i].set_xlim(-0.5, len(times)-0.5)
-
-        max_value = max(times[f'Sector{i+1}Time'])
-        ax[i].set_ylim(min(times[f'Sector{i+1}Time']) - 0.25, max_value + 0.25)
-        labels = [item.get_text() for item in ax[i].get_xticklabels()]
-        ax[i].set_xticklabels(labels, fontsize=12, rotation=45)
+        sector_time = f'Sector{i+1}Time'
+        colors = sector_times.sort_values(by=f'Sector{i+1}Time', ascending=True)['Color'].values
+        create_rounded_barh(ax[i], sector_times, sector_time, 'Color')
+        ax[i].set_title(f'Sector {i + 1}', font='Fira Sans', fontsize=18, y=0.99)
+        ax[i].invert_yaxis()
         color_index = 0
-        for label in ax[i].get_xticklabels():
+        for label in ax[i].get_yticklabels():
             label.set_color('white')
             label.set_fontsize(14)
-            label.set_rotation(35)
             for_color = colors[color_index]
             if for_color == '#ffffff':
                 for_color = '#FF7C7C'
             label.set_path_effects([path_effects.withStroke(linewidth=1.5, foreground=for_color)])
             color_index += 1
-        ax[i].yaxis.grid(True, linestyle='--', alpha=0.25)
+        ax[i].yaxis.grid(False)
         ax[i].xaxis.grid(False)
-        labels = [item.get_text() for item in ax[i].get_yticklabels()]
-        ax[i].set_yticklabels(labels, fontsize=14)
+        ax[i].set_xticklabels([])
+        ax[i].tick_params(axis='x', length=0)
     plt.tight_layout()
-    plt.savefig(f'../PNGs/SECTOR TIMES IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
+    plt.savefig(f'../PNGs/SECTOR TIMES IN {session.event.year} {str(session.event.Country).upper()} '
+                f'{str(session.name).upper()}',
                 dpi=450)
     plt.show()

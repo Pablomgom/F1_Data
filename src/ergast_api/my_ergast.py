@@ -73,7 +73,7 @@ race_results_schema = ['year', 'round', 'raceId', 'raceName', 'driverCurrentNumb
 qualy_results_schema = ['year', 'round', 'raceId', 'number', 'position', 'q1', 'q2', 'q3',
                         'raceName', 'constructorRef', 'constructorName',
                         'givenName', 'familyName', 'fullName', 'driverCode', 'circuitName',
-                        'location', 'country', 'circuitRef']
+                        'location', 'country', 'circuitRef', 'Valid']
 
 pit_stop_schema = ['year', 'round', 'raceName', 'fullName', 'stop', 'lap', 'pitTime', 'duration']
 
@@ -239,12 +239,12 @@ class My_Ergast:
                 new_time = fastest_lap + timedelta(seconds=additional_seconds)
                 columns[4-offset] = new_time.strftime('%M:%S.%f')[:-3]
             processed_line = [pos_counter, 0 if number == 0 else columns[1], full_name, constructor_name,
-                              columns[4-offset].replace(',', '.')]
+                              columns[4-offset].replace(',', '.'), columns[5-offset].replace(',', '.')]
             processed_data.append(processed_line)
             pos_counter += 1
 
         data_to_append = pd.DataFrame(processed_data, columns=["position", "number", "fullName",
-                                                               "constructorName", "q1"])
+                                                               "constructorName", "q1", "q2"])
 
         og_len = len(data_to_append)
         qualyId = self.qualifying['qualifyId'].max() + 1

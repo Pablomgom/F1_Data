@@ -1,3 +1,5 @@
+import math
+
 import fastf1
 import numpy as np
 import pandas as pd
@@ -246,3 +248,5 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     plt.tight_layout()
     plt.savefig(f'../PNGs/{year} {track} {session} PREDICTION.png', dpi=450)
     plt.show()
+
+

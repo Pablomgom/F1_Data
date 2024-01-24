@@ -9,6 +9,7 @@ from timple.timedelta import strftimedelta
 
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.table import render_mpl_table
+from src.utils.utils import get_medal
 from src.variables.team_colors import team_colors
 
 
@@ -154,7 +155,7 @@ def get_position_changes(year, round):
     plt.show()
 
 
-def compare_my_ergast_teammates(driver, start=2001, end=2024):
+def compare_my_ergast_teammates(driver, start=1950, end=2100):
     """
     Compare a driver against his teammates
     :param given: Name
@@ -170,29 +171,26 @@ def compare_my_ergast_teammates(driver, start=2001, end=2024):
             team = driver_data['constructorName'].values[0]
             team_data = session[session['constructorName'] == team]
             team_data = team_data[team_data['fullName'] != driver]
-            if len(team_data) == 1:
+            for t in team_data['fullName'].values:
+                team_data_teammate = team_data[team_data['fullName'] == t]
                 d_position = driver_data[col].values[0]
-                t_position = team_data[col].values[0]
-                if d_position == 0:
-                    d_position = 200
-                if t_position == 0:
-                    t_position = 200
-
-                if d_position < t_position:
+                t_position = team_data_teammate[col].values[0]
+                driver_valid = driver_data['Valid'].loc[0]
+                teammate_valid = team_data_teammate['Valid'].loc[0]
+                if d_position < t_position and (driver_valid and teammate_valid):
                     d_data[0] += 1
-                else:
+                elif d_position > t_position and (driver_valid and teammate_valid):
                     t_data[0] += 1
+                else:
+                    print(f'{session["year"].loc[0]}: {session["raceName"].loc[0]}')
                 driver_race_data = race_data[race_data['fullName'] == driver]
-                team_race_data = race_data[race_data['constructorName'] == team]
-                team_race_data = team_race_data[team_race_data['fullName'] != driver]
+                team_race_data = race_data[race_data['fullName'] == t]
                 d_grid = driver_race_data['grid'].values[0]
                 t_grid = team_race_data['grid'].values[0]
                 if d_grid == 1:
                     d_data[1] += 1
-                    # print(f'{d_position} - {driver_race_data["year"].min()} - {driver_race_data["raceName"].min()}')
                 elif t_grid == 1:
                     t_data[1] += 1
-                    # print(f'{t_position} - {team_data["year"].min()} - {team_data["raceName"].min()}')
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([i for i in range(start, end)])
@@ -200,12 +198,14 @@ def compare_my_ergast_teammates(driver, start=2001, end=2024):
     d_data = [0, 0, 0, 0, 0, 0, 0, 0]
     t_data = [0, 0, 0, 0, 0, 0, 0, 0]
 
-    index = 0
     for qualy in q.content:
-        process_data(qualy, d_data, t_data, 'position', r.content[index])
-        index += 1
+        year = qualy['year'].loc[0]
+        round = qualy['round'].loc[0]
+        race_gp = my_ergast.get_race_results([year], round).content[0]
+        process_data(qualy, d_data, t_data, 'position', race_gp)
 
     for race in r.content:
+        can_append = True
         driver_data = race[race['fullName'] == driver]
         if len(driver_data) == 1:
             team = driver_data['constructorName'].values[0]
@@ -213,47 +213,57 @@ def compare_my_ergast_teammates(driver, start=2001, end=2024):
             team_data = team_data[team_data['fullName'] != driver]
             d_points = driver_data['points'].values[0]
             d_data[7] += d_points
-            if len(team_data) == 1:
-                d_status = driver_data['status'].values[0]
-                t_status = team_data['status'].values[0]
-                d_position = driver_data['position'].values[0]
-                t_position = team_data['position'].values[0]
-                d_points = driver_data['points'].values[0]
-                t_points = team_data['points'].values[0]
-                # VICTORIES
-                if d_position == 1:
-                    d_data[3] += 1
-                if t_position == 1:
-                    t_data[3] += 1
-                # PODIUMS
-                if d_position in [1, 2, 3]:
-                    d_data[4] += 1
-                if t_position in [1, 2, 3]:
-                    t_data[4] += 1
-                # POINT FINISHES
-                if d_points > 0:
-                    d_data[5] += 1
-                if t_points > 0:
-                    t_data[5] += 1
-                # TOTAL POINTS
-                t_data[7] += t_points
-                if re.search(r'(Finished|\+)', d_status) and re.search(r'(Finished|\+)', t_status):
-                    if d_position < t_position:
-                        d_data[2] += 1
+            for t in team_data['fullName'].values:
+                teammate_data = team_data[team_data['fullName'] == t]
+                if len(teammate_data) == 1:
+                    d_status = driver_data['status'].values[0]
+                    t_status = teammate_data['status'].values[0]
+                    d_position = driver_data['position'].values[0]
+                    t_position = teammate_data['position'].values[0]
+                    d_points = driver_data['points'].values[0]
+                    t_points = teammate_data['points'].values[0]
+                    # VICTORIES
+                    if d_position == 1 and can_append:
+                        d_data[3] += 1
+                    if t_position == 1:
+                        t_data[3] += 1
+                    # PODIUMS
+                    if d_position in [1, 2, 3] and can_append:
+                        d_data[4] += 1
+                    if t_position in [1, 2, 3]:
+                        t_data[4] += 1
+                    # POINT FINISHES
+                    if d_points > 0 and can_append:
+                        d_data[5] += 1
+                    if t_points > 0:
+                        t_data[5] += 1
+                    # TOTAL POINTS
+                    t_data[7] += t_points
+                    # RACE H2H AND DNF
+                    if re.search(r'(Finished|\+)', d_status) and re.search(r'(Finished|\+)', t_status):
+                        if d_position < t_position:
+                            d_data[2] += 1
+                        else:
+                            t_data[2] += 1
                     else:
-                        t_data[2] += 1
-                    print(f'{d_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
+                        if not re.search(r'(Finished|\+)', d_status) and can_append:
+                            d_data[6] += 1
+                        if not re.search(r'(Finished|\+)', t_status) and can_append:
+                            t_data[6] += 1
+                    if can_append:
+                        can_append = False
 
-                else:
-                    if not re.search(r'(Finished|\+)', d_status):
-                        # print(f'{d_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
-                        d_data[6] += 1
-                    if not re.search(r'(Finished|\+)', t_status):
-                        t_data[6] += 1
-                        # print(f'{t_status} - {driver_data["year"].min()} - {driver_data["raceName"].min()}')
 
-    print(d_data, t_data)
-
+    print(f'QUALY H2H: {d_data[0]} vs. {t_data[0]} ({(d_data[0]/(d_data[0] + t_data[0]) * 100):.2f}%)')
+    print(f'POLES: {d_data[1]} vs. {t_data[1]} ({(d_data[1]/(d_data[1] + t_data[1])  * 100):.2f}%)')
+    print(f'RACE H2H: {d_data[2]} vs. {t_data[2]} ({(d_data[2]/(d_data[2] + t_data[2])  * 100):.2f}%)*')
+    print(f'VICTORIES: {d_data[3]} vs. {t_data[3]} ({(d_data[3]/(d_data[3] + t_data[3])  * 100):.2f}%)')
+    print(f'PODIUMS: {d_data[4]} vs. {t_data[4]} ({(d_data[4]/(d_data[4] + t_data[4])  * 100):.2f}%)')
+    print(f'POINT FINISHES: {d_data[5]} vs. {t_data[5]} ({(d_data[5]/(d_data[5] + t_data[5])  * 100):.2f}%)')
+    print(f'DNFs: {d_data[6]} vs. {t_data[6]} ({(d_data[6]/(d_data[6] + t_data[6])  * 100):.2f}%)')
+    print(f'POINTS: {d_data[7]} vs. {t_data[7]} ({(d_data[7]/(d_data[7] + t_data[7]) * 100):.2f}%)')
+    print('\n*Only races in which both drivers finished')
+    print('Sprint are not considered')
 
 def get_driver_laps(year):
     """
@@ -351,7 +361,7 @@ def q3_appearances(year):
         print(f'{v} - {d}')
 
 
-def results_from_pole(driver, start=1950, end=2024, grid=1):
+def results_from_grid_position(driver, start=1950, end=2024, grid=1):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
     finish_positions = Counter()
@@ -368,7 +378,8 @@ def results_from_pole(driver, start=1950, end=2024, grid=1):
             finish_positions[finish_pos] += 1
             winner = race[race['position'] == 1]
             winners[winner['fullName'].iloc[0]] += 1
-            print(f'{pole["year"].values[0]} {pole["raceName"].values[0]}: From P{grid} to {finish_pos}')
+            medal = get_medal(finish_pos)
+            print(f'{medal}{pole["year"].values[0]} {pole["raceName"].values[0]}: From P{grid} to {finish_pos}')
 
     for pos, count in sorted(finish_positions.items(), key=lambda x: x[1], reverse=True):
         print(f'{pos}: {count} times')
@@ -390,8 +401,8 @@ def results_from_pole(driver, start=1950, end=2024, grid=1):
         plt.savefig(f'../PNGs/{title}.png', dpi=450)
         plt.show()
 
-    sankey_plot(winners, driver, f'RACE WINNERS WITH {driver.upper()} ON POLE')
-    sankey_plot(finish_positions, driver, f'{driver.upper()} RESULTS STARTING ON POLE')
+    sankey_plot(winners, driver, f'RACE WINNERS WITH {driver.upper()} STARTING FROM P{grid}')
+    sankey_plot(finish_positions, driver, f'{driver.upper()} RESULTS STARTING FROM P{grid}')
 
 
 

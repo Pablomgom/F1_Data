@@ -136,6 +136,8 @@ def get_valid_drivers(drivers, results, year):
     valid_drivers = []
     for d in drivers:
         name = d.name.split('//')
+        if name[0] == 'Jacques':
+            a = 1
         if get_finish_status(name[0], name[1], results):
             valid_drivers.append(d)
         else:
@@ -407,3 +409,34 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
     if restore or save:
         with open("elo/elo_data.pkl", "wb") as file:
             pickle.dump(drivers, file)
+
+
+def best_season(season=2007):
+    with open("elo/elo_data.pkl", "rb") as file:
+        drivers = pickle.load(file)
+
+    rookie_session = {}
+
+    for d in drivers:
+        prev_value = 0
+        first_race = True
+        for r, e in d.historical_elo.items():
+            current_year = int(r.split(' - ')[0])
+            if current_year == season:
+                diff_prev = prev_value - e
+                if diff_prev != 0 and e != 0:
+                    if (current_year, d.name) not in rookie_session:
+                        if prev_value == 0:
+                            rookie_session[(current_year, d.name)] = [1500, e]
+                        else:
+                            rookie_session[(current_year, d.name)] = [prev_value, e]
+                    else:
+                        rookie_session[(current_year, d.name)].append(e)
+            if e != 0:
+                prev_value = e
+
+    filtered_rookie_session = sorted(rookie_session.items(), key=lambda x: x[1][-1] - x[1][0], reverse=True)
+    index = 1
+    for d, e in filtered_rookie_session:
+        print(f'{index} - {d[1].replace("//", " ")}: {(e[-1] - e[0]):.2f} (from {e[0]:.2f} to {e[-1]:.2f})')
+        index += 1

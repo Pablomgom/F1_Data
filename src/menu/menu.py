@@ -5,7 +5,7 @@ from src.analysis.overtakes import *
 from src.analysis.pit_stops import *
 from src.analysis.teams import *
 from src.analysis.upgrades import *
-from src.elo.elo import elo_execution
+from src.elo.elo import elo_execution, best_season
 from src.analysis.ergast import *
 from src.sessions.qualy import *
 from src.sessions.race import *
@@ -72,7 +72,7 @@ def get_funcs():
         'get_driver_laps': get_driver_laps,
         'winning_positions_per_circuit': winning_positions_per_circuit,
         'q3_appearances': q3_appearances,
-        'results_from_pole': results_from_pole,
+        'results_from_grid_position': results_from_grid_position,
         'highest_qualy': highest_qualy,
         'long_runs_scatter': long_runs_scatter,
         'last_result_grid_pos': last_result_grid_pos,
@@ -102,6 +102,13 @@ def get_funcs():
         'difference_P2': difference_P2,
         'delta_reference_team': delta_reference_team,
         'team_gap_to_next_or_fastest': team_gap_to_next_or_fastest,
+        'driver_results_per_year': driver_results_per_year,
+        'avg_qualy_pos_dif': avg_qualy_pos_dif,
+        'avg_race_pos_dif': avg_race_pos_dif,
+        'all_drivers_race_h2h': all_drivers_race_h2h,
+        'times_lapped_per_team': times_lapped_per_team,
+        'avg_qualy_pos_dif_per_years': avg_qualy_pos_dif_per_years,
+        'best_season': best_season,
         'help': help
     }
 

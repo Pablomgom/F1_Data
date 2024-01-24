@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import round_bars, annotate_bars
+from src.utils.utils import get_medal
 from src.variables.driver_colors import driver_colors_2023
 
 
@@ -378,23 +379,30 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
                 team = race[race['fullName'] == d_1]['constructorName'].loc[0]
                 teammates = race[(race['constructorName'] == team) & (race['fullName'] != d_1)]['fullName'].values
                 for d_2 in teammates:
-                    best_pos = race[race['fullName'].isin([d_1, d_2])]['position'].min()
-                    status = race[race['fullName'].isin([d_1, d_2])]['status'].values
-                    status = [i for i in status if '+' in i or 'Finished' in i]
-                    driver = race[race['position'] == best_pos]['fullName'].loc[0]
-                    if (DNFs and len(status) == 2) or not DNFs:
-                        if race_type == 'Race':
-                            if year not in race_result:
-                                race_result[year] = {}
-                                d1_points[year] = {}
-                                d2_points[year] = {}
-                            if d_2 not in race_result[year]:
-                                race_result[year][d_2] = []
-                                d1_points[year][d_2] = 0
-                                d2_points[year][d_2] = 0
-                            race_result[year][d_2].append(driver)
-                            d1_points[year][d_2] += race[race['fullName'] == d_1]['points'][0]
-                            d2_points[year][d_2] += race[race['fullName'] == d_2]['points'][0]
+                    if len(race[race['fullName'] == d_2]) == 1:
+                        status = race[race['fullName'].isin([d_1, d_2])]['status'].values
+                        status = [i for i in status if '+' in i or 'Finished' in i]
+                        d1_pos = race[race['fullName'] == d_1]['position'].loc[0]
+                        d2_pos = race[race['fullName'] == d_2]['position'].loc[0]
+                        driver = None
+                        if d1_pos < d2_pos:
+                            driver = d_1
+                        elif d1_pos > d2_pos:
+                            driver = d_2
+                        if (DNFs and len(status) == 2) or not DNFs:
+                            if race_type == 'Race':
+                                if year not in race_result:
+                                    race_result[year] = {}
+                                    d1_points[year] = {}
+                                    d2_points[year] = {}
+                                if d_2 not in race_result[year]:
+                                    race_result[year][d_2] = []
+                                    d1_points[year][d_2] = 0
+                                    d2_points[year][d_2] = 0
+                                if driver is not None:
+                                    race_result[year][d_2].append(driver)
+                                d1_points[year][d_2] += race[race['fullName'] == d_1]['points'][0]
+                                d2_points[year][d_2] += race[race['fullName'] == d_2]['points'][0]
         return d1_points, d2_points
 
     d1_points, d2_points = process_drivers(total_races, 'Race', d1_points, d2_points)
@@ -403,22 +411,35 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
         driver_ahead = 0
         teammate_ahead = 0
         for year, results in data.items():
+            printed_line = ''
             for teammate, h2h in results.items():
                 count = Counter(h2h)
-                print(f"{year} against {teammate}:")
-                for name, count in count.items():
+                printed_line += f'{year}:'
+                d_1_curr_year = 0
+                teammate_curr_year = 0
+                for name, times in count.items():
                     if name == d_1:
-                        driver_ahead += count
+                        driver_ahead += times
+                        d_1_curr_year = times
                     else:
-                        teammate_ahead += count
-                    print(f"  {name}: {count}")
+                        teammate_ahead += times
+                        teammate_curr_year = times
+                printed_line += f' {d_1.split(" ", 1)[1]} {d_1_curr_year} - {teammate_curr_year} {teammate.split(" ", 1)[1]}'
+                dot = '🟰'
+                if d_1_curr_year < teammate_curr_year:
+                    dot = '🔴'
+                elif d_1_curr_year > teammate_curr_year:
+                    dot = '🟢'
+                printed_line = f'{dot}{printed_line}'
+                print(printed_line)
+                printed_line = ''
 
         print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
 
     print_results(race_result)
 
 
-def get_driver_results_circuit(driver, circuit, start=None, end=None):
+def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
     """
         Get the driver results on a circuit
 
@@ -429,27 +450,42 @@ def get_driver_results_circuit(driver, circuit, start=None, end=None):
         end (int): Year of end
    """
 
-    if start is None:
-        start = 1950
-    if end is None:
-        end = 2024
+    races = My_Ergast().get_race_results([i for i in range(start, end)])
+    print(f'🚨{driver.upper()} RESULTS IN {circuit}\n')
+    for r in races.content:
+        results = r[(r['fullName'] == driver) & (r['circuitRef'] == circuit)]
+        if len(results) > 0:
+            year = r['year'].loc[0]
+            grid = results['grid'].values[0]
+            position = results['position'].values[0]
+            status = results['status'].values[0]
+            if '+' not in status and 'Finished' not in status:
+                position = 'DNF'
+            else:
+                position = 'P' + str(position)
+            team = results['constructorName'].values[0]
+            medal = get_medal(position)
+            print(f'{medal}{year}: From P{grid} to {position} with {team}')
 
-    ergast = Ergast()
-    for year in range(start, end):
-        round_number = ergast.get_race_schedule(season=year, circuit=circuit, limit=1000)
-        if len(round_number):
-            round_number = round_number.values[0][1]
-            results = ergast.get_race_results(season=year, round=round_number, limit=1000)
-            if len(results.content) > 0:
-                results = results.content[0]
-                results = results[results['driverId'] == driver]
-                if len(results) > 0:
-                    grid = results['grid'].values[0]
-                    position = results['position'].values[0]
-                    status = results['status'].values[0]
-                    if '+' not in status and 'Finished' not in status:
-                        position = 'DNF'
-                    else:
-                        position = 'P' + str(position)
-                    team = results['constructorName'].values[0]
-                    print(f'{year}: From P{grid} to {position} with {team}')
+
+def driver_results_per_year(driver, start=1900, end=2100):
+
+    races = My_Ergast().get_race_results([i for i in range(start, end)])
+    positions_gained = 0
+    for r in races.content:
+        driver_data = r[r['fullName'] == driver]
+        race_name = driver_data['raceName'].loc[0].replace('Grand Prix', 'GP')
+        grid_pos = driver_data['grid'].loc[0]
+        grid_integer = grid_pos
+        grid_pos = f'P{grid_pos}'
+        result = driver_data["position"].loc[0]
+        status = driver_data['status'].loc[0]
+        if status != 'Finished' and '+' not in status:
+            result = 'DNF'
+        if result != 'DNF':
+            positions_gained += grid_integer - result
+            result = f'P{result}'
+        medal = get_medal(result)
+        print(f'{medal}From {grid_pos} to {result} in the {race_name}')
+    print(f'\nPositions gained (excluding DNFs): {positions_gained}')
+

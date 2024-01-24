@@ -93,6 +93,10 @@ def plot_overtakes():
     plt.show()
 
 
-def overtakes_by_race():
-    df = pd.read_csv('../resources/csv/Overtakes_by_race.csv')
-    a = 1
+def overtakes_by_race(race):
+    overtakes = pd.read_csv('../resources/csv/Overtakes.csv')
+    overtakes = overtakes[overtakes['Race'] == race]
+    overtakes = overtakes.groupby('Overtakes')['Season'].apply(list).reset_index()
+    overtakes = overtakes.sort_values(by='Overtakes', ascending=False)
+    for index, row in overtakes.iterrows():
+        print(f'{row["Overtakes"]}: {str(row["Season"]).replace("[", "").replace("]", "")}')

@@ -8,7 +8,6 @@ import matplotlib.patheffects as path_effects
 
 
 def lighten_color(hex_color, factor=0.2):
-
     hex_color = hex_color.strip('#')
 
     r = int(hex_color[:2], 16)
@@ -87,7 +86,6 @@ def rounded_top_rect(x, y, width, height, corner_radius, edgecolor, y_offset=0, 
     lighter_color = lighten_color(edgecolor, factor=0.6)
     return patches.PathPatch(path, edgecolor=lighter_color, linewidth=linewidth)
 
-
 def round_stacked_bars(x, y, width, height, color):
     corner_radius = min(5 * width, height / 2)
 
@@ -139,7 +137,8 @@ def stacked_bars(bars, ax, color):
         ax.add_patch(rounded_box)
 
 
-def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0, corner_radius=0.1, linewidth=1.75):
+def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0, corner_radius=0.1, linewidth=1.75,
+               horizontal=False):
     for bar in bars:
         bar.set_visible(False)
 
@@ -159,8 +158,7 @@ def round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0,
             color = colors[i]
 
         if height != 0:
-            rounded_box = rounded_top_rect(x, y, width, height, corner_radius, color,
-                                           y_offset=y_offset_rounded, linewidth=linewidth)
+            rounded_box = rounded_top_rect(x, y, width, height, corner_radius, color, linewidth=linewidth)
             rounded_box.set_facecolor(color)
             ax.add_patch(rounded_box)
         i += 1

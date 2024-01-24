@@ -220,7 +220,7 @@ def tyre_strategies(session):
                prop=get_font_properties('Fira Sans', 'large'), loc='upper center', ncol=2)
 
     plt.title(session.event.OfficialEventName, font='Fira Sans', fontsize=18)
-    plt.xlabel("Lap Number", font='Fira Sans')
+    plt.xlabel("Lap Number", font='Fira Sans', fontsize=14)
     plt.grid(False)
     ax.invert_yaxis()
 
@@ -892,3 +892,80 @@ def delta_reference_team(year, save=False, round=None):
         df_save = df_save.melt(id_vars=['Year', 'Session', 'Track'], var_name='Team', value_name='Delta')
         df_save = df_save[['Team', 'Delta', 'Year', 'Session', 'Track']]
         df_save.to_csv('../resources/csv/Race_pace_delta.csv', index=False)
+
+
+def avg_race_pos_dif(driver):
+
+    races = My_Ergast().get_race_results([i for i in range(1950, 2100)])
+    delta_per_year = {}
+    for q in races.content:
+        driver_data = q[q['fullName'] == driver]
+        if len(driver_data) > 0:
+            status = driver_data['status'].loc[0]
+            if status == 'Finished' or '+' in status:
+                driver_pos = driver_data['position'].loc[0]
+                team = driver_data['constructorName'].loc[0]
+                teammates = q[(q['constructorName'] == team) & (q['fullName'] != driver)]['fullName']
+                for t in teammates.values:
+                    teammate_data = q[q['fullName'] == t]
+                    if len(teammate_data) == 1:
+                        teammate_valid = teammate_data['status'].loc[0]
+                        year = q['year'].loc[0]
+                        if teammate_valid == 'Finished' or '+' in teammate_valid:
+                            teammate_pos = teammate_data['position'].loc[0]
+                            if (year, t) not in delta_per_year:
+                                delta_per_year[(year, t)] = [[], []]
+                            delta_per_year[(year, t)][0].append(driver_pos)
+                            delta_per_year[(year, t)][1].append(teammate_pos)
+
+    for y, d in delta_per_year.items():
+        driver_avg = np.median(d[0])
+        teammate_avg = np.median(d[1])
+        diff = driver_avg - teammate_avg
+        diff_str = f'+{diff:.2f}' if diff > 0 else f'{diff:.2f}'
+        print(f'{"🔴" if diff > 0 else "🟢" if diff < 0 else "🟰"}{y[0]}: {y[1]} ({diff_str})')
+
+    print(f'If the value is less than 0, {driver} has a better average race position.')
+    print(f'If the value is greater than 0, {driver} has a worst average race position.')
+    print('Only races in which BOTH drivers finished.')
+
+
+def all_drivers_race_h2h():
+
+    races = My_Ergast().get_race_results([i for i in range(1950, 2100)])
+    drivers_dict = {}
+    for r in races.content:
+        drivers = r['fullName'].unique()
+        for d in drivers:
+            driver_data = r[r['fullName'] == d]
+            if len(driver_data) == 1:
+                driver_status = driver_data['status'].loc[0]
+                if driver_status == 'Finished' or '+' in driver_status:
+                    driver_team = driver_data['constructorName'].loc[0]
+                    teammates = r[(r['constructorName'] == driver_team) & (r['fullName'] != d)]['fullName'].unique()
+                    for t in teammates:
+                        teammate_data = r[r['fullName'] == t]
+                        if len(teammate_data) == 1:
+                            teammate_status = teammate_data['status'].loc[0]
+                            if teammate_status == 'Finished' or '+' in teammate_status:
+                                driver_pos = driver_data['position'].loc[0]
+                                teammate_pos = teammate_data['position'].loc[0]
+                                win_h2h = None
+                                if driver_pos < teammate_pos:
+                                    win_h2h = 1
+                                elif driver_pos > teammate_pos:
+                                    win_h2h = 0
+                                if win_h2h is not None:
+                                    if d not in drivers_dict:
+                                        drivers_dict[d] = [win_h2h]
+                                    else:
+                                        drivers_dict[d].append(win_h2h)
+    percentage_dict = {}
+    for d, h in drivers_dict.items():
+        if len(h) >= 15:
+            diff = (np.sum(h)/len(h)) * 100
+            percentage_dict[d] = diff
+
+    percentage_dict = dict(sorted(percentage_dict.items(), key=lambda item: item[1], reverse=True))
+    for d, h in percentage_dict.items():
+        print(f'{d}: {h:.2f}% ({sum(drivers_dict[d])}/{len(drivers_dict[d])})')

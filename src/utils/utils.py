@@ -81,7 +81,7 @@ def parse_args(args_input, function_map, session):
 
 
 def load_session(year, gp, race_type):
-    session = fastf1.get_testing_session(year, gp, race_type)
+    session = fastf1.get_session(year, gp, race_type)
     print(session.api_path)
     session.load()
     return session
@@ -103,7 +103,7 @@ def plot_turns(circuit_info, track_angle, plt):
         text_y = corner['Y'] + offset_y
         text_x, text_y = rotate([text_x, text_y], angle=track_angle)
         track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
-        plt.scatter(text_x, text_y, color='grey', s=300)
+        plt.scatter(text_x, text_y, color='grey', s=325)
         plt.plot([track_x, text_x], [track_y, text_y], color='grey')
         plt.text(text_x, text_y, txt,
                  va='center_baseline', ha='center', size='large', color='white')
@@ -252,3 +252,20 @@ def get_country_names(text):
     if country == 'United ':
         country = 'United Kingdom '
     return country
+
+
+def get_medal(position):
+    medal = ''
+    if position == 'P1':
+        medal = '🥇'
+    elif position == 'P2':
+        medal = '🥈'
+    elif position == 'P3':
+        medal = '🥉'
+    return medal
+
+
+def get_dot(diff):
+    if diff > 0:
+        return '🟢'
+    return '🔴'

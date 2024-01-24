@@ -1,3 +1,4 @@
+import math
 import re
 import statistics
 from collections import Counter
@@ -14,6 +15,7 @@ from unidecode import unidecode
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import get_handels_labels, get_font_properties
 from src.plots.table import render_mpl_table
+from src.utils.utils import get_dot
 from src.variables.driver_colors import driver_colors_historical
 
 
@@ -112,7 +114,7 @@ def get_circuitos():
     print(countries)
 
 
-def wins_and_poles_circuit(circuit, start=None, end=None):
+def wins_and_poles_circuit(circuit, start=1950, end=2050):
     """
         Get all wins and poles in a circuit
 
@@ -123,28 +125,21 @@ def wins_and_poles_circuit(circuit, start=None, end=None):
 
    """
 
-    ergast = Ergast()
+    ergast = My_Ergast()
     winners = pd.Series(dtype=str)
     poles = pd.Series(dtype=str)
     years = []
-    if end is None:
-        end = 2024
-    if start is None:
-        start = 1950
-    for i in range(start, end):
-        races = ergast.get_race_results(season=i, limit=1000)
-        has_raced = races.description[races.description['circuitId'] == circuit]
+    races = ergast.get_race_results([i for i in range(start, end)])
+    for r in races.content:
+        has_raced = r[r['circuitRef'] == circuit]
         if len(has_raced) > 0:
-            index = has_raced['circuitId'].index[0]
-            actual_race = races.content[index]
-            data = actual_race[actual_race['position'] == 1]
-            qualy_data = actual_race[actual_race['grid'] == 1]
-            driver_win = str(data['givenName'].min() + ' ' + data['familyName'].min())
-            driver_pole = str(qualy_data['givenName'].min() + ' ' + qualy_data['familyName'].min())
+            data = r[r['position'] == 1]
+            qualy_data = r[r['grid'] == 1]
+            driver_win = str(data['fullName'].loc[0])
+            driver_pole = str(qualy_data['fullName'].loc[0])
             winners = pd.concat([winners, pd.Series([driver_win])], ignore_index=True)
             poles = pd.concat([poles, pd.Series([driver_pole])], ignore_index=True)
-            years.append(i)
-        print(years)
+            years.append(r['year'].loc[0])
 
     winners.index = years
     poles.index = years
@@ -163,9 +158,11 @@ def wins_and_poles_circuit(circuit, start=None, end=None):
     poles = poles.drop(columns=["First_Year"])
 
     print('POLES')
-    print(poles)
+    for index, row in poles.iterrows():
+        print(f'{row["Times"]} - {index}: {str(row["Years"]).replace("[", "(").replace("]", ")")}')
     print('WINNERS')
-    print(winners)
+    for index, row in winners.iterrows():
+        print(f'{row["Times"]} - {index}: {str(row["Years"]).replace("[", "(").replace("]", ")")}')
 
 
 def get_historical_race_days():
@@ -308,7 +305,7 @@ def lucky_drivers(start=None, end=None):
 
     values = 0
     for key, value in sorted_data.items():
-        print(f"{key}: {value}/{drivers_array.count(key)} ({value/drivers_array.count(key)*100:.3f}%)")
+        print(f"{key}: {value}/{drivers_array.count(key)} ({value / drivers_array.count(key) * 100:.3f}%)")
         values += value
     print(values)
 
@@ -622,7 +619,6 @@ def difference_P2():
 
 
 def team_gap_to_next_or_fastest(team, start=2014, end=2024):
-
     def get_team_order(teams):
         order = []
         for element in teams:
@@ -662,9 +658,49 @@ def team_gap_to_next_or_fastest(team, start=2014, end=2024):
                     next_team_lap = rivals[s].loc[0].total_seconds()
                     next_team = rivals['constructorName'].loc[0]
                     diff = next_team_lap - fastest_from_team
-                    print(f'{team} {diff:.3f}s {"faster" if diff > 0 else "slower"} than {next_team} in the {race_name} '
-                          f'(P{team_order.index(team) + 1})\n'
-                          f'From P{team_order.index(team) + 1} to P{team_order_race.index(team) + 1} '
-                          f'in the {race_name}')
+                    dot = get_dot(diff)
+                    print(
+                        f'{dot}{abs(diff):.3f}s {"faster" if diff > 0 else "slower"} than {next_team} in the {race_name}')
                     break
 
+
+def times_lapped_per_team(start=2014, end=2024):
+    races = My_Ergast().get_race_results([i for i in range(start, end)])
+    dict_per_year = {}
+    drivers_dict = {}
+    for r in races.content:
+        max_laps = r['laps'].loc[0]
+        for index, row in r.iterrows():
+            status = row['status']
+            year = row['year']
+            if '+' in status:
+                times_lapped = int(status.replace('+', '').split(' ')[0])
+                driver_laps = row['laps']
+                classified = True if driver_laps >= math.ceil(max_laps * 0.9) else False
+                if classified:
+                    team = row['constructorName']
+                    driver = row['fullName']
+                    if (year, team) not in dict_per_year:
+                        dict_per_year[(year, team)] = times_lapped
+                    else:
+                        dict_per_year[(year, team)] += times_lapped
+
+                    if driver not in drivers_dict:
+                        drivers_dict[driver] = times_lapped
+                    else:
+                        drivers_dict[driver] += times_lapped
+
+    print('---PER YEAR---')
+    dict_per_year = dict(sorted(dict_per_year.items(), key=lambda item: (item[0][0], item[1])))
+    for t, l in dict_per_year.items():
+        print(f'{t[0]} - {t[1]}: {l}')
+
+    print('---ALL TIME---')
+    dict_per_year = dict(sorted(dict_per_year.items(), key=lambda item: item[1]))
+    for t, l in dict_per_year.items():
+        print(f'{t[0]} - {t[1]}: {l}')
+
+    print('---DRIVERS---')
+    drivers_dict = dict(sorted(drivers_dict.items(), key=lambda item: item[1]))
+    for t, l in drivers_dict.items():
+        print(f'{t}: {l}')
