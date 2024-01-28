@@ -138,34 +138,34 @@ def tyre_strategies(session):
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
-    past_stint = 1
-    past_driver = stints.loc[0, 'Driver']
-    for i in range(len(stints)):
-        changed = False
-        current_driver = stints.loc[i, 'Driver']
-
-        if past_driver != current_driver:
-            past_stint = 1
-
-        current_stint = stints.loc[i, 'Stint']
-        if past_stint != current_stint and i != 0:
-            tyre_laps_prev = stints.loc[i - 1, 'TyreLife']
-            tyre_laps = stints.loc[i, 'TyreLife']
-            compound_prev = stints.loc[i - 1, 'Compound']
-            compound = stints.loc[i, 'Compound']
-
-            if tyre_laps_prev + 1 == tyre_laps and (compound_prev == compound):
-                indexes = stints.index[stints['Driver'] == stints.loc[i, 'Driver']].tolist()
-                indexes = [x for x in indexes if x >= i]
-                for index in indexes:
-                    stints.loc[index, 'Stint'] = stints.loc[index, 'Stint'] - 1
-                    stints.loc[index, 'FreshTyre'] = stints.loc[min(indexes) - 1, 'FreshTyre']
-                past_stint = current_stint - 1
-                changed = True
-
-        if not changed:
-            past_stint = current_stint
-            past_driver = current_driver
+    # past_stint = 1
+    # past_driver = stints.loc[0, 'Driver']
+    # for i in range(len(stints)):
+    #     changed = False
+    #     current_driver = stints.loc[i, 'Driver']
+    #
+    #     if past_driver != current_driver:
+    #         past_stint = 1
+    #
+    #     current_stint = stints.loc[i, 'Stint']
+    #     if past_stint != current_stint and i != 0:
+    #         tyre_laps_prev = stints.loc[i - 1, 'TyreLife']
+    #         tyre_laps = stints.loc[i, 'TyreLife']
+    #         compound_prev = stints.loc[i - 1, 'Compound']
+    #         compound = stints.loc[i, 'Compound']
+    #
+    #         if tyre_laps_prev + 1 == tyre_laps and (compound_prev == compound):
+    #             indexes = stints.index[stints['Driver'] == stints.loc[i, 'Driver']].tolist()
+    #             indexes = [x for x in indexes if x >= i]
+    #             for index in indexes:
+    #                 stints.loc[index, 'Stint'] = stints.loc[index, 'Stint'] - 1
+    #                 stints.loc[index, 'FreshTyre'] = stints.loc[min(indexes) - 1, 'FreshTyre']
+    #             past_stint = current_stint - 1
+    #             changed = True
+    #
+    #     if not changed:
+    #         past_stint = current_stint
+    #         past_driver = current_driver
 
     stints = stints.groupby(["Driver", "Stint", "Compound", "FreshTyre"])
     stints = stints.count().reset_index()
@@ -192,11 +192,11 @@ def tyre_strategies(session):
             text_y_position = driver  # align vertically with the driver's bar
             text = ax.text(
                 text_x_position, text_y_position, stint_text,
-                ha='center', va='center', font='Fira Sans', fontsize=12, color='black', alpha=0.75
+                ha='center', va='center', font='Fira Sans', fontsize=13, color='black', alpha=1
             )
 
             text.set_path_effects([
-                patheffects.withStroke(linewidth=0.8, foreground="white")
+                patheffects.withStroke(linewidth=2.5, foreground="white")
             ])
 
             plt.barh(
@@ -212,7 +212,6 @@ def tyre_strategies(session):
             label = f"{'New' if row['FreshTyre'] else 'Used'} {row['Compound']}"
             color_rgb = mcolors.to_rgb(color)  # Convert color name to RGB
             patches[label] = mpatches.Patch(color=color_rgb + (alpha,), label=label)
-
             previous_stint_end += row["StintLength"]
 
     patches = {k: patches[k] for k in sorted(patches.keys(), key=lambda x: (x.split()[1], x.split()[0]))}
@@ -246,7 +245,6 @@ def race_pace_top_10(session, threshold=1.07):
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
 
     point_finishers = session.drivers[:10]
-    point_finishers = ['VER', 'RUS', 'LEC', 'NOR', 'ALO', 'TSU', 'GAS', 'ALB', 'HUL', 'ZHO']
     driver_laps = session.laps.pick_drivers(point_finishers).pick_quicklaps(threshold).pick_wo_box()
     driver_laps = driver_laps.reset_index()
     finishing_order = [session.get_driver(i)["Abbreviation"] for i in point_finishers]
@@ -756,24 +754,25 @@ def race_diff_v2(year, save=False):
 def percentage_race_ahead(start=2001, end=2024):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve']
+    circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve', 'albert_park']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:
             drivers_in_q = r['fullName'].unique()
             for d in drivers_in_q:
                 driver_data = r[r['fullName'] == d]
-                driver_pos = min(driver_data['position'])
+                driver_pos = driver_data['position'].loc[0]
                 driver_status = driver_data[driver_data['position'] == driver_pos]['status'].loc[0]
-                if 'Finished' in driver_status or '+' in driver_status:
-                    driver_teams = driver_data['constructorName'].unique()
-                    for driver_team in driver_teams:
-                        team_data = r[r['constructorName'] == driver_team]
-                        team_data = team_data[team_data['fullName'] != d]
-                        for teammate in team_data['fullName'].unique():
-                            teammate_pos = min(r[r['fullName'] == teammate]['position'])
-                            teammate_status = \
-                                r[(r['fullName'] == teammate) & (r['position'] == teammate_pos)]['status'].loc[0]
+                if ('Finished' in driver_status or '+' in driver_status) and len(driver_data) == 1:
+                    driver_team = driver_data['constructorName'].loc[0]
+                    team_data = r[r['constructorName'] == driver_team]
+                    team_data = team_data[team_data['fullName'] != d]
+                    for teammate in team_data['fullName'].unique():
+                        teammate_pos = r[r['fullName'] == teammate]
+                        if len(teammate_pos) == 1:
+                            teammate_pos = teammate_pos['position'].loc[0]
+                            teammate_status = r[(r['fullName'] == teammate)
+                                                & (r['position'] == teammate_pos)]['status'].loc[0]
                             if 'Finished' in teammate_status or '+' in teammate_status:
                                 win = 1
                                 if driver_pos > teammate_pos:
@@ -925,14 +924,14 @@ def avg_race_pos_dif(driver):
         diff_str = f'+{diff:.2f}' if diff > 0 else f'{diff:.2f}'
         print(f'{"🔴" if diff > 0 else "🟢" if diff < 0 else "🟰"}{y[0]}: {y[1]} ({diff_str})')
 
-    print(f'If the value is less than 0, {driver} has a better average race position.')
-    print(f'If the value is greater than 0, {driver} has a worst average race position.')
+    print(f'If the value is less than 0, {driver} has a better median race position.')
+    print(f'If the value is greater than 0, {driver} has a worst median race position.')
     print('Only races in which BOTH drivers finished.')
 
 
-def all_drivers_race_h2h():
+def all_drivers_race_h2h(start=1950, end=2100):
 
-    races = My_Ergast().get_race_results([i for i in range(1950, 2100)])
+    races = My_Ergast().get_race_results([i for i in range(start, end)])
     drivers_dict = {}
     for r in races.content:
         drivers = r['fullName'].unique()
@@ -962,10 +961,16 @@ def all_drivers_race_h2h():
                                         drivers_dict[d].append(win_h2h)
     percentage_dict = {}
     for d, h in drivers_dict.items():
-        if len(h) >= 15:
-            diff = (np.sum(h)/len(h)) * 100
-            percentage_dict[d] = diff
+        diff = (np.sum(h)/len(h)) * 100
+        percentage_dict[d] = diff
 
-    percentage_dict = dict(sorted(percentage_dict.items(), key=lambda item: item[1], reverse=True))
-    for d, h in percentage_dict.items():
-        print(f'{d}: {h:.2f}% ({sum(drivers_dict[d])}/{len(drivers_dict[d])})')
+    df = pd.DataFrame(percentage_dict.items(), columns=['Driver', 'Percentage'])
+    df['Rank'] = df['Percentage'].rank(method='min', ascending=False)
+    df.sort_values(by='Rank', inplace=True)
+    for index, row in df.iterrows():
+        driver = row['Driver']
+        percentage = row['Percentage']
+        rank = int(row['Rank'])  # Convert to int for display purposes
+        total_runs = sum(drivers_dict[driver])
+        num_runs = len(drivers_dict[driver])
+        print(f'{rank} - {driver}: {percentage:.2f}% ({total_runs}/{num_runs})')

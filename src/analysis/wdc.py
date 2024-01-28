@@ -7,6 +7,7 @@ from matplotlib.lines import Line2D
 
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import stacked_bars, round_bars, annotate_bars
+from src.utils.utils import create_rounded_barh, create_rounded_barh_custom
 from src.variables.variables import point_systems
 
 
@@ -161,13 +162,9 @@ def wdc_comparation(driver, start=None, end=None, DNFs=None):
 
     points_diff = np.subtract(points_per_year, team_mates_points_per_year)
 
-    fig, ax1 = plt.subplots(figsize=(10, 8), dpi=150)
-
     all_teammate_names = set()
     for names in fixed_names:
         all_teammate_names.add(names)
-
-    color_map = cm.get_cmap('tab20', len(all_teammate_names))
 
     first_three_letters = [
         '/'.join(
@@ -177,39 +174,43 @@ def wdc_comparation(driver, start=None, end=None, DNFs=None):
         for name in fixed_names
     ]
     text_to_annotate = []
-    for p, d in zip(points_diff, first_three_letters):
-        if p > 0:
-            text = f'+{p:.0f}\nVS\n{d}'
+    for p, t, n in zip(points_per_year, team_mates_points_per_year, first_three_letters):
+        diff = p - t
+        diff = 0 if np.isnan(diff) else diff
+        if diff > 0:
+            text = f'+{diff:.1f} vs. {n} ({(p/(p+t))*100:.2f})%'
+        elif diff < 0:
+            text = f'{diff:.1f} vs. {n}  ({(p/(p+t))*100:.2f})%'
         else:
-            text = f'{p:.0f}\nVS\n{d}'
+            if p == 0 and t == 0:
+                text = f'No points for {driver.split(" ")[1][:3].upper()} and {n}'
+            else:
+                text = f'Tie with {n} at {p} points'
         text_to_annotate.append(text)
 
-    bars = plt.bar(years, points_diff)
-    round_bars(bars, ax1, color_map, color_1='#32CD32', color_2='#FF0000', y_offset_rounded=0, corner_radius=0.4)
-    annotate_bars(bars, ax1, 2.5, 13, text_annotate=text_to_annotate, ceil_values=False,
-                  round=0, y_negative_offset='height', annotate_zero=True, negative_offset=21.5)
+    fig, ax1 = plt.subplots(figsize=(10, 8), dpi=150)
+    colors = ['#FF0000' if d < 0 else '#008000' for d in points_diff]
+    create_rounded_barh_custom(ax1, points_diff, years, colors, text_to_annotate)
+    xmin, xmax = ax1.get_xlim()
+    x0_norm = abs(xmin) / (abs(xmin) + xmax)
+    for y in years:
+        ax1.hlines(y, xmin, 0, colors='grey', linewidth=0.5, linestyles='dashed', zorder=-5)
 
-    ax1.set_ylim(top=np.max(points_diff) + 25)
-    y_min = np.min(points_diff)
-    if y_min < 0:
-        ax1.set_ylim(bottom=y_min * 3)
-    plt.xlabel('Year', font='Fira Sans', fontsize=16)
-    plt.ylabel('Points difference', font='Fira Sans', fontsize=16)
+    ax1.axvline(x=0, color='white', linewidth=1)
+    ax1.set_yticks(years)
+    ax1.set_yticklabels(years)
+    plt.xlabel('Points difference', font='Fira Sans', fontsize=16)
+    plt.ylabel('Year', font='Fira Sans', fontsize=16)
 
     plt.title(f'{driver} points comparison per year with his teammates {"- excluding mechanical DNFs" if DNFs else ""}',
               font='Fira Sans', fontsize=18,
               )
-    plt.gca().yaxis.grid(True, linestyle='dashed')
-    plt.gca().xaxis.grid(False)
-    ax1.set_xticks(years)
-    ax1.set_xticklabels(years)
     plt.xticks(font='Fira Sans', fontsize=14, rotation=45)
     plt.yticks(font='Fira Sans', fontsize=14)
 
     plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver} POINTS COMPARISON WDC {"DNFs" if DNFs is True else ""}.png', dpi=450)
-
     plt.show()
 
 
@@ -281,24 +282,15 @@ def proccess_season_data(data, drivers, driver_points, system):
    """
 
     def print_wdc(driver_points):
-        driver_points = dict(sorted(driver_points.items(), key=lambda item: item[1], reverse=True))
-        total_p = 0
-        pos = 1
-        for d, p in driver_points.items():
+        for pos, (d, p) in enumerate(sorted(driver_points.items(), key=lambda item: item[1], reverse=True), start=1):
             print(f'{pos}: {d} - {p}')
-            total_p += p
-            pos += 1
-        print(total_p)
+        print(sum(driver_points.values()))
 
-    for i in range(len(data)):
-        for driver in drivers:
-            driver_data = data[i][data[i]['driverCode'] == driver]
-            if len(driver_data) > 0:
-                pos = data[i][data[i]['driverCode'] == driver]['position'].values[0]
-                if pos in list(system.keys()):
-                    driver_points[driver] += system[pos]
-        if i == len(data) - 2:
-            print_wdc(driver_points)
+    driver_points = {driver: 0 for driver in drivers}
+    for round_data in data:  # Exclude the last item for the special case
+        for driver, pos in round_data[round_data['fullName'].isin(drivers)][['fullName', 'position']].values:
+            if pos in system:
+                driver_points[driver] += system[pos]
 
     print_wdc(driver_points)
 
@@ -314,7 +306,7 @@ def simulate_season_different_psystem(year, system):
 
     ergast = Ergast()
     race_data = ergast.get_race_results(season=year, limit=1000).content
-    drivers = set([code for df in race_data for code in df['driverCode'].values])
+    drivers = set([code for df in race_data for code in df['fullName'].values])
     driver_points = {}
     for driver in drivers:
         driver_points[driver] = 0
@@ -332,7 +324,7 @@ def simulate_qualy_championship(year, system):
    """
 
     qualy_data = My_Ergast().get_qualy_results([year]).content
-    drivers = set([code for df in qualy_data for code in df['driverCode'].values])
+    drivers = set([code for df in qualy_data for code in df['fullName'].values])
     driver_points = {}
     for driver in drivers:
         driver_points[driver] = 0

@@ -436,37 +436,14 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
 
 
 def laps_led(start, end):
-    total_laps = 0
-    contador = Counter()
-    for year in range(start, end):
-        rounds = fastf1.get_event_schedule(year, include_testing=False)
-        for r in range(len(rounds)):
-            session = fastf1.get_session(year, r + 1, 'R')
-            try:
-                session.load()
-            except:
-                print(f'No data for {session}')
-                continue
-            laps = session.laps.copy()
-            leaders = laps[laps['Position'] == 1].drop_duplicates('LapNumber')
-            total_laps += len(leaders)
-            drivers = leaders['Driver'].value_counts().index.values
-            for d in drivers:
-                if d == 'TSU':
-                    print(d, session)
-                laps_lead = len(leaders[leaders['Driver'] == d])
-                if d in contador:
-                    contador[d] += laps_lead
-                else:
-                    contador[d] = laps_lead
+    laps_led = pd.read_csv('../resources/csv/Laps_led.csv')
+    laps_led = laps_led[(laps_led['Season']) >= start & (laps_led['Season'] <= end)]
+    grouped_laps = laps_led.groupby('Driver')['Laps'].sum().reset_index().sort_values(by='Laps', ascending=False)
+    total_laps = laps_led['Laps'].sum()
+    grouped_laps['Rank'] = grouped_laps['Laps'].rank(method='min', ascending=False)
 
-    sorted_contador = {driver: laps for driver, laps in
-                       sorted(contador.items(), key=lambda item: item[1], reverse=True)}
-
-    # Iterate over the sorted Counter and calculate the percentage
-    for driver, laps_led in sorted_contador.items():
-        percentage = (laps_led / total_laps) * 100
-        print(f"{driver}: {laps_led} laps, ({percentage:.2f}%)")
+    for index, row in grouped_laps.iterrows():
+        print(f'{int(row["Rank"])} - {row["Driver"]}: {row["Laps"]} ({(row["Laps"] / total_laps) * 100:.2f}%)')
 
 
 def points_percentage_diff():
@@ -502,10 +479,18 @@ def victories_per_driver_team(start=2014, end=2024):
         team = r['constructorName'].iloc[0]
         df.loc[len(df)] = [driver, team]
 
-    df['Team'] = df['Team'].replace('Alpine F1 Team', 'Alpine')
+    df['Team'] = df['Team'].replace('Alpine F1 Team', 'Alpine').replace('Team Lotus', 'Lotus')
+    df['Team'] = df['Team'].str.split('-').str[0]
     df['Count Driver'] = df.groupby('Driver')['Driver'].transform('count')
     df['Count Teams'] = df.groupby('Team')['Team'].transform('count')
+    df['Percentage wins'] = (df['Count Teams'] / len(df)) * 100
     df['Driver'] = [f'{driver} ({count})' for driver, count in zip(df['Driver'], df['Count Driver'])]
+    df_print = df.groupby('Team')[['Count Teams', 'Percentage wins']].first()
+    df_print = df_print.sort_values(by='Percentage wins', ascending=False)
+    team_pos = 1
+    for index, row in df_print.iterrows():
+        print(f'{team_pos} - {index}: {row["Percentage wins"]:.2f}% ({row["Count Teams"]:.0f}/{len(df)})')
+        team_pos += 1
     df['Team'] = [f'{driver} ({count})' for driver, count in zip(df['Team'], df['Count Teams'])]
     df = df.sort_values(by='Count Teams', ascending=True)
     df = df.drop(['Count Teams', 'Count Driver'], axis=1)
@@ -704,3 +689,61 @@ def times_lapped_per_team(start=2014, end=2024):
     drivers_dict = dict(sorted(drivers_dict.items(), key=lambda item: item[1]))
     for t, l in drivers_dict.items():
         print(f'{t}: {l}')
+
+
+def avg_position_season(season):
+
+    races = My_Ergast().get_race_results([season])
+    positions_dict = {}
+    dnfs_dict = {}
+    for r in races.content:
+        for index, row in r.iterrows():
+            status = row['status']
+            name = row['fullName']
+            if status == 'Finished' or '+' in status:
+                position = row['position']
+                if name not in positions_dict:
+                    positions_dict[name] = [position]
+                else:
+                    positions_dict[name].append(position)
+            else:
+                if name not in dnfs_dict:
+                    dnfs_dict[name] = 1
+                else:
+                    dnfs_dict[name] += 1
+
+    positions_dict = sorted(positions_dict.items(), key=lambda item: np.mean(item[1]))
+    positions_with_rank = {d: rank + 1 for rank, (d, _) in enumerate(positions_dict)}
+
+    for d, m in positions_dict:
+        driver_dnfs = dnfs_dict.get(d, 0)
+        average_position = np.mean(m)
+        total_races = len(m) + driver_dnfs
+        dnfs_percentage = (driver_dnfs / total_races) * 100
+        rank = positions_with_rank[d]
+
+        print(f'{rank} - {d}: {average_position:.2f} - DNFs ({driver_dnfs}/{total_races} {dnfs_percentage:.2f}%)')
+
+
+
+def dfns_per_year(start=1950, end=2050):
+    races = My_Ergast().get_race_results([i for i in range(start, end)])
+    dnfs_dict = {}
+    for r in races.content:
+        for index, row in r.iterrows():
+            status = row['status']
+            year = row['year']
+            if (status == 'Finished' or '+' in status) or status.lower() == 'withdraw' or status.lower() == 'illness':
+                if year not in dnfs_dict:
+                    dnfs_dict[year] = [0]
+                else:
+                    dnfs_dict[year].append(0)
+            else:
+                if year not in dnfs_dict:
+                    dnfs_dict[year] = 1
+                else:
+                    dnfs_dict[year].append(1)
+
+    dnfs_dict = dict(sorted(dnfs_dict.items(), key=lambda item: np.sum(item[1])/len(item[1])))
+    for y, d in dnfs_dict.items():
+        print(f'{y}: {(np.sum(d)/len(d)) * 100:.2f}% - Total ({np.sum(d)})')

@@ -104,7 +104,7 @@ def get_position_changes(year, round):
     finish['grid'].replace(0, 20, inplace=True)
     finish.loc[finish['status'].isin(['Did not qualify', 'Did not prequalify']), 'grid'] = finish['Finish']
     finish['Grid change'] = finish['grid'] - finish['Finish']
-    # finish['grid'].replace(20, 'Pit Lane', inplace=True)
+    finish['grid'].replace(20, 'Pit Lane', inplace=True)
     finish['Team'] = finish['constructorName']
 
     race_diff_times = []
@@ -253,15 +253,12 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100):
                     if can_append:
                         can_append = False
 
-
-    print(f'QUALY H2H: {d_data[0]} vs. {t_data[0]} ({(d_data[0]/(d_data[0] + t_data[0]) * 100):.2f}%)')
-    print(f'POLES: {d_data[1]} vs. {t_data[1]} ({(d_data[1]/(d_data[1] + t_data[1])  * 100):.2f}%)')
-    print(f'RACE H2H: {d_data[2]} vs. {t_data[2]} ({(d_data[2]/(d_data[2] + t_data[2])  * 100):.2f}%)*')
-    print(f'VICTORIES: {d_data[3]} vs. {t_data[3]} ({(d_data[3]/(d_data[3] + t_data[3])  * 100):.2f}%)')
-    print(f'PODIUMS: {d_data[4]} vs. {t_data[4]} ({(d_data[4]/(d_data[4] + t_data[4])  * 100):.2f}%)')
-    print(f'POINT FINISHES: {d_data[5]} vs. {t_data[5]} ({(d_data[5]/(d_data[5] + t_data[5])  * 100):.2f}%)')
-    print(f'DNFs: {d_data[6]} vs. {t_data[6]} ({(d_data[6]/(d_data[6] + t_data[6])  * 100):.2f}%)')
-    print(f'POINTS: {d_data[7]} vs. {t_data[7]} ({(d_data[7]/(d_data[7] + t_data[7]) * 100):.2f}%)')
+    for i, category in enumerate(
+            ["QUALY H2H", "POLES", "RACE H2H", "VICTORIES", "PODIUMS", "POINT FINISHES", "DNFs", "POINTS"]):
+        total = d_data[i] + t_data[i]
+        if total != 0:
+            percentage = (d_data[i] / total) * 100
+            print(f'{category}: {d_data[i]} vs. {t_data[i]} ({percentage:.2f}%)')
     print('\n*Only races in which both drivers finished')
     print('Sprint are not considered')
 
@@ -346,8 +343,9 @@ def q3_appearances(year):
         q_drivers = qualy['fullName'].values
         for d in q_drivers:
             qualy_data = qualy[qualy['fullName'] == d]
-            position = qualy_data['position'].min()
-            if position <= 10:
+            position = qualy_data['position'].loc[0]
+            q3_time = qualy_data['q3'].loc[0]
+            if position <= 10 or not pd.isna(q3_time):
                 if d in drivers_dict:
                     drivers_dict[d] += 1
                 else:
@@ -405,41 +403,6 @@ def results_from_grid_position(driver, start=1950, end=2024, grid=1):
     sankey_plot(finish_positions, driver, f'{driver.upper()} RESULTS STARTING FROM P{grid}')
 
 
-
-
-
-
-def highest_qualy(team, start, end=2024):
-    ergast = My_Ergast()
-    q = ergast.get_qualy_results([i for i in range(start, end)])
-    max_pos = 50
-    race = None
-    for qualy in q.content:
-        team_data = qualy[qualy['constructorRef'] == team]
-        if len(team_data) == 0:
-            print(f'No data for {team} in {qualy["year"].min()}')
-        else:
-            q_pos = team_data['position'].min()
-            if q_pos < max_pos:
-                max_pos = q_pos
-                race = f'{team_data["year"].min()} - {team_data["raceName"].min()}'
-            elif q_pos == max_pos:
-                race += f'{team_data["year"].min()} - {team_data["raceName"].min()} \n'
-
-    print(max_pos, race)
-
-
-def last_result_grid_pos(driver, grid_pos):
-    ergast = My_Ergast()
-    r = ergast.get_race_results([i for i in range(1950, 2023)])
-    r.content.reverse()
-    for race in r.content:
-        d_data = race[race['fullName'] == driver]
-        if len(d_data) == 1:
-            if d_data['grid'].iloc[0] == grid_pos:
-                print(f'{d_data["year"].iloc[0]} - {d_data["raceName"].iloc[0]}: From '
-                      f'{d_data["grid"].iloc[0]} to {d_data["position"].iloc[0]}')
-                break
 
 def comebacks_in_circuit(circuit):
     ergast = My_Ergast()

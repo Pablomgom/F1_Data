@@ -24,7 +24,6 @@ def get_funcs():
         'cluster_circuits': cluster_circuits,
         'lucky_drivers': lucky_drivers,
         'session_diff_last_year': session_diff_last_year,
-        'team_performance_vs_qualy_last_year': team_performance_vs_qualy_last_year,
         'qualy_diff_teammates': qualy_diff_teammates,
         'driver_race_times_per_tyre': driver_race_times_per_tyre,
         'get_fastest_data': get_fastest_data,
@@ -73,9 +72,7 @@ def get_funcs():
         'winning_positions_per_circuit': winning_positions_per_circuit,
         'q3_appearances': q3_appearances,
         'results_from_grid_position': results_from_grid_position,
-        'highest_qualy': highest_qualy,
         'long_runs_scatter': long_runs_scatter,
-        'last_result_grid_pos': last_result_grid_pos,
         'air_track_temps': air_track_temps,
         'comebacks_in_circuit': comebacks_in_circuit,
         'session_results': session_results,
@@ -109,6 +106,8 @@ def get_funcs():
         'times_lapped_per_team': times_lapped_per_team,
         'avg_qualy_pos_dif_per_years': avg_qualy_pos_dif_per_years,
         'best_season': best_season,
+        'avg_position_season': avg_position_season,
+        'dfns_per_year': dfns_per_year,
         'help': help
     }
 

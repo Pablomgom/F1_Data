@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from adjustText import adjust_text
 from fastf1 import plotting
-from fastf1.ergast import Ergast
+import scipy.ndimage
 from matplotlib import pyplot as plt, ticker, cm, patches
 from matplotlib.collections import LineCollection
 from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
@@ -19,7 +19,7 @@ from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.utils import utils
 from src.plots.plots import round_bars, annotate_bars, lighten_color
-from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows
+from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows, value_to_color, create_rounded_barh
 import seaborn as sns
 from src.variables.team_colors import team_colors_2023
 
@@ -103,7 +103,7 @@ def long_runs_driver(session, driver, threshold=1.07):
     font_properties = FontProperties(family='Fira Sans', size='x-large')
     plt.title(f'{driver} LONG RUNS IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
               font='Fira Sans', fontsize=20)
-    ax.legend(prop=font_properties, loc='upper left')
+    ax.legend(prop=font_properties, loc='lower right')
     ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
     sns.despine(left=True, bottom=True)
     ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
@@ -241,7 +241,8 @@ def session_diff_last_year(year, round_id, prev_year, circuit=None, session='Q')
 
     plt.axhline(0, color='white', linewidth=0.8)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'{current.event.Location.upper()} {current.name.upper()} COMPARISON: {year} vs. {prev_year}', font='Fira Sans',
+    plt.title(f'{current.event.Location.upper()} {current.name.upper()} COMPARISON: {year} vs. {prev_year}',
+              font='Fira Sans',
               fontsize=18)
     plt.xlabel('Team', font='Fira Sans', fontsize=16)
     plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
@@ -528,10 +529,10 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
 
             for i in session.laps.pick_driver(team_2).pick_lap(lap).iterlaps():
                 lap_team_2 = i[1]
-            tel_team_1 = lap_team_1.get_telemetry()
+            tel_team_1 = lap_team_1.telemetry
         else:
             lap_team_1 = session.laps.pick_driver(team_1).pick_fastest()
-            tel_team_1 = lap_team_1.get_telemetry()
+            tel_team_1 = lap_team_1.telemetry
             lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
 
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
@@ -557,31 +558,45 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
         x_new = np.linspace(0, 1, len(segments))
         f = interp1d(x_old, delta_time, kind='linear')
         delta_time = f(x_new)
-    cmap = cm.get_cmap('coolwarm')
 
+    cmap = cm.get_cmap('coolwarm')
     vmax = np.max(np.abs(delta_time))
     vmin = -vmax
     norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
-    segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
-    border_width = 15
-    border_color = 'white'
-    lc_comp = LineCollection(segments, norm=norm, cmap=cmap, linewidths=border_width)
-    lc_comp.set_array(delta_time)
-    lc_comp.set_linewidth(13)
+    def smooth_data(segments, window_size=7):
+        smoothed_data = np.copy(segments)
+        half_window = window_size // 2
 
-    plt.subplots(figsize=(8, 9))
-    plt.gca().add_collection(lc_comp)
+        for i in range(segments.shape[1]):
+            for j in range(segments.shape[0]):
+                start = max(j - half_window, 0)
+                end = min(j + half_window + 1, segments.shape[0])
+                smoothed_data[j, i] = np.mean(segments[start:end, i], axis=0)
+
+        return smoothed_data
+
+    segments = smooth_data(segments, window_size=7)
+    segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
+    plt.subplots(figsize=(8, 7))
+    for i, segment in enumerate(segments):
+        seg_x = [segment[0][0], segment[1][0]]
+        seg_y = [segment[0][1], segment[1][1]]
+        plt.plot(seg_x, seg_y, color=cmap(norm(delta_time[i])), linewidth=10)
+
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
     plot_turns(session.get_circuit_info(), session.get_circuit_info().rotation / 180 * np.pi, plt)
-    cbar = plt.colorbar(mappable=lc_comp, label="DeltaTime")
+
     legend_lines = [Line2D([0], [0], color='red', lw=4),
                     Line2D([0], [0], color='blue', lw=4)]
 
     plt.legend(legend_lines, [f'{team_1} ahead', f'{team_2} ahead'], fontsize='x-large')
-    cbar.set_label('Time Difference (s)', rotation=270, labelpad=20, fontsize=20)
 
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = plt.colorbar(sm, orientation='vertical')
+    cbar.set_label('Delta Time', fontsize='x-large')
     cbar.ax.tick_params(labelsize=12)
     for label in cbar.ax.get_yticklabels():
         label.set_size(18)
@@ -608,7 +623,7 @@ def track_dominance(session, team_1, team_2):
     """
 
     lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
-    tel_team_1 = lap_team_1.get_telemetry()
+    tel_team_1 = lap_team_1.telemetry
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
@@ -645,26 +660,32 @@ def track_dominance(session, team_1, team_2):
 
     x = np.array(tel_team_1['X'].values)
     y = np.array(tel_team_1['Y'].values)
-
     points = np.array([x, y]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    track = np.concatenate([points[:-1], points[1:]], axis=1)
 
+    def smooth_data(segments, window_size=7):
+        smoothed_data = np.copy(segments)
+        half_window = window_size // 2
+
+        for i in range(segments.shape[1]):
+            for j in range(segments.shape[0]):
+                start = max(j - half_window, 0)
+                end = min(j + half_window + 1, segments.shape[0])
+                smoothed_data[j, i] = np.mean(segments[start:end, i], axis=0)
+
+        return smoothed_data
+
+    segments = smooth_data(track, window_size=7)
     segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
-    colors = [plotting.team_color(team_1), plotting.team_color(team_2)]
-    cmap = LinearSegmentedColormap.from_list("custom_cmap", colors, N=2)
-    lc_comp = LineCollection(segments, cmap=cmap, joinstyle='bevel')
-    lc_comp.set_array(delta_time_team)
-    lc_comp.set_linewidth(13)
+    colors = [plotting.team_color(team_1) if value == 0 else plotting.team_color(team_2) for value in delta_time_team]
+    plt.subplots(figsize=(8, 7))
+    for i, segment in enumerate(segments):
+        seg_x = [segment[0][0], segment[1][0]]
+        seg_y = [segment[0][1], segment[1][1]]
+        plt.plot(seg_x, seg_y, color=colors[i], linewidth=10)
 
-    plt.subplots(figsize=(8, 8))
-    border_width = 15
-    border_color = 'white'
-    lc_border = LineCollection(segments, colors=border_color, linewidths=border_width)
-    plt.gca().add_collection(lc_border)
-    plt.gca().add_collection(lc_comp)
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
-
     plot_turns(session.get_circuit_info(), session.get_circuit_info().rotation / 180 * np.pi, plt)
     legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
                     Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
@@ -672,16 +693,13 @@ def track_dominance(session, team_1, team_2):
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='lower left', fontsize='x-large')
 
     plt.suptitle(f"{team_1} vs {team_2}:"
-                 f" {session.session_info['StartDate'].year}  {session.event.EventName}", font='Fira Sans',
+                 f" {session.session_info['StartDate'].year} {session.event.EventName}", font='Fira Sans',
                  fontsize=18)
     plt.tight_layout()
     path = (f"../PNGs/TRACK DOMINANCE{team_1} vs {team_2} - {str(session.session_info['StartDate'].year)}"
             f" {session.event.EventName}.png")
     plt.savefig(path, dpi=400)
     plt.show()
-
-
-
 
 
 def get_fastest_data(session, fastest_lap=False, DRS=True):
@@ -878,7 +896,6 @@ def session_results(start, end, session=2):
 
 
 def drs_efficiency(year):
-
     schedule = fastf1.get_event_schedule(year, include_testing=False)
     drs_dict = {}
     for i in range(len(schedule)):
@@ -904,14 +921,14 @@ def drs_efficiency(year):
                     first_index = open_close.index[0]
                     indexes.remove(first_index)
                     indexes.append(first_index)
-                for d in range(int(len(indexes)/2)):
-                    speed_open = team_lap.telemetry['Speed'][indexes[0+d*2]]
+                for d in range(int(len(indexes) / 2)):
+                    speed_open = team_lap.telemetry['Speed'][indexes[0 + d * 2]]
                     try:
-                        speed_close = max(team_lap.telemetry['Speed'][indexes[0+d*2]:indexes[1+d*2]])
+                        speed_close = max(team_lap.telemetry['Speed'][indexes[0 + d * 2]:indexes[1 + d * 2]])
                     except ValueError:
                         max_index = max(team_lap.telemetry['Speed'].index)
-                        before_finish_line = team_lap.telemetry['Speed'][indexes[0+d*2]:max_index]
-                        after_finish_line = team_lap.telemetry['Speed'][0:indexes[1+d*2]+1]
+                        before_finish_line = team_lap.telemetry['Speed'][indexes[0 + d * 2]:max_index]
+                        after_finish_line = team_lap.telemetry['Speed'][0:indexes[1 + d * 2] + 1]
                         speed_close = max(pd.concat([before_finish_line, after_finish_line]))
                     delta_diff = ((speed_close - speed_open) / speed_open) * 100
                     if t not in current_session_delta:
@@ -945,7 +962,7 @@ def drs_efficiency(year):
     plt.ylabel('Drs efficiency (%)', font='Fira Sans', fontsize=20)
     plt.xticks(rotation=35, font='Fira Sans', fontsize=18)
     plt.yticks(font='Fira Sans', fontsize=16)
-    plt.ylim(bottom=min(df['Delta'])-1, top=max(df['Delta'])+1)
+    plt.ylim(bottom=min(df['Delta']) - 1, top=max(df['Delta']) + 1)
     color_index = 0
     for label in ax.get_xticklabels():
         label.set_color('white')
@@ -986,34 +1003,13 @@ def get_fastest_sectors(session):
         except KeyError:
             print(f'No data for {driver}')
 
-    def create_rounded_barh(ax, data, sector_time, color_col, height=0.8):
-        times = data.sort_values(by=sector_time, ascending=True)
-        colors = times[color_col].values
-        y_positions = range(len(times))
-
-        for y, time, color in zip(y_positions, times[sector_time], colors):
-            lighter_color = lighten_color(color, factor=0.6)
-            rect = patches.FancyBboxPatch((0, y - height / 2), time, height,
-                                          boxstyle="round,pad=0.02,rounding_size=0.2",
-                                          linewidth=2.75,
-                                          edgecolor=lighter_color,
-                                          facecolor=color)
-            ax.add_patch(rect)
-            ax.text(time + 0.1, y, f'{time:.3f}s', va='center', ha='left', color='white', fontsize=14.5)
-
-        ax.set_ylim(-1, len(times))
-        ax.set_yticks(y_positions)
-        ax.set_yticklabels(times.index.values)
-        ax.set_xlim(min(times[sector_time]) - 0.5, max(times[sector_time]) + 0.5)
-
-
     fig, ax = plt.subplots(ncols=3, figsize=(8, 8), dpi=150)
     fig.suptitle(f'SECTOR TIMES IN {session.event.year} {str(session.event.Country).upper()} '
-                f'{str(session.name).upper()}',
+                 f'{str(session.name).upper()}',
                  font='Fira Sans', fontsize=20, fontweight='bold')
     for i in range(3):
-        sector_time = f'Sector{i+1}Time'
-        colors = sector_times.sort_values(by=f'Sector{i+1}Time', ascending=True)['Color'].values
+        sector_time = f'Sector{i + 1}Time'
+        colors = sector_times.sort_values(by=f'Sector{i + 1}Time', ascending=True)['Color'].values
         create_rounded_barh(ax[i], sector_times, sector_time, 'Color')
         ax[i].set_title(f'Sector {i + 1}', font='Fira Sans', fontsize=18, y=0.99)
         ax[i].invert_yaxis()

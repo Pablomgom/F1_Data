@@ -4,8 +4,11 @@ import fastf1
 import numpy as np
 import matplotlib.colors as mcolors
 import nltk
+from matplotlib import patches
 from nltk import ne_chunk, pos_tag, word_tokenize
 from nltk.tree import Tree
+
+from src.plots.plots import lighten_color
 
 name_count = {}
 
@@ -103,10 +106,10 @@ def plot_turns(circuit_info, track_angle, plt):
         text_y = corner['Y'] + offset_y
         text_x, text_y = rotate([text_x, text_y], angle=track_angle)
         track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
-        plt.scatter(text_x, text_y, color='grey', s=325)
-        plt.plot([track_x, text_x], [track_y, text_y], color='grey')
+        plt.scatter(text_x, text_y, color='grey', s=350, zorder=10000)
+        plt.plot([track_x, text_x], [track_y, text_y], color='grey', zorder=10000)
         plt.text(text_x, text_y, txt,
-                 va='center_baseline', ha='center', size='large', color='white')
+                 va='center_baseline', ha='center', size='large', color='white', zorder=10000)
 
 
 def call_function_from_module(module_name, func_name, *args, **kwargs):
@@ -269,3 +272,64 @@ def get_dot(diff):
     if diff > 0:
         return '🟢'
     return '🔴'
+
+
+def value_to_color(value, min_value, max_value):
+    if min_value == max_value:
+        # Avoid division by zero if all values are the same
+        return '#ffffff'  # White
+
+    # Center the normalization around zero
+    normalized_value = (value - min_value) / (max_value - min_value)
+    # Rescale to [-1, 1]
+    normalized_value = 2 * normalized_value - 1
+
+    def smootherstep(edge0, edge1, x):
+        x = np.clip((x - edge0) / (edge1 - edge0), 0, 1)
+        return x ** 3 * (x * (x * 6 - 15) + 10)
+
+    if normalized_value < 0:
+        scale = smootherstep(-1, 0, normalized_value)
+        r = g = b = int(255 * scale)
+        b = 255
+    else:
+        scale = smootherstep(0, 1, normalized_value)
+        r = 255
+        g = b = int(255 * (1 - scale))
+
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
+def create_rounded_barh(ax, data, sector_time, color_col, height=0.8):
+    times = data.sort_values(by=sector_time, ascending=True)
+    colors = times[color_col].values
+    y_positions = range(len(times))
+
+    for y, time, color in zip(y_positions, times[sector_time], colors):
+        lighter_color = lighten_color(color, factor=0.6)
+        rect = patches.FancyBboxPatch((0, y - height / 2), time, height,
+                                      boxstyle="round,pad=0.02,rounding_size=0.2",
+                                      linewidth=2.75,
+                                      edgecolor=lighter_color,
+                                      facecolor=color)
+        ax.add_patch(rect)
+        ax.text(time + 0.1, y, f'{time:.3f}s', va='center', ha='left', color='white', fontsize=14.5)
+
+
+def create_rounded_barh_custom(ax, x_data, y_data, colors, text_to_annotate, height=0.8):
+    ax.set_ylim(min(y_data) - 1, max(y_data) + 1)
+    ax.set_xlim(min(x_data) - 10, max(x_data) + 50)
+
+    for y, x, color, t in zip(y_data, x_data, colors, text_to_annotate):
+        if x != 0:
+            lighter_color = lighten_color(color, factor=0.6)
+            rect = patches.FancyBboxPatch((0, y - height / 2), x, height,
+                                          boxstyle="round,pad=0.05",
+                                          linewidth=1,
+                                          edgecolor=lighter_color,
+                                          facecolor=color)
+            ax.add_patch(rect)
+        offset = 5
+        x_pos = x if x > 0 else 0
+        text_position = x_pos + offset
+        ax.text(text_position, y, t, va='center', color='white', ha='left', font='Fira Sans', fontsize=13)

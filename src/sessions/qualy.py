@@ -20,108 +20,6 @@ from src.variables.team_colors import team_colors_2023
 from scipy import stats
 
 
-def team_performance_vs_qualy_last_year(team, delete_circuits=[], year=2023):
-    """
-       Plot the performance of a team against last year qualy sessions
-
-       Parameters:
-       team (str): Team to analyze
-       delete_circuits (array, optional): Circuits to exclude from the analysis. Default = []
-       year (int, optional): Year of the analysis. Default = 2023
-
-   """
-
-    ergast = Ergast()
-    prev_year = ergast.get_qualifying_results(season=year - 1, limit=1000)
-    current_year = ergast.get_qualifying_results(season=year, limit=1000)
-
-    prev_cir = prev_year.description['raceName'].values
-    current_cir = current_year.description['raceName'].values
-
-    def intersect_lists_ordered(list1, list2):
-        return [item for item in list1 if item in list2]
-
-    result = intersect_lists_ordered(current_cir, prev_cir)
-    race_index_prev = []
-
-    for item in result:
-        if item in prev_year.description['raceName'].values:
-            race_index_prev.append(prev_year.description['raceName'].to_list().index(item) + 1)
-
-    race_index_current = []
-    for i, item in current_year.description['raceName'].items():
-        if item in result:
-            race_index_current.append(i + 1)
-
-    delta = []
-    color = []
-    result = [track.replace('_', ' ').title() for track in result]
-    result = [track.split(' ')[0] for track in result]
-    for i in range(len(race_index_current)):
-        prev_year = fastf1.get_session(year - 1, race_index_prev[i], 'Q')
-        prev_year.load()
-        current_year = fastf1.get_session(year, race_index_current[i], 'Q')
-        current_year.load()
-
-        fast_prev_year = prev_year.laps.pick_team(team).pick_fastest()['LapTime']
-        fast_current_year = current_year.laps.pick_team(team).pick_fastest()['LapTime']
-        if result[i] in delete_circuits:
-            delta.append(np.nan)
-            color.append('#FF0000')
-        else:
-            delta_time = round(fast_current_year.total_seconds() - fast_prev_year.total_seconds(), 3)
-            delta.append(delta_time)
-            if delta_time > 0:
-                color.append('#FF0000')
-            else:
-                color.append('#008000')
-
-    fig, ax = plt.subplots(figsize=(24, 10))
-    bars = ax.bar(result, delta, color=color)
-
-    for bar in bars:
-        bar.set_visible(False)
-    i = 0
-    for bar in bars:
-        height = bar.get_height()
-        x, y = bar.get_xy()
-        width = bar.get_width()
-        # Create a fancy bbox with rounded corners and add it to the axes
-        rounded_box = rounded_top_rect(x, y, width, height, 0.1, color[i])
-        rounded_box.set_facecolor(color[i])
-        ax.add_patch(rounded_box)
-        i += 1
-
-    for i in range(len(delta)):
-        if delta[i] > 0:  # If the bar is above y=0
-            plt.text(result[i], delta[i] + 0.4, '+' + str(delta[i]) + 's',
-                     ha='center', va='top', font='Fira Sans', fontsize=12)
-        else:  # If the bar is below y=0
-            plt.text(result[i], delta[i] - 0.4, str(delta[i]) + 's',
-                     ha='center', va='bottom', font='Fira Sans', fontsize=12)
-
-    plt.axhline(0, color='white', linewidth=0.8)
-    differences_series = pd.Series(delta)
-    # Calculate the rolling mean
-    mean_y = differences_series.rolling(window=4, min_periods=1).mean().tolist()
-    plt.plot(result, mean_y, color='red',
-             marker='o', markersize=5.5, linewidth=3.5, label='Moving Average (4 last races)')
-
-    # Add legend patches for the bar colors
-    red_patch = mpatches.Patch(color='red', label=f'{year - 1} Faster')
-    green_patch = mpatches.Patch(color='green', label=f'{year} Faster')
-    plt.legend(handles=[green_patch, red_patch,
-                        plt.Line2D([], [], color='orange', marker='o', markersize=5.5, linestyle='',
-                                   label='Moving Average (4 last circuits)')], fontsize='x-large', loc='upper left')
-    plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
-    plt.title(f'{team.upper()} QUALY COMPARISON: 2022 vs. 2023', font='Fira Sans', fontsize=24)
-    plt.xlabel('Circuit', font='Fira Sans', fontsize=16)
-    plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
-    plt.tight_layout()
-    plt.savefig(f'../PNGs/{team} QUALY COMPARATION {year - 1} vs {year}.png', dpi=450)
-    plt.show()
-
-
 def qualy_results(session):
     """
        Plot the results of a qualy with fastF1 API
@@ -286,12 +184,13 @@ def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
     for q in qualy.content:
         track = q['circuitRef'].loc[0]
         year = q['year'].loc[0]
+        round = q['round'].loc[0]
         race_name = q['raceName'].loc[0]
         if track == circuit:
             q = q[q['Valid'] == True].reset_index(drop=True)
             p1 = q['fullName'].loc[0]
             p2 = q['fullName'].loc[1]
-            if year >= 2006:
+            if year > 2005 or (year == 2005 and round >= 7):
                 for s in sessions:
                     p1_time = q[q['fullName'] == p1][s].loc[0]
                     p2_time = q[q['fullName'] == p2][s].loc[0]
@@ -299,6 +198,12 @@ def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
                         diff = (p2_time - p1_time).total_seconds()
                         margins[(year, race_name)] = (diff, f'{p1} {diff:.3f}s faster than {p2}')
                         break
+
+            elif year == 2005 and round < 7:
+                p1_time = q[q['fullName'] == p1]['q1'].loc[0] + q[q['fullName'] == p1]['q2'].loc[0]
+                p2_time = q[q['fullName'] == p2]['q1'].loc[0] + q[q['fullName'] == p2]['q2'].loc[0]
+                diff = (p2_time - p1_time).total_seconds()
+                margins[(year, race_name)] = (diff, f'{p1} {diff:.3f}s faster than {p2}')
             else:
                 final_times = []
                 for d in [p1, p2]:
@@ -454,7 +359,12 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
     for y, d in delta_per_year.items():
         trunc_mean = stats.trim_mean(d, 0.1)
         print(
-            f'{"🔴" if trunc_mean > 0 else "🟢"}{y[0]}: {abs(trunc_mean):.3f}s {"faster" if trunc_mean < 0 else "slower"} than {y[1]}')
+            f'{"🔴" if trunc_mean > 0 else "🟢"}{y[0]}: {abs(trunc_mean):.3f}s {"faster" if trunc_mean < 0 else " slower"} than {y[1]}')
+
+    for y, d in delta_per_year.items():
+        mean = np.mean(d)
+        median = np.median(d)
+        print(f'{y[0]} MEAN: {mean:.3f}s {"faster" if mean < 0 else "slower"} MEDIAN: {median:.3f}s {"faster" if median < 0 else "slower"} ')
 
     total_difference = []
     for l1, l2 in zip(total_laps_d1, total_laps_d2):
