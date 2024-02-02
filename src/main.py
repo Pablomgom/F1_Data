@@ -14,7 +14,7 @@ from src.menu.menu import get_funcs
 
 from src.utils.utils import parse_args, is_session_first_arg
 
-setup_mpl(misc_mpl_mods=False)
+# setup_mpl(misc_mpl_mods=False)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.width', None)
@@ -61,16 +61,6 @@ if __name__ == '__main__':
 #
 #     My_Ergast().insert_qualy_data(1950, 7, data,
 #                                   offset=0, character_sep='-', have_country=True, number=1)
-
-
-    # a = My_Ergast().get_qualy_results([i for i in range(1950, 2024)])
-    # years = {}
-    # for q in a.content:
-    #     year = q['year'].loc[0]
-    #     print(f'{year}: {len(q)}')
-    #
-    # a = My_Ergast().get_qualy_results([2009], 1)
-    # b = 1
 
 
     while True:

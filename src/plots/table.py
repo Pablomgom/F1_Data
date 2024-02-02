@@ -29,7 +29,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=24,
             cell.set_facecolor(header_color)
         else:
             if diff_column is None:
-                if k[1] == data.columns.get_loc('Grid change') :
+                if k[1] == data.columns.get_loc('Grid change'):
                     value = data.iloc[k[0] - 1, k[1]]
                     if '+' in value:
                         cell.set_facecolor('green')
@@ -37,12 +37,14 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=24,
                         cell.set_facecolor('gray')
                     else:
                         cell.set_facecolor('red')
-                elif k[0] <= 3 :
+                elif k[0] <= 3:
                     cell.set_facecolor(medal_colors[k[0] - 1])
                 else:
                     cell.set_facecolor(row_colors[k[0] % len(row_colors)])
             else:
                 cell.set_facecolor(row_colors[k[0] % len(row_colors)])
+            if k[1] == len(data.columns) - 1:
+                cell.set_text_props(color='w')
 
     plt.title(title, fontsize=1)
 

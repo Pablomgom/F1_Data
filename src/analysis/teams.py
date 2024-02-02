@@ -10,42 +10,6 @@ from src.utils.utils import append_duplicate_number
 from src.variables.team_colors import team_colors_2023, team_colors
 import matplotlib.patches as mpatches
 
-def get_DNFs_team(team, start, end):
-    """
-         Print the DNFs of a team
-
-         Parameters:
-         team (str): Team
-         start (int): Year of start
-         end (int): Year of end
-    """
-
-    ergast = Ergast()
-    mechanical = 0
-    accident = 0
-    finished = 0
-    for year in range(start, end):
-        race_index = 0
-        team_data = ergast.get_race_results(season=year, constructor=team, limit=1000)
-        for race in team_data.content:
-            finish_status = race['status'].values
-            for status in finish_status:
-                if re.search(r'(Spun off|Accident|Collision|Puncture|amage)', status):
-                    accident += 1
-                    print(f'{year} - {team_data.description["circuitId"][race_index]} - {status}')
-                elif re.search(r'(Finished|\+)', status):
-                    finished += 1
-                else:
-                    mechanical += 1
-                    print(f'{year} - {team_data.description["circuitId"][race_index]} - {status}')
-            race_index += 1
-    print(f"""
-        MECHANICAL: {mechanical}
-        ACCIDENT: {accident}
-        FINISHED: {finished}
-    """)
-
-
 def compare_qualy_results(team, threshold, end=None, exclude=None):
     """
        Compare qualy results for a team given a threshold

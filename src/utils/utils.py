@@ -304,7 +304,6 @@ def create_rounded_barh(ax, data, sector_time, color_col, height=0.8):
     times = data.sort_values(by=sector_time, ascending=True)
     colors = times[color_col].values
     y_positions = range(len(times))
-
     for y, time, color in zip(y_positions, times[sector_time], colors):
         lighter_color = lighten_color(color, factor=0.6)
         rect = patches.FancyBboxPatch((0, y - height / 2), time, height,
@@ -314,6 +313,11 @@ def create_rounded_barh(ax, data, sector_time, color_col, height=0.8):
                                       facecolor=color)
         ax.add_patch(rect)
         ax.text(time + 0.1, y, f'{time:.3f}s', va='center', ha='left', color='white', fontsize=14.5)
+
+    ax.set_ylim(-1, len(times))
+    ax.set_yticks(y_positions)
+    ax.set_yticklabels(times.index.values)
+    ax.set_xlim(min(times[sector_time]) - 0.5, max(times[sector_time]) + 0.5)
 
 
 def create_rounded_barh_custom(ax, x_data, y_data, colors, text_to_annotate, height=0.8):

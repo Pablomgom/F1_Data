@@ -101,10 +101,10 @@ def get_position_changes(year, round):
     finish['Driver'] = finish['givenName'] + ' ' + finish['familyName']
     finish['Finish'] = range(1, finish.shape[0] + 1)
     finish.loc[(finish['grid'] == 5) & (finish['Driver'] == 'Guanyu Zhou'), 'grid'] = 15
-    finish['grid'].replace(0, 20, inplace=True)
+    # finish['grid'].replace(0, 20, inplace=True)
     finish.loc[finish['status'].isin(['Did not qualify', 'Did not prequalify']), 'grid'] = finish['Finish']
     finish['Grid change'] = finish['grid'] - finish['Finish']
-    finish['grid'].replace(20, 'Pit Lane', inplace=True)
+    # finish['grid'].replace(20, 'Pit Lane', inplace=True)
     finish['Team'] = finish['constructorName']
 
     race_diff_times = []
@@ -262,7 +262,8 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100):
     print('\n*Only races in which both drivers finished')
     print('Sprint are not considered')
 
-def get_driver_laps(year):
+
+def laps_completed(year):
     """
     Get the percetange of laps completed by driver per year
     :param year: Year of analysis
@@ -298,10 +299,10 @@ def get_driver_laps(year):
         percentage = round((completed_laps / total_laps) * 100, 2)
         laps_dict[driver] = [total_laps, completed_laps, percentage]
 
-    laps_dict = dict(sorted(laps_dict.items(), key=lambda item: item[1][2], reverse=True))
+    laps_dict = dict(sorted(laps_dict.items(), key=lambda item: item[1][1], reverse=True))
     count = 1
     for d, l in laps_dict.items():
-        print(f'{count}: {d} - {l[2]}% ({l[1]}-{l[0]})')
+        print(f'{count}: {d} - {l[2]}% ({l[1]}/{l[0]})')
         count += 1
 
 
@@ -318,12 +319,12 @@ def winning_positions_per_circuit(circuit, start=1950, end=2024):
     r = ergast.get_race_results([i for i in range(start, end)])
     positions_dict = {}
     for race in r.content:
-        race_circuit = race['circuitRef'].min()
+        race_circuit = race['circuitRef'].loc[0]
         if circuit == race_circuit:
             win_data = race[race['position'] == 1]
-            grid_pos = win_data['grid'].min()
+            grid_pos = win_data['grid'].loc[0]
             year = win_data['year'].min()
-            d_name = win_data['fullName'].min()
+            d_name = win_data['fullName'].loc[0]
             if grid_pos in positions_dict:
                 positions_dict[grid_pos].append(f'{year}: {d_name}')
             else:
@@ -339,8 +340,10 @@ def q3_appearances(year):
     ergast = My_Ergast()
     q = ergast.get_qualy_results([year])
     drivers_dict = {}
+    different_drivers = []
     for qualy in q.content:
         q_drivers = qualy['fullName'].values
+        different_drivers.extend(q_drivers)
         for d in q_drivers:
             qualy_data = qualy[qualy['fullName'] == d]
             position = qualy_data['position'].loc[0]
@@ -350,8 +353,12 @@ def q3_appearances(year):
                     drivers_dict[d] += 1
                 else:
                     drivers_dict[d] = 1
+    different_drivers = set(different_drivers)
     drivers_dict = dict(sorted(drivers_dict.items(), key=lambda item: item[1], reverse=True))
     grouped_dict = defaultdict(list)
+    for d in different_drivers:
+        if d not in drivers_dict:
+            drivers_dict[d] = 0
     for key, value in drivers_dict.items():
         grouped_dict[value].append(key)
     for v, d in grouped_dict.items():
@@ -403,7 +410,6 @@ def results_from_grid_position(driver, start=1950, end=2024, grid=1):
     sankey_plot(finish_positions, driver, f'{driver.upper()} RESULTS STARTING FROM P{grid}')
 
 
-
 def comebacks_in_circuit(circuit):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(1950, 2023)])
@@ -433,20 +439,24 @@ def comebacks_in_circuit(circuit):
                 print(f'{key} places - {v}')
 
 
-
-
-def driver_grid_positions(driver, start=1950, end=2024):
+def driver_grid_winning_positions(driver, start=1950, end=2024):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
     grid_positions = Counter()
+    drivers_in_p1 = Counter()
     for race in r.content:
         data = race[race['position'] == 1]
         data = data[data['fullName'] == driver]
+        driver_p1 = race[race['grid'] == 1]['fullName'].loc[0]
         if len(data) == 1:
             grid_pos = data['grid'].iloc[0]
             grid_positions[grid_pos] += 1
-            print(f'{grid_pos} - {race["year"].iloc[0]}: {race["raceName"].iloc[0]}')
+            drivers_in_p1[driver_p1] += 1
+            print(f'From P{grid_pos} in {race["year"].iloc[0]} {race["raceName"].iloc[0].replace("Grand Prix", "GP")}')
 
-    for pos, count in sorted(grid_positions.items(), key=lambda x: x[1], reverse=True):
-        print(f'{pos}: {count} times')
+    for pos, count in sorted(grid_positions.items(), key=lambda x: (-x[1], x[0])):
+        print(f'From P{pos}: {count} time{"s" if count > 1 else ""}')
 
+    print('ON POLE')
+    for driver, count in sorted(drivers_in_p1.items(), key=lambda x: (x[1]), reverse=True):
+        print(f'{driver}: {count} time{"s" if count != 1 else ""}')

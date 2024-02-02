@@ -265,7 +265,7 @@ def full_compare_drivers_season(year, d1, d2, team=None, mode='driver', split=No
         """)
 
 
-def get_retirements_per_driver(driver, start=None, end=None):
+def get_retirements_per_driver(driver, start=1950, end=2100):
     """
         Get retirements of a driver
 
@@ -276,23 +276,20 @@ def get_retirements_per_driver(driver, start=None, end=None):
 
    """
 
-    ergast = Ergast()
+    ergast = My_Ergast()
+    races = ergast.get_race_results([i for i in range(start, end)]).content
     positions = pd.Series(dtype=object)
 
-    for i in range(start, end):
-        races = ergast.get_race_results(season=i, limit=1000)
-        total_races = races.content
-        for race in total_races:
-            race = race[race['familyName'] == driver]
-            if not pd.isna(race['status'].max()):
-                if re.search(r'(Spun off|Accident|Collision|Damage)', race['status'].max()):
-                    positions = pd.concat([positions, pd.Series(['Crash'])], ignore_index=True)
-                elif re.search(r'(Finished|\+)', race['status'].max()):
-                    positions = pd.concat([positions, pd.Series(['P' + str(race['position'].max())])],
-                                          ignore_index=True)
-                else:
-                    positions = pd.concat([positions, pd.Series(['Mech DNF'])], ignore_index=True)
-        print(i)
+    for race in races:
+        race = race[race['fullName'] == driver]
+        if not pd.isna(race['status'].max()):
+            if re.search(r'(Spun off|Accident|Collision|Damage|damage)', race['status'].max()):
+                positions = pd.concat([positions, pd.Series(['Crash'])], ignore_index=True)
+            elif re.search(r'(Finished|\+)', race['status'].max()):
+                positions = pd.concat([positions, pd.Series(['P' + str(race['position'].max())])],
+                                      ignore_index=True)
+            else:
+                positions = pd.concat([positions, pd.Series(['Mech DNF'])], ignore_index=True)
 
     positions = positions.value_counts()
     positions = pd.DataFrame({'Category': positions.index, 'Count': positions.values})
@@ -308,7 +305,7 @@ def get_retirements_per_driver(driver, start=None, end=None):
     top_N = positions.nlargest(N)
     top_N['Other'] = positions.iloc[N:].sum()
 
-    fig, ax = plt.subplots(figsize=(7.2, 6.5), dpi=150)
+    fig, ax = plt.subplots(figsize=(6, 6), dpi=150)
 
     fig.patch.set_facecolor('black')
     ax.set_facecolor('black')
@@ -333,15 +330,17 @@ def get_retirements_per_driver(driver, start=None, end=None):
 
         return inner_autopct
 
-    # Generate labels and corresponding values
     labels = top_N.index.tolist()
     values = top_N.values
 
-    # Adjust pie plot call
-    top_N.plot.pie(ax=ax, autopct=autopct_generator(values),
-                   labels=['' for _ in labels], legend=False,
-                   wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors,
-                   textprops={"color": "black", "ha": "center"})
+    wedges, texts, autotexts = ax.pie(values, autopct=autopct_generator(values),
+                                       labels=['' for _ in labels],
+                                       wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors,
+                                       textprops={"color": "black", "ha": "center"},
+                                       radius=1.25)
+
+    for autotext in autotexts:
+        autotext.set_fontsize(12)
 
     plt.title(f'{driver} historical positions (Total races: {positions.sum()})',
               font='Fira Sans', fontsize=16, color='white')
@@ -349,7 +348,13 @@ def get_retirements_per_driver(driver, start=None, end=None):
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver} finish history', dpi=450)
     plt.show()
-    print(printed_data)
+    printed_data['Rank'] = printed_data['Percentage'].rank(method='min', ascending=False)
+    for index, row in printed_data.iterrows():
+        position = row['Position']
+        times = row['Times']
+        percentage = row['Percentage']
+        rank = int(row['Rank'])
+        print(f'{rank} - {position}: {percentage}% ({times}/{positions.sum()})')
 
 
 def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):

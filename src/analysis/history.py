@@ -310,51 +310,6 @@ def lucky_drivers(start=None, end=None):
     print(values)
 
 
-def get_fastest_punctuable_lap(circuit, start=None, end=None, all_drivers=False):
-    """
-        Get the fastest lap of a circuit
-
-        Parameters:
-        circuit (str): A specific driver
-        start (int): Year of start
-        end (int): Year of end
-        all_drivers (bool): Top 10 or all drivers
-
-   """
-
-    if start is None:
-        start = 1950
-    if end is None:
-        end = 2024
-
-    current_fl = pd.Timedelta(days=1)
-    current_driver = ''
-    current_year = 0
-
-    ergast = Ergast()
-    for year in range(start, end):
-        round_number = ergast.get_race_schedule(season=year, circuit=circuit, limit=1000)
-        if len(round_number):
-            round_number = round_number.values[0][1]
-            laps = ergast.get_lap_times(season=year, round=round_number, limit=1000)
-            if len(laps.content) > 0:
-                race_results = ergast.get_race_results(season=year, round=round_number, limit=1000)
-                if not all_drivers:
-                    top_10 = race_results.content[0]['driverId'][:10].values
-                    fl_drivers = laps.content[0][laps.content[0]['driverId'].isin(top_10)]
-                    fl = fl_drivers['time'].min()
-                    driver = fl_drivers[fl_drivers['time'] == fl]['driverId'].values[0]
-                else:
-                    fl = laps.content[0]['time'].min()
-                    driver = laps.content[0][laps.content[0]['time'] == fl]['driverId'].values[0]
-
-                if fl < current_fl:
-                    current_fl = fl
-                    current_driver = driver
-                    current_year = year
-                print(current_fl, current_driver, current_year)
-
-
 def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, victories=True):
     ergast = Ergast()
     last_race = ergast.get_race_results(season=end - 1, round=17, limit=1000).content[0]
@@ -498,41 +453,6 @@ def victories_per_driver_team(start=2014, end=2024):
     plt.title(f'WINS PER TEAM ({start}-{end - 1})', font='Fira Sans', fontsize=18, color='white')
     plt.tight_layout()
     plt.savefig(f'../PNGs/WINNERS-TEAM IN PERIOD.png', dpi=450)
-    plt.show()
-
-
-def mapped_grid_final_pos(driver, start=1950, end=2024):
-    races = My_Ergast().get_race_results([i for i in range(start, end)]).content
-    df = pd.DataFrame(columns=['GRID', 'RESULT'])
-    for r in races:
-        r = r[r['fullName'] == driver]
-        if len(r) > 0:
-            grid_pos = r['grid'].loc[0]
-            status = r['status'].loc[0]
-            final_result = r['position'].loc[0]
-            if re.search(r'(Spun off|Accident|Collision|Damage|Fatal)', status):
-                final_result = 'Crash'
-            elif not re.search(r'Finished|\+', status):
-                final_result = 'Mech DNF'
-            else:
-                final_result = f'P{final_result}'
-            if grid_pos == 0:
-                grid_pos = 'PIT LANE'
-            else:
-                grid_pos = f'P{grid_pos}'
-            df.loc[len(df), 'GRID'] = grid_pos
-            df.loc[len(df) - 1, 'RESULT'] = final_result
-
-    df['Count GRID'] = df.groupby('GRID')['GRID'].transform('count')
-    df['Count RESULT'] = df.groupby('RESULT')['RESULT'].transform('count')
-    df['GRID'] = [f'{driver} ({count})' for driver, count in zip(df['GRID'], df['Count GRID'])]
-    df['RESULT'] = [f'{driver} ({count})' for driver, count in zip(df['RESULT'], df['Count RESULT'])]
-    df = df.sort_values(by='Count RESULT', ascending=True)
-    df = df.drop(['Count GRID', 'Count RESULT'], axis=1)
-    sankey.sankey(df['GRID'], df['RESULT'], aspect=1, fontsize=11)
-    plt.title(f'{driver.upper()} RESULTS FROM GRID POSITION', font='Fira Sans', fontsize=18, color='white')
-    plt.tight_layout()
-    plt.savefig(f'../PNGs/{driver} MAPPED POSITIONS.png', dpi=450)
     plt.show()
 
 
@@ -692,7 +612,6 @@ def times_lapped_per_team(start=2014, end=2024):
 
 
 def avg_position_season(season):
-
     races = My_Ergast().get_race_results([season])
     positions_dict = {}
     dnfs_dict = {}
@@ -712,18 +631,18 @@ def avg_position_season(season):
                 else:
                     dnfs_dict[name] += 1
 
-    positions_dict = sorted(positions_dict.items(), key=lambda item: np.mean(item[1]))
-    positions_with_rank = {d: rank + 1 for rank, (d, _) in enumerate(positions_dict)}
-
-    for d, m in positions_dict:
-        driver_dnfs = dnfs_dict.get(d, 0)
-        average_position = np.mean(m)
-        total_races = len(m) + driver_dnfs
-        dnfs_percentage = (driver_dnfs / total_races) * 100
-        rank = positions_with_rank[d]
-
-        print(f'{rank} - {d}: {average_position:.2f} - DNFs ({driver_dnfs}/{total_races} {dnfs_percentage:.2f}%)')
-
+    df = pd.DataFrame.from_dict(positions_dict, orient='index').transpose()
+    df_avg = df.mean().reset_index()
+    df_avg.columns = ['Driver', 'AvgPosition']
+    df_avg['Rank'] = df_avg['AvgPosition'].rank(method='min')
+    df_avg = df_avg.sort_values(by='Rank')
+    for index, row in df_avg.iterrows():
+        driver = row['Driver']
+        total_races = len(positions_dict.get(driver, 0)) + dnfs_dict.get(driver, 0)
+        print(
+            f"{int(row['Rank'])} - {driver}: {row['AvgPosition']:.2f} - "
+            f"DNFs ({dnfs_dict.get(driver, 0)}/{total_races}"
+            f" {(dnfs_dict.get(driver, 0) / total_races) * 100:.2f}%)")
 
 
 def dfns_per_year(start=1950, end=2050):
@@ -744,6 +663,39 @@ def dfns_per_year(start=1950, end=2050):
                 else:
                     dnfs_dict[year].append(1)
 
-    dnfs_dict = dict(sorted(dnfs_dict.items(), key=lambda item: np.sum(item[1])/len(item[1])))
+    dnfs_dict = dict(sorted(dnfs_dict.items(), key=lambda item: np.sum(item[1]) / len(item[1])))
     for y, d in dnfs_dict.items():
-        print(f'{y}: {(np.sum(d)/len(d)) * 100:.2f}% - Total ({np.sum(d)})')
+        print(f'{y}: {(np.sum(d) / len(d)) * 100:.2f}% - Total ({np.sum(d)})')
+
+
+def pole_position_evolution(circuit, start=1950, end=2050):
+
+    qualys = My_Ergast().get_qualy_results([i for i in range(start, end)])
+    prev_value = None
+    log_entries = []
+    for q in qualys.content:
+        if q["circuitRef"].loc[0] == circuit:
+            year = q["year"].loc[0]
+            q['bestTime'] = q.apply(lambda row: min(row['q1'], row['q2'], row['q3']), axis=1)
+            q = q.sort_values(by='bestTime', ascending=True).reset_index(drop=True)
+            pole_time = q['bestTime'].loc[0]
+            driver = q['fullName'].loc[0]
+            hours, minutes, full_seconds = str(pole_time).split(':')
+            if '.' in full_seconds:
+                seconds, milliseconds = full_seconds.split('.')
+            else:
+                seconds = full_seconds
+                milliseconds = '000'
+            milliseconds_formatted = f"{float('0.' + milliseconds):.3f}".split('.')[1]
+            formatted_pole_time = f"{minutes}:{seconds}.{milliseconds_formatted}"
+
+            if prev_value is None:
+                entry = f'{"🟠"}{year}: {formatted_pole_time} - {driver}'
+            else:
+                diff = (pole_time - prev_value).total_seconds()
+                entry = f'{"🟢" if diff < 0 else "🔴"}{year}: {formatted_pole_time} - {driver} ({"+" if diff > 0 else ""}{diff:.3f}s)'
+            prev_value = pole_time
+            log_entries.append(entry)
+
+    final_log = '\n'.join(log_entries)
+    print(final_log)

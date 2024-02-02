@@ -105,7 +105,6 @@ def bar_season(year, mode='Driver'):
     index = []
     round = 1
     for i in range(len(races_df)):
-        date = races_df[i]['raceDate'].min().strftime("%Y-%m-%d")
         race_name = races_df[i]['raceName'].min().replace('Sprint','').replace('Grand Prix', 'GP')
         is_sprint = 'Sprint' if races_df[i]['raceType'].min() == 1 else 'Race'
 
@@ -125,8 +124,8 @@ def bar_season(year, mode='Driver'):
     df = pd.DataFrame(family_points_dict, index=index)
     filename = f'../MP4/F1 Championship - {races.description.season[0]} Season.mp4'
     title = f'F1 Championship - {races.description.season[0]} Season'
-    df.columns = ['AlphaTauri', 'Alpine', 'Haas', 'Alfa Romeo', 'Mercedes',
-                  'Aston Martin', 'Williams', 'McLaren', 'Ferrari', 'Red Bull']
+    # df.columns = ['AlphaTauri', 'Alpine', 'Haas', 'Alfa Romeo', 'Mercedes',
+    #               'Aston Martin', 'Williams', 'McLaren', 'Ferrari', 'Red Bull']
     figsize = (1920 / 200, 1080 / 200)
     bcr.bar_chart_race(
         df=df.cumsum(),

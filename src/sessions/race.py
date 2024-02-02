@@ -138,34 +138,34 @@ def tyre_strategies(session):
 
     drivers = [session.get_driver(driver)["Abbreviation"] for driver in drivers]
     stints = laps[["Driver", "Stint", "Compound", "LapNumber", "FreshTyre", "TyreLife"]]
-    # past_stint = 1
-    # past_driver = stints.loc[0, 'Driver']
-    # for i in range(len(stints)):
-    #     changed = False
-    #     current_driver = stints.loc[i, 'Driver']
-    #
-    #     if past_driver != current_driver:
-    #         past_stint = 1
-    #
-    #     current_stint = stints.loc[i, 'Stint']
-    #     if past_stint != current_stint and i != 0:
-    #         tyre_laps_prev = stints.loc[i - 1, 'TyreLife']
-    #         tyre_laps = stints.loc[i, 'TyreLife']
-    #         compound_prev = stints.loc[i - 1, 'Compound']
-    #         compound = stints.loc[i, 'Compound']
-    #
-    #         if tyre_laps_prev + 1 == tyre_laps and (compound_prev == compound):
-    #             indexes = stints.index[stints['Driver'] == stints.loc[i, 'Driver']].tolist()
-    #             indexes = [x for x in indexes if x >= i]
-    #             for index in indexes:
-    #                 stints.loc[index, 'Stint'] = stints.loc[index, 'Stint'] - 1
-    #                 stints.loc[index, 'FreshTyre'] = stints.loc[min(indexes) - 1, 'FreshTyre']
-    #             past_stint = current_stint - 1
-    #             changed = True
-    #
-    #     if not changed:
-    #         past_stint = current_stint
-    #         past_driver = current_driver
+    past_stint = 1
+    past_driver = stints.loc[0, 'Driver']
+    for i in range(len(stints)):
+        changed = False
+        current_driver = stints.loc[i, 'Driver']
+
+        if past_driver != current_driver:
+            past_stint = 1
+
+        current_stint = stints.loc[i, 'Stint']
+        if past_stint != current_stint and i != 0:
+            tyre_laps_prev = stints.loc[i - 1, 'TyreLife']
+            tyre_laps = stints.loc[i, 'TyreLife']
+            compound_prev = stints.loc[i - 1, 'Compound']
+            compound = stints.loc[i, 'Compound']
+
+            if tyre_laps_prev + 1 == tyre_laps and (compound_prev == compound):
+                indexes = stints.index[stints['Driver'] == stints.loc[i, 'Driver']].tolist()
+                indexes = [x for x in indexes if x >= i]
+                for index in indexes:
+                    stints.loc[index, 'Stint'] = stints.loc[index, 'Stint'] - 1
+                    stints.loc[index, 'FreshTyre'] = stints.loc[min(indexes) - 1, 'FreshTyre']
+                past_stint = current_stint - 1
+                changed = True
+
+        if not changed:
+            past_stint = current_stint
+            past_driver = current_driver
 
     stints = stints.groupby(["Driver", "Stint", "Compound", "FreshTyre"])
     stints = stints.count().reset_index()

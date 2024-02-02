@@ -359,7 +359,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
     for y, d in delta_per_year.items():
         trunc_mean = stats.trim_mean(d, 0.1)
         print(
-            f'{"🔴" if trunc_mean > 0 else "🟢"}{y[0]}: {abs(trunc_mean):.3f}s {"faster" if trunc_mean < 0 else " slower"} than {y[1]}')
+            f'{"🔴" if trunc_mean > 0 else "🟢"}{y[0]}: {abs(trunc_mean):.3f}s {"faster" if trunc_mean < 0 else "slower"} than {y[1]}')
 
     for y, d in delta_per_year.items():
         mean = np.mean(d)
@@ -416,7 +416,7 @@ def avg_qualy_pos_dif_per_years(start=2014, end=2024):
 
 def avg_qualy_pos_dif(driver):
 
-    print(f'🚨{driver.upper()} AVERAGE QUALY POSITION DIFFERENCE AGAINST HIS TEAMMATES')
+    print(f'🚨{driver.upper()} MEDIAN QUALY POSITION DIFFERENCE AGAINST HIS TEAMMATES')
 
     qualys = My_Ergast().get_qualy_results([i for i in range(1950, 2100)])
     delta_per_year = {}

@@ -6,10 +6,9 @@ import numpy as np
 import pandas as pd
 from adjustText import adjust_text
 from fastf1 import plotting
-import scipy.ndimage
-from matplotlib import pyplot as plt, ticker, cm, patches
+from matplotlib import pyplot as plt, ticker, cm
 from matplotlib.collections import LineCollection
-from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
@@ -18,10 +17,10 @@ import matplotlib.patheffects as path_effects
 from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.utils import utils
-from src.plots.plots import round_bars, annotate_bars, lighten_color
-from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows, value_to_color, create_rounded_barh
+from src.plots.plots import round_bars, annotate_bars
+from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows, create_rounded_barh
 import seaborn as sns
-from src.variables.team_colors import team_colors_2023
+from src.variables.team_colors import team_colors_2023, team_colors
 
 
 def long_runs_driver(session, driver, threshold=1.07):
@@ -716,6 +715,7 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    year = session.date.year
     circuit_speed = {}
     colors_dict = {}
     for driver in drivers:
@@ -728,37 +728,29 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
                     d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
                 top_speed = max(d_laps.telemetry['Speed'])
                 if fastest_lap:
-                    team = d_laps['Team'].lower()
+                    team = d_laps['Team']
+                    column = 'Top Speeds (only the fastest lap from each driver)'
                 else:
-                    team = d_laps['Team'].values[0].lower()
-                if team == 'red bull racing':
-                    team = 'red bull'
-                elif team == 'haas f1 team':
-                    team = 'haas'
+                    team = d_laps['Team'].values[0]
+                    column = 'Top Speeds'
                 circuit_speed[driver] = top_speed
                 colors_dict[driver] = team
         except KeyError:
             print(f'No data for {driver}')
         print(circuit_speed)
 
-    order = True
-    if fastest_lap:
-        column = 'Top Speeds (only the fastest lap from each driver)'
-    else:
-        column = 'Top Speeds'
     x_fix = 5
     y_fix = 0.25
     annotate_fontsize = 13
     y_offset_rounded = 0.035
     round_decimals = 0
 
-    circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=order)}
-
+    circuit_speed = {k: v for k, v in sorted(circuit_speed.items(), key=lambda item: item[1], reverse=True)}
     fig, ax1 = plt.subplots(figsize=(8, 6.5), dpi=175)
 
     colors = []
     for i in range(len(circuit_speed)):
-        colors.append(fastf1.plotting.TEAM_COLORS[colors_dict[list(circuit_speed.keys())[i]]])
+        colors.append(team_colors[year][colors_dict[list(circuit_speed.keys())[i]]])
 
     bars = ax1.bar(list(circuit_speed.keys()), list(circuit_speed.values()), color=colors,
                    edgecolor='white')
@@ -867,34 +859,6 @@ def air_track_temps():
     plt.show()
 
 
-def session_results(start, end, session=2):
-    count = 0
-    for i in range(end, start - 1, -1):
-        year_data = fastf1.get_event_schedule(i)
-        year_data = year_data[year_data['EventFormat'] != 'testing']
-        for j in range(len(year_data), 0, -1):
-            try:
-                practice_times = {}
-                s = fastf1.get_session(i, j, session)
-                s.load()
-                drivers = s.laps['Driver'].unique()
-                for d in drivers:
-                    d_lap = s.laps.pick_driver(d).pick_fastest()['LapTime']
-                    team = s.laps.pick_driver(d).pick_fastest()['Team']
-                    if not pd.isna(d_lap):
-                        practice_times[f'{d} + {team}'] = d_lap
-                practice_times = dict(sorted(practice_times.items(), key=lambda item: item[1], reverse=False))
-                top2 = list(practice_times.keys())[2]
-                print(top2)
-                if 'PIA + McLaren' in top2:
-                    print(s)
-                    if count == 1:
-                        exit(0)
-                    count += 1
-            except:
-                print('No data')
-
-
 def drs_efficiency(year):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
     drs_dict = {}
@@ -990,6 +954,7 @@ def get_fastest_sectors(session):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    year = session.date.year
     sector_times = pd.DataFrame(columns=['Sector1Time', 'Sector2Time', 'Sector3Time', 'Color'])
     for driver in drivers:
         try:
@@ -999,7 +964,7 @@ def get_fastest_sectors(session):
                     time = round(min(d_laps[sector].dropna()).total_seconds(), 3)
                     team = d_laps['Team'].values[0]
                     sector_times.loc[driver, sector] = time
-                    sector_times.loc[driver, f'Color'] = team_colors_2023.get(team)
+                    sector_times.loc[driver, f'Color'] = team_colors[year][team]
         except KeyError:
             print(f'No data for {driver}')
 

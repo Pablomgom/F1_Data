@@ -218,7 +218,7 @@ def pitstops_pirelli_era():
     for y, p in pit_stop_dict.items():
         mean_pit_stops.append(statistics.mean(p))
 
-    pitstops_2023 = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
+    pitstops_2023 = pd.read_csv('../resources/csv/Pit_stops.csv', sep=',')
     pitstops_2023 = pitstops_2023[pitstops_2023['Year'] == 2023].sort_values(by='Race_ID')
     mean_pit_stops.append((pitstops_2023.groupby('Race_ID').size()/20).mean())
 
