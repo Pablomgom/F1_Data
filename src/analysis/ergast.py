@@ -95,9 +95,9 @@ def get_position_changes(year, round):
 
     """
 
-    race = Ergast().get_race_results(season=year, round=round, limit=1000)
+    race = My_Ergast().get_race_results([year], round).content[0]
 
-    finish = race.content[0][['familyName', 'givenName', 'grid', 'status', 'constructorName']]
+    finish = race[['familyName', 'givenName', 'grid', 'status', 'constructorName']]
     finish['Driver'] = finish['givenName'] + ' ' + finish['familyName']
     finish['Finish'] = range(1, finish.shape[0] + 1)
     finish.loc[(finish['grid'] == 5) & (finish['Driver'] == 'Guanyu Zhou'), 'grid'] = 15
@@ -108,27 +108,26 @@ def get_position_changes(year, round):
     finish['Team'] = finish['constructorName']
 
     race_diff_times = []
-    for race_content in race.content:
-        for i in range(len(race_content['totalRaceTime'])):
-            if i == 0:
-                race_time = race_content['totalRaceTime'][i]
-                hours = race_time.seconds // 3600
-                minutes = ((race_time.seconds // 60) % 60)
+    for index, row in race.iterrows():
+        if index == 0:
+            race_time = row['totalRaceTime']
+            hours = race_time.seconds // 3600
+            minutes = ((race_time.seconds // 60) % 60)
+            seconds = race_time.seconds % 60
+            milliseconds = race_time.microseconds // 1000
+            race_time = f"{hours}:{str(minutes).ljust(2, '0')}:{str(seconds).ljust(3, '0')}" \
+                        f".{str(milliseconds).ljust(3, '0')}"
+            race_diff_times.append(race_time)
+        else:
+            race_time = row['totalRaceTime']
+            if pd.isna(race_time):
+                race_diff_times.append(None)
+            else:
+                minutes = (race_time.seconds // 60) % 60
                 seconds = race_time.seconds % 60
                 milliseconds = race_time.microseconds // 1000
-                race_time = f"{hours}:{str(minutes).ljust(2, '0')}:{str(seconds).ljust(3, '0')}" \
-                            f".{str(milliseconds).ljust(3, '0')}"
+                race_time = f"+{str(minutes).zfill(1)}:{str(seconds).zfill(2)}.{(str(milliseconds).zfill(2)).rjust(3, '0')}"
                 race_diff_times.append(race_time)
-            else:
-                race_time = race_content['totalRaceTime'][i]
-                if pd.isna(race_time):
-                    race_diff_times.append(None)
-                else:
-                    minutes = (race_time.seconds // 60) % 60
-                    seconds = race_time.seconds % 60
-                    milliseconds = race_time.microseconds // 1000
-                    race_time = f"+{str(minutes).zfill(1)}:{str(seconds).zfill(2)}.{(str(milliseconds).zfill(2)).rjust(3, '0')}"
-                    race_diff_times.append(race_time)
 
     finish['status'] = pd.Series(race_diff_times).combine_first(finish['status'])
 
@@ -146,11 +145,11 @@ def get_position_changes(year, round):
     finish = finish[['Finish', 'Driver', 'Team', 'Starting position', 'Status', 'Grid change']]
 
     render_mpl_table(finish)
-    plt.title(f"Race Results - {race.description['raceName'].min()} - {race.description['season'].min()}",
+    plt.title(f"Race Results - {race['raceName'].loc[0]} - {race['year'].loc[0]}",
               font='Fira Sans', fontsize=40)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(f"../PNGs/Race Results - {race.description['raceName'].min()} - {race.description['season'].min()}",
+    plt.savefig(f"../PNGs/Race Results - {race['raceName'].loc[0]} - {race['year'].loc[0]}",
                 bbox_inches='tight', dpi=400)
     plt.show()
 

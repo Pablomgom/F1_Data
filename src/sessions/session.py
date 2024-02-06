@@ -729,7 +729,7 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
                 top_speed = max(d_laps.telemetry['Speed'])
                 if fastest_lap:
                     team = d_laps['Team']
-                    column = 'Top Speeds (only the fastest lap from each driver)'
+                    column = 'Top Speeds (only fastest lap)'
                 else:
                     team = d_laps['Team'].values[0]
                     column = 'Top Speeds'
@@ -759,7 +759,7 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
     annotate_bars(bars, ax1, y_fix, annotate_fontsize, text_annotate='default', ceil_values=False, round=round_decimals)
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Location + " " + session.name}',
-                  font='Fira Sans', fontsize=14)
+                  font='Fira Sans', fontsize=16)
     ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
 
     y_label = 'Max speed'

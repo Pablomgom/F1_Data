@@ -42,9 +42,27 @@ team_colors_2023 = {
     'Williams': '#005aff'
 }
 
+team_colors_2019 = {
+    'Mercedes': '#00d2be',
+    'Ferrari': '#dc0000',
+    'Red Bull': '#0600ef',
+    'Red Bull Racing': '#0600ef',
+    'McLaren': '#ff8700',
+    'Renault': '#FFFF00',
+    'Alpine F1 Team': '#FF69B4',
+    'Racing Point': '#FFC0CB',
+    'Alfa Romeo': '#900000',
+    'Alfa Romeo Racing': '#900000',
+    'Toro Rosso': '#00008B',
+    'Haas': '#ffffff',
+    'Haas F1 Team': '#ffffff',
+    'Williams': '#005aff'
+}
+
 
 team_colors = {
     2008: team_colors_2008,
     2009: team_colors_2009,
-    2023: team_colors_2023
+    2023: team_colors_2023,
+    2019: team_colors_2019
 }

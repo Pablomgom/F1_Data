@@ -281,7 +281,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
 
     def process_times(year, q, full_data, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year, d1, d2):
         diff = round(d1_time - d2_time, 3)
-        if abs(diff) < 1500:
+        if abs(diff) < 5:
             d1_pos = full_data[full_data['fullName'] == d1]['position'].loc[0]
             d2_pos = full_data[full_data['fullName'] == d2]['position'].loc[0]
             display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos)

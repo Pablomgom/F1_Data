@@ -357,7 +357,7 @@ def get_retirements_per_driver(driver, start=1950, end=2100):
         print(f'{rank} - {position}: {percentage}% ({times}/{positions.sum()})')
 
 
-def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
+def race_qualy_h2h(d_1, start=1950, end=3000):
     """
         Compare a season for 2 drivers
 
@@ -371,9 +371,11 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
     ergast = My_Ergast()
     years = [i for i in range(start, end)]
     races = ergast.get_race_results(years)
+    qualys = ergast.get_qualy_results(years).content
     total_races = races.content
 
     race_result = {}
+    qualy_result = {}
     d1_points = {}
     d2_points = {}
 
@@ -385,8 +387,14 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
                 teammates = race[(race['constructorName'] == team) & (race['fullName'] != d_1)]['fullName'].values
                 for d_2 in teammates:
                     if len(race[race['fullName'] == d_2]) == 1:
-                        status = race[race['fullName'].isin([d_1, d_2])]['status'].values
-                        status = [i for i in status if '+' in i or 'Finished' in i]
+                        status = []
+                        valid = []
+                        if race_type == 'Race':
+                            status = race[race['fullName'].isin([d_1, d_2])]['status'].values
+                            status = [i for i in status if '+' in i or 'Finished' in i]
+                        else:
+                            valid = race[race['fullName'].isin([d_1, d_2])]['Valid'].values
+                            valid = [i for i in valid if i]
                         d1_pos = race[race['fullName'] == d_1]['position'].loc[0]
                         d2_pos = race[race['fullName'] == d_2]['position'].loc[0]
                         driver = None
@@ -394,7 +402,7 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
                             driver = d_1
                         elif d1_pos > d2_pos:
                             driver = d_2
-                        if (DNFs and len(status) == 2) or not DNFs:
+                        if len(status) == 2 or len(valid) == 2:
                             if race_type == 'Race':
                                 if year not in race_result:
                                     race_result[year] = {}
@@ -408,9 +416,17 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
                                     race_result[year][d_2].append(driver)
                                 d1_points[year][d_2] += race[race['fullName'] == d_1]['points'][0]
                                 d2_points[year][d_2] += race[race['fullName'] == d_2]['points'][0]
+                            else:
+                                if year not in qualy_result:
+                                    qualy_result[year] = {}
+                                if d_2 not in qualy_result[year]:
+                                    qualy_result[year][d_2] = []
+                                if driver is not None:
+                                    qualy_result[year][d_2].append(driver)
         return d1_points, d2_points
 
     d1_points, d2_points = process_drivers(total_races, 'Race', d1_points, d2_points)
+    process_drivers(qualys, 'Qualy', d1_points, d2_points)
 
     def print_results(data):
         driver_ahead = 0
@@ -442,6 +458,7 @@ def race_qualy_h2h(d_1, start=1950, end=3000, DNFs=True):
         print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
 
     print_results(race_result)
+    print_results(qualy_result)
 
 
 def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
