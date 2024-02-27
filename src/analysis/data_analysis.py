@@ -150,11 +150,12 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None, 
 
 def predict_race_pace(year=2024, track='Bahrain', session='R'):
 
-    track_features = ['Corner Density', 'Top Speed', 'Full Gas', 'Lifting', 'Q1 Corner Speed', 'Median Corner Speed',
-                    'Q3 Corner Speed', 'Average Corner Speed', 'Corner Speed Variance']
+    track_features = ['Corner Density', 'Top Speed', 'Full Gas', 'Lifting', 'Q1 Corner Speed',
+                      'Median Corner Speed', 'Q3 Corner Speed', 'Average Corner Speed', 'Corner Speed Variance']
 
     teams = ['Red Bull Racing', 'Aston Martin', 'Alpine', 'Mercedes', 'RB',
              'Kick Sauber', 'Williams', 'Haas F1 Team', 'McLaren', 'Ferrari']
+
     if session == 'R':
         race_pace_delta = pd.read_csv('../resources/csv/Race_pace_delta.csv')
     else:
@@ -163,10 +164,11 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
 
     race_pace_delta['Team'] = race_pace_delta['Team'].replace({'AlphaTauri': 'RB',
                                                                'Alfa Romeo': 'Kick Sauber'})
-
     race_pace_delta.sort_values(by=['Year', 'Session'], inplace=True)
     race_pace_delta['Recent_Avg_Delta'] = race_pace_delta.groupby('Team')['Delta'].transform(
-        lambda x: x.rolling(window=2, min_periods=1).mean())
+        lambda x: x.ewm(span=3, adjust=False).mean())
+
+
 
     race_pace_delta_pivot = race_pace_delta.pivot_table(index=['Year', 'Track', 'Session'], columns='Team',
                                                         values=['Delta', 'Recent_Avg_Delta']).reset_index()
@@ -186,7 +188,8 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     X = predict_data[feature_columns]
     y = predict_data[[f'Delta_{team}' for team in teams]]
     scaler = StandardScaler()
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model = RandomForestRegressor(n_estimators=1000, random_state=42, max_depth=10, max_features='sqrt',
+                                  min_samples_leaf=2, min_samples_split=2)
     X_scaled = scaler.fit_transform(X)
     model.fit(X_scaled, y)
     prev_year_data = circuit_data[(circuit_data['Year'] == year - 1) & (circuit_data['Track'] == track)]
