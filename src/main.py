@@ -1,4 +1,6 @@
 import sys
+from time import sleep
+
 import fastf1
 import traceback
 
@@ -7,6 +9,7 @@ from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 
+import src.utils.utils
 from src.awards.awards import awards_2023
 from src.db.db import Database
 from src.ergast_api.my_ergast import My_Ergast
@@ -14,7 +17,7 @@ from src.menu.menu import get_funcs
 
 from src.utils.utils import parse_args, is_session_first_arg
 
-# setup_mpl(misc_mpl_mods=False)
+setup_mpl(misc_mpl_mods=False)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.width', None)
@@ -82,3 +85,4 @@ if __name__ == '__main__':
                 print(f"Result: {result}")
         except Exception as e:
             traceback.print_exc()
+            sleep(0.2)

@@ -6,89 +6,14 @@ from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
 from statsmodels.tsa.arima.model import ARIMA
+
+from src.ergast_api.my_ergast import My_Ergast
 from src.utils.utils import append_duplicate_number
 from src.variables.team_colors import team_colors_2023, team_colors
 import matplotlib.patches as mpatches
 
-def compare_qualy_results(team, threshold, end=None, exclude=None):
-    """
-       Compare qualy results for a team given a threshold
+from src.variables.variables import point_systems
 
-        Parameters:
-        team (str, optional): Only for analyze a team. Default: None
-        threshold (int): Threshold to compare the values
-        end (int, optional): 1950 by default
-        exclude (dict, optional): Excludes a circuit in a given year
-
-   """
-
-    if end is None:
-        end = 1950
-    ergast = Ergast()
-    for year in range(2023, end, -1):
-        qualys = ergast.get_qualifying_results(season=year, limit=1000)
-        qualys_data = qualys.content
-        qualys_data.reverse()
-        circuits = list(qualys.description['circuitId'])
-        circuits.reverse()
-        for i in range(len(qualys_data)):
-            exclude_qualy = False
-            data = qualys_data[i]
-            team_data = data[data['constructorId'] == team]
-            check = data[data['constructorId'] == team]['position'].mean()
-            print(f'{check} in {year} in {circuits[i]}')
-            if exclude is not None:
-                for circuit, year_dict in exclude.items():
-                    if circuit == circuits[i] and year_dict == year:
-                        exclude_qualy = True
-            if exclude_qualy:
-                continue
-            if check >= threshold:
-                print(f"""
-                {year} in {circuits[i]}
-                {list(team_data['driverId'])}
-                {list(team_data['position'])}
-                {check} points                
-                """)
-                exit(0)
-
-
-def compare_amount_points(team, threshold, end=None, exclude=None):
-    """
-       Compare points for a team given a threshold
-
-        Parameters:
-        team (str, optional): Only for analyze a team. Default: None
-        threshold (int): Threshold to compare the values
-        end (int, optional): 1950 by default
-        exclude (dict, optional): Excludes a circuit in a given year
-
-   """
-
-    if end is None:
-        end = 1950
-    ergast = Ergast()
-    for year in range(2023, end, -1):
-        races = ergast.get_race_results(season=year, limit=1000)
-        races_data = races.content
-        races_data.reverse()
-        circuits = list(races.description['circuitId'])
-        circuits.reverse()
-        for i in range(len(races_data)):
-            data = races_data[i]
-            team_data = data[data['constructorId'] == team]
-            check = data[data['constructorId'] == team]['points'].sum()
-            print(f'{check} in {year} in {circuits[i]}')
-            if exclude is not None and check == exclude:
-                break
-            if check <= threshold:
-                print(f"""
-                {year} in {circuits[i]}
-                {list(team_data['driverId'])}
-                {list(team_data['position'])}
-                {check} points                
-                """)
-                exit(0)
 
 def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     """
@@ -207,3 +132,25 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     plt.savefig(f'../PNGs/AVERAGE POINTS {year}.png', dpi=450)
     plt.show()
 
+
+def points_per_year(team, mode='team', point_system=2010, start=2014, end=2024):
+    ergast = My_Ergast()
+    r = ergast.get_race_results([i for i in range(start, end)])
+    points_dict = {year: [] for year in range(start, end)}
+    points_positions = point_systems.get(point_system)
+    col = 'constructorName' if mode == 'team' else 'fullName'
+    for race in r.content:
+        race_year = race['year'].loc[0]
+        race = race[race[col] == team]
+        positions = race['position'].values
+        total_points_race = 0
+        for p in positions:
+            total_points_race += points_positions.get(p, 0)
+        points_dict[race_year].append(total_points_race)
+
+    mean_results = {key: np.mean(value) for key, value in points_dict.items()}
+    ordered_results = dict(sorted(mean_results.items(), key=lambda item: item[1], reverse=True))
+    rank = 1
+    for k, v in ordered_results.items():
+        print(f'{rank} - {k}: {v:.2f}')
+        rank += 1

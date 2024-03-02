@@ -15,7 +15,7 @@ from unidecode import unidecode
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import get_handels_labels, get_font_properties
 from src.plots.table import render_mpl_table
-from src.utils.utils import get_dot
+from src.utils.utils import get_dot, format_timedelta
 from src.variables.driver_colors import driver_colors_historical
 
 
@@ -680,20 +680,13 @@ def pole_position_evolution(circuit, start=1950, end=2050):
             q = q.sort_values(by='bestTime', ascending=True).reset_index(drop=True)
             pole_time = q['bestTime'].loc[0]
             driver = q['fullName'].loc[0]
-            hours, minutes, full_seconds = str(pole_time).split(':')
-            if '.' in full_seconds:
-                seconds, milliseconds = full_seconds.split('.')
-            else:
-                seconds = full_seconds
-                milliseconds = '000'
-            milliseconds_formatted = f"{float('0.' + milliseconds):.3f}".split('.')[1]
-            formatted_pole_time = f"{minutes}:{seconds}.{milliseconds_formatted}"
 
             if prev_value is None:
-                entry = f'{"🟠"}{year}: {formatted_pole_time} - {driver}'
+                entry = f'{"🟠"}{year}: {format_timedelta(pole_time)} - {driver.split(" ", 1)[1]}'
             else:
                 diff = (pole_time - prev_value).total_seconds()
-                entry = f'{"🟢" if diff < 0 else "🔴"}{year}: {formatted_pole_time} - {driver} ({"+" if diff > 0 else ""}{diff:.3f}s)'
+                entry = (f'{"🟢" if diff < 0 else "🔴"}{year}: {format_timedelta(pole_time)} - {driver.split(" ", 1)[1]}'
+                         f' ({"+" if diff > 0 else ""}{diff:.3f}s)')
             prev_value = pole_time
             log_entries.append(entry)
 

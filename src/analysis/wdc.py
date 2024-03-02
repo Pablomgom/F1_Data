@@ -99,8 +99,6 @@ def process_race_data(content, driver, points, team_mate_points, team_mates_name
                     team_mate_points += 0
                     team_mates_names.append("Didn't have")
                 else:
-                    if team_mates['familyName'].values[0] == 'Andretti':
-                        a = 1
                     team_mate_points += team_mates['points'].values[0]
                     team_mates_names.append(team_mates['familyName'].values[0])
                 append = True
@@ -168,8 +166,8 @@ def wdc_comparation(driver, start=None, end=None, DNFs=None):
 
     first_three_letters = [
         '/'.join(
-            part[:3].upper() if '.' not in part else part.split('.')[0][:3].upper()
-            for part in name.replace(' - ', '/').split('/')
+            part[:3].upper() if '.' not in part else part.replace('de ','').split('.')[0][:3].upper()
+            for part in name.replace('de ','').replace(' - ', '/').split('/')
         )
         for name in fixed_names
     ]

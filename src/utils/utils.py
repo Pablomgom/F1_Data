@@ -300,25 +300,29 @@ def value_to_color(value, min_value, max_value):
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def create_rounded_barh(ax, data, sector_time, color_col, height=0.8):
+def create_rounded_barh(ax, data, sector_time, color_col, height=0.8, mode=0):
     times = data.sort_values(by=sector_time, ascending=True)
     colors = times[color_col].values
     y_positions = range(len(times))
     for y, time, color in zip(y_positions, times[sector_time], colors):
-        lighter_color = lighten_color(color, factor=0.6)
-        rect = patches.FancyBboxPatch((0, y - height / 2), time, height,
-                                      boxstyle="round,pad=0.02,rounding_size=0.2",
-                                      linewidth=2.75,
-                                      edgecolor=lighter_color,
-                                      facecolor=color)
-        ax.add_patch(rect)
-        ax.text(time + 0.1, y, f'{time:.3f}s', va='center', ha='left', color='white', fontsize=14.5)
+        if time != 0:
+            lighter_color = lighten_color(color, factor=0.6)
+            fixed_time = time if mode == 0 else time + 0.5
+            rect = patches.FancyBboxPatch((0 if mode == 0 else -0.5, (y - height / 2)), fixed_time, height,
+                                          boxstyle="round,pad=0.02,rounding_size=0.1",
+                                          linewidth=2.75,
+                                          edgecolor=lighter_color,
+                                          facecolor=color)
+            ax.add_patch(rect)
+        ax.text(time + 0.05, y, f'{time:.3f}s', va='center', ha='left', color='white', fontsize=14.5)
 
     ax.set_ylim(-1, len(times))
     ax.set_yticks(y_positions)
     ax.set_yticklabels(times.index.values)
-    ax.set_xlim(min(times[sector_time]) - 0.5, max(times[sector_time]) + 0.5)
-
+    if mode == 0:
+        ax.set_xlim(min(times[sector_time]) - 0.5, max(times[sector_time]) + 0.5)
+    else:
+        ax.set_xlim(0, max(times[sector_time]) + 0.5)
 
 def create_rounded_barh_custom(ax, x_data, y_data, colors, text_to_annotate, height=0.8):
     ax.set_ylim(min(y_data) - 1, max(y_data) + 1)
@@ -337,3 +341,7 @@ def create_rounded_barh_custom(ax, x_data, y_data, colors, text_to_annotate, hei
         x_pos = x if x > 0 else 0
         text_position = x_pos + offset
         ax.text(text_position, y, t, va='center', color='white', ha='left', font='Fira Sans', fontsize=13)
+
+
+def format_timedelta(lap_time):
+    return f"{lap_time.seconds // 60:01d}:{lap_time.seconds % 60:02d}.{int(lap_time.microseconds / 1000):03d}"

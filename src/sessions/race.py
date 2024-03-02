@@ -17,9 +17,9 @@ import pandas as pd
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 
-from src.utils.utils import append_duplicate_number, split_at_discontinuities
+from src.utils.utils import append_duplicate_number, split_at_discontinuities, format_timedelta
 from src.variables.driver_colors import driver_colors_2023
-from src.variables.team_colors import team_colors_2023
+from src.variables.team_colors import team_colors_2023, team_colors
 import matplotlib.dates as mdates
 from scipy import stats
 
@@ -243,21 +243,17 @@ def race_pace_top_10(session, threshold=1.07):
 
     """
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
-
+    session_year = session.event.year
     point_finishers = session.drivers[:10]
+    point_finishers = ['VER', 'SAI', 'RUS', 'NOR', 'ALO', 'ZHO', 'MAG', 'RIC', 'TSU', 'OCO']
     driver_laps = session.laps.pick_drivers(point_finishers).pick_quicklaps(threshold).pick_wo_box()
     driver_laps = driver_laps.reset_index()
     finishing_order = [session.get_driver(i)["Abbreviation"] for i in point_finishers]
-    driver_colors = {abv: fastf1.plotting.DRIVER_COLORS[driver] for
-                     abv, driver in fastf1.plotting.DRIVER_TRANSLATE.items()}
-
+    team_colors_dict = team_colors.get(session_year)
+    driver_colors = [team_colors_dict[session.laps.pick_driver(d)['Team'].loc[0]] for d in point_finishers]
     fig, ax = plt.subplots(figsize=(8, 6))
     driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
-    mean_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].mean()
-    median_lap_times = driver_laps.groupby("Driver")["LapTime(s)"].median()
-
-    # driver_colors = ['#0600ef', '#dc0000', '#ff8700', '#00d2be', '#FF69B4', '#006f62',
-    #                  '#005aff', '#cacaca', '#2b4562', '#900000']
+    mean_lap_times = driver_laps.groupby("Driver")["LapTime"].mean()
 
     sns.violinplot(data=driver_laps,
                    x="Driver",
@@ -279,29 +275,31 @@ def race_pace_top_10(session, threshold=1.07):
                   size=5,
                   )
 
+    all_drivers = set(session.laps['Driver'].values)
+    for d in all_drivers:
+        d_laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps(threshold)
+        print(f'{d} - {format_timedelta(d_laps["LapTime"].mean())}')
+
+    fastest_time = None
+    position = 1
     for i, driver in enumerate(finishing_order):
+        team = session.laps.pick_driver(driver)['Team'].loc[0]
         mean_time = mean_lap_times[driver]
-        median_time = median_lap_times[driver]
-
-        # Convert mean and median times to minutes, seconds, and milliseconds
-        mean_minutes, mean_seconds = divmod(mean_time, 60)
-        mean_seconds, mean_milliseconds = divmod(mean_seconds, 1)
-        median_minutes, median_seconds = divmod(median_time, 60)
-        median_seconds, median_milliseconds = divmod(median_seconds, 1)
-
-        # Place the mean and median labels below each violinplot
-        # ax.text(i, min(driver_laps['LapTime(s)']) - 1.3,
-        #         f"Average",
-        #         font='Fira Sans', fontsize=9, ha='center')
-        # ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
-        #         f"{int(mean_minutes):02d}:{int(mean_seconds):02d}.{int(mean_milliseconds * 1000):03d}",
-        #         font='Fira Sans', fontsize=9, ha='center')
+        f_mean_time = format_timedelta(mean_time)
         ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
-                f"{int(median_minutes):02d}:{int(median_seconds):02d}.{int(median_milliseconds * 1000):03d}",
+                f"{f_mean_time}",
                 font='Fira Sans', fontsize=9, ha='center')
+        if fastest_time is None:
+            time_diff = ''
+            fastest_time = mean_time
+        else:
+            time_diff = f'(+{format_timedelta(mean_time - fastest_time)}s)'.replace('0:0', '')
+        print(f'{position} - {team}: {f_mean_time} {time_diff}')
+        position += 1
+
 
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
-             max(driver_laps['LapTime']).total_seconds() + 2)  # change these numbers as per your needs
+             max(driver_laps['LapTime']).total_seconds() + 2)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     ax.set_xlabel("Driver", font='Fira Sans', fontsize=17)
@@ -518,6 +516,7 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
     for i in range(len(schedule)):
         session = fastf1.get_session(year, i + 1 if round_id is None else round_id, 'R')
         session.load()
+        print_output = ''
         loops = 1
         if all_teams:
             teams = session.laps['Team'].unique()
@@ -527,12 +526,12 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
             try:
                 if all_teams:
                     team = teams[i]
-                    print(f'{team.upper()}')
                     drivers = session.laps[session.laps['Team'] == team]['Driver'].unique()
                     if len(drivers) != 2:
                         raise RaceException
                     d1 = drivers[0]
                     d2 = drivers[1]
+                    print(f'{team.upper()} - {d1} vs. {d2}')
                 team_d1 = session.laps.pick_driver(d1)['Team'].unique()[0]
                 team_d2 = session.laps.pick_driver(d2)['Team'].unique()[0]
                 from src.utils.utils import call_function_from_module
@@ -542,37 +541,41 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
                 min_laps_d2, max_laps_d2 = call_function_from_module(race_same_team_exceptions,
                                                                      f"{team_d2.replace(' ', '_')}_{year}",
                                                                      i + 1, session.total_laps)
-                min_laps = max(min_laps_d1, min_laps_d2)
+                min_laps = max(min_laps_d1, min_laps_d2, 1)
                 max_laps = min(max_laps_d1, max_laps_d2)
                 d1_laps = session.laps.pick_driver(d1)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
                 d2_laps = session.laps.pick_driver(d2)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
-                d1_compare = pd.DataFrame(d1_laps[['LapNumber', 'LapTime', 'Compound', 'TyreLife']])
-                d2_compare = pd.DataFrame(d2_laps[['LapNumber', 'LapTime', 'Compound', 'TyreLife']])
-                d1_compare.columns = ['LapNumber', 'LapTime_d1', 'Compound_d1', 'TyreLife_d1']
-                d2_compare.columns = ['LapNumber', 'LapTime_d2', 'Compound_d2', 'TyreLife_d2']
+                d1_compare = pd.DataFrame(d1_laps[['Driver', 'LapNumber', 'LapTime', 'Compound', 'TyreLife']])
+                d2_compare = pd.DataFrame(d2_laps[['LapNumber', 'LapTime', 'Compound', 'TyreLife', 'Driver']])
+                d1_compare.columns = ['Driver_d1','LapNumber', 'LapTime_d1', 'Compound_d1', 'TyreLife_d1']
+                d2_compare.columns = ['LapNumber', 'LapTime_d2', 'Compound_d2', 'TyreLife_d2', 'Driver_d2']
                 comparable_laps = pd.merge(d1_compare, d2_compare, how='inner', on='LapNumber')
                 comparable_laps = comparable_laps[comparable_laps['Compound_d1'] == comparable_laps['Compound_d2']]
                 comparable_laps = comparable_laps[abs(comparable_laps['TyreLife_d1'] - comparable_laps['TyreLife_d2']) <= 3]
+                print(tabulate(comparable_laps, headers='keys', tablefmt='fancy_grid'))
                 if len(comparable_laps) >= 5:
                     total_laps_d1.extend(comparable_laps['LapTime_d1'])
                     total_laps_d2.extend(comparable_laps['LapTime_d2'])
-                    diff = []
                     if all_teams:
-                        for l1, l2 in zip(total_laps_d1, total_laps_d2):
-                            delta_diff = l1 - l2
-                            diff.append(delta_diff.total_seconds())
                         mean_d1 = stats.trim_mean(total_laps_d1, 0.05)
                         mean_d2 = stats.trim_mean(total_laps_d2, 0.05)
                         mean_diff = (mean_d1 - mean_d2).total_seconds()
-                        print(f'{d1}: {mean_d1:.3f}\n'
-                              f'{d2}: {mean_d2:.3f}')
-                        print(f'{d1 if mean_diff < 0 else d2} FASTER: {mean_diff:.3f}s')
+                        if mean_diff < 0:
+                            print_output += (f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} '
+                                             f' ({mean_diff:.3f}s)\n'
+                                             f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")}\n')
+                        else:
+                            print_output += (f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")} '
+                                             f' (-{mean_diff:.3f}s)\n'
+                                             f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} \n')
                         total_laps_d1 = []
                         total_laps_d2 = []
-                    else:
-                        print(tabulate(comparable_laps, headers='keys', tablefmt='fancy_grid'))
+                else:
+                    print(f'NOT ENOUGH LAPS FOR {d1} vs. {d2}')
             except (RaceException, IndexError):
                 print(f'{session}')
+
+    print(print_output)
     if not all_teams:
         race_differences = []
         for l1, l2 in zip(total_laps_d1, total_laps_d2):
@@ -585,13 +588,15 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
         print(f'MEDIAN DIFF {d1 if median < 0 else d2} FASTER: {median}')
         print(f'MEAN DIFF {d1 if mean < 0 else d2} FASTER: {mean}')
 
+    print('Only comparing laps that match in lap number, tyre and with 3 or less laps of tyre age difference')
 
-def fuel_correct_factor(year):
+def fuel_correct_factor(year, session_id=None):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
+    schedule = [1] if session_id is not None else schedule
     tyres = ['HARD', 'MEDIUM', 'SOFT']
     delta_dict = {}
     for i in range(len(schedule)):
-        session = fastf1.get_session(year, i + 1, 'R')
+        session = fastf1.get_session(year, i + 1 if session_id is None else session_id, 'R')
         session.load()
         session_fuel_correct_factor = []
         drivers = session.laps['Driver'].unique()
@@ -616,11 +621,7 @@ def fuel_correct_factor(year):
                         session_fuel_correct_factor.append(value)
         if len(session_fuel_correct_factor) > 25:
             print(f'TOTAL VALUES {len(session_fuel_correct_factor)}')
-            trim_percentage = 10
-            trim_count = int(len(session_fuel_correct_factor) * trim_percentage / 100)
-            sorted_data = sorted(session_fuel_correct_factor)
-            trimmed_data = sorted_data[trim_count:-trim_count]
-            truncated_mean = statistics.mean(trimmed_data)
+            truncated_mean = stats.trim_mean(session_fuel_correct_factor, 0.1)
             delta_dict[session] = truncated_mean
         else:
             delta_dict[session] = np.NaN
@@ -754,7 +755,7 @@ def race_diff_v2(year, save=False):
 def percentage_race_ahead(start=2001, end=2024):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve', 'albert_park']
+    circuits = ['bahrain']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:
@@ -794,7 +795,7 @@ def percentage_race_ahead(start=2001, end=2024):
         print(f'{d}: {w}% {h2h_dict[d]}')
 
 
-def delta_reference_team(year, save=False, round=None):
+def delta_reference_team(year, round=None):
     tyres = ['SOFT', 'MEDIUM', 'HARD']
     fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
     final_delta = {}
@@ -833,10 +834,10 @@ def delta_reference_team(year, save=False, round=None):
         cut_value = np.mean(max_tyre_age)
         # cut_value = max(max_tyre_age[max_tyre_age >= cut_value].index.values)
         total_laps = total_laps[total_laps['TyreLife'].isin(max_tyre_age[max_tyre_age >= cut_value].index.values)]
-        total_laps['LapTime'] = total_laps['LapTime'].dt.total_seconds()
-        total_laps['FuelCorrected'] = total_laps['LapTime'] - race_fuel_factor * (
+        total_laps.loc[:, 'LapTime'] = total_laps['LapTime'].dt.total_seconds()
+        total_laps.loc[:, 'FuelCorrected'] = total_laps['LapTime'] - race_fuel_factor * (
                 session.total_laps - total_laps['LapNumber'])
-        total_laps['FuelCorrected'] = pd.to_timedelta(total_laps['FuelCorrected'], unit='s')
+        total_laps.loc[:, 'FuelCorrected'] = pd.to_timedelta(total_laps['FuelCorrected'], unit='s')
         total_laps = total_laps.groupby(['Team', 'Driver'])['FuelCorrected'].median().reset_index()
         teams_data = (total_laps.groupby('Team')['FuelCorrected'].min().reset_index()
                       .sort_values(by='FuelCorrected', ascending=True)).reset_index(drop=True)
@@ -882,16 +883,6 @@ def delta_reference_team(year, save=False, round=None):
     plt.tight_layout()
     plt.savefig(f"../PNGs/{year} race time difference.png", dpi=400)
     plt.show()
-
-    if save:
-        df_save = pd.DataFrame(final_delta)
-        df_save['Year'] = year
-        df_save['Track'] = sessions_names
-        df_save['Session'] = df_save.index + 1
-        df_save = df_save.melt(id_vars=['Year', 'Session', 'Track'], var_name='Team', value_name='Delta')
-        df_save = df_save[['Team', 'Delta', 'Year', 'Session', 'Track']]
-        df_save.to_csv('../resources/csv/Race_pace_delta.csv', index=False)
-
 
 def avg_race_pos_dif(driver):
 

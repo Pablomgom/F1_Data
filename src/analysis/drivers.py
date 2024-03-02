@@ -473,7 +473,7 @@ def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
    """
 
     races = My_Ergast().get_race_results([i for i in range(start, end)])
-    print(f'🚨{driver.upper()} RESULTS IN {circuit}\n')
+    print(f'🚨{driver.upper()} RESULTS IN {circuit.upper()}\n')
     for r in races.content:
         results = r[(r['fullName'] == driver) & (r['circuitRef'] == circuit)]
         if len(results) > 0:

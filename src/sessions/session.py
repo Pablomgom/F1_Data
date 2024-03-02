@@ -18,7 +18,7 @@ from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.utils import utils
 from src.plots.plots import round_bars, annotate_bars
-from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows, create_rounded_barh
+from src.utils.utils import darken_color, plot_turns, rotate, remove_close_rows, create_rounded_barh, format_timedelta
 import seaborn as sns
 from src.variables.team_colors import team_colors_2023, team_colors
 
@@ -127,28 +127,31 @@ def long_runs_scatter(session, threshold=1.07):
     driver_laps = pd.DataFrame(columns=['Driver', 'Laps', 'Compound', 'Average'])
     for d in drivers:
         d_laps = session.laps.pick_driver(d)
-        max_stint = d_laps['Stint'].value_counts()
+        max_stint = d_laps[d_laps['Compound'].isin(['HARD', 'MEDIUM', 'SOFT'])]['Stint'].value_counts()
         max_stint = max_stint.reset_index()
         max_stint.columns = ['Stint', 'Counts']
         max_stint = max_stint.sort_values(by=['Counts', 'Stint'], ascending=[False, False])
-        max_stint = max_stint['Stint'].iloc[0]
-        print(f'{d}\n {d_laps[["Stint", "Compound"]].value_counts()}')
-        driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold).pick_wo_box()
-        stint_index = 1
+        stint_index = 0
+        driver_laps_dict = {}
         try:
-            while len(driver_laps_filter) < 5 or 'UNKNOWN' in driver_laps_filter['Compound'].loc[0]:
-                max_stint = d_laps['Stint'].value_counts().index[stint_index]
-                driver_laps_filter = d_laps[d_laps['Stint'] == max_stint].pick_quicklaps(threshold).pick_wo_box()
+            for i in range(len(max_stint)):
+                stint_number = max_stint.iloc[stint_index]['Stint']
+                driver_laps_filter = d_laps[d_laps['Stint'] == stint_number].pick_quicklaps(threshold).pick_wo_box()
+                driver_laps_dict[stint_number] = len(driver_laps_filter)
                 stint_index += 1
-            driver_laps_filter = driver_laps_filter[driver_laps_filter['LapTime'].notna()]
-            driver_laps_filter['LapNumber'] = driver_laps_filter['LapNumber'] - driver_laps_filter[
-                'LapNumber'].min() + 1
+
+            driver_laps_dict = dict(sorted(driver_laps_dict.items(), key=lambda item: (-int(item[1]), -int(item[0]))))
+            final_stint_number, number_laps = next(iter(driver_laps_dict.items()))
+            if number_laps < 5:
+                raise Exception
+            print(f'{d} - STINT: {final_stint_number} - LAPS: {number_laps}')
+            driver_laps_filter = d_laps[d_laps['Stint'] == final_stint_number].pick_quicklaps(threshold).pick_wo_box()
             driver_laps_filter = driver_laps_filter.reset_index()
             df_append = pd.DataFrame({
-                'Driver': d,
+                'Driver': f'{d} ({len(driver_laps_filter)})',
                 'Laps': [driver_laps_filter['LapTime'].to_list()],
                 'Compound': [driver_laps_filter['Compound'].iloc[0]],
-                'Average': driver_laps_filter['LapTime'].median()
+                'Average': driver_laps_filter['LapTime'].mean()
             })
             driver_laps = pd.concat([driver_laps, df_append], ignore_index=True)
         except:
@@ -156,7 +159,6 @@ def long_runs_scatter(session, threshold=1.07):
 
     driver_laps = driver_laps.sort_values(by=['Compound', 'Average'], ascending=[True, False])
     fig, ax = plt.subplots(figsize=(8, 8))
-
     for idx, row in driver_laps.iterrows():
         driver = row['Driver']
         laps = row['Laps']
@@ -165,16 +167,42 @@ def long_runs_scatter(session, threshold=1.07):
             hex_color = plotting.COMPOUND_COLORS[tyre]
         except KeyError:
             hex_color = '#434649'
-        color_factor = np.linspace(0, 0.7, len(laps))
+        color_factor = np.linspace(0, 0.6, len(laps))
         color_index = 0
         for lap in laps:
             color = darken_color(hex_color, amount=round(color_factor[color_index], 1))
-            plt.scatter(lap, driver, color=color, s=80)
+            plt.scatter(lap.total_seconds(), driver, color=color, s=100)
             color_index += 1
+
+    prev_tyre = None
+    prev_time = None
+    driver_laps = driver_laps.sort_values(by=['Compound', 'Average'], ascending=[False, True])
+    for idx, row in driver_laps.iterrows():
+        driver = row['Driver']
+        laps = row['Laps']
+        tyre = row['Compound']
+        driver_median_lap = np.median(laps)
+        if prev_time is not None and tyre == prev_tyre:
+            time_diff = f'(+{format_timedelta(driver_median_lap - prev_time)}s)'.replace('0:0', '')
+        else:
+            time_diff = ''
+            prev_time = driver_median_lap
+        print(f'{driver.split(" (")[0]}: {format_timedelta(driver_median_lap)} {time_diff}')
+        prev_tyre = tyre
+
+    def format_timedelta_to_mins(seconds, pos):
+        mins = int(seconds // 60)
+        secs = int(seconds % 60)
+        millis = int((seconds - int(seconds)) * 1000)
+        return f'{mins:01d}:{secs:02d}.{millis:03d}'
+
+    formatter = FuncFormatter(format_timedelta_to_mins)
+    plt.gca().xaxis.set_major_formatter(formatter)
 
     ax.set_xlabel("Lap Time", font='Fira Sans', fontsize=16)
     ax.set_ylabel("Driver", font='Fira Sans', fontsize=16)
-    plt.grid(color='w', which='major', axis='x', linestyle='--')
+    plt.grid(color='w', which='major', axis='x', linestyle='--', alpha=0.4)
+    plt.grid(color='w', which='major', axis='y', linestyle='--', alpha=0.4)
     plt.xticks(font='Fira Sans', fontsize=14)
     plt.yticks(font='Fira Sans', fontsize=14)
     plt.title(f'LONG RUNS IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
@@ -182,11 +210,11 @@ def long_runs_scatter(session, threshold=1.07):
     sns.despine(left=True, bottom=True)
     plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(f"../PNGs/ LAPS {session.event.OfficialEventName}.png", dpi=450)
+    plt.savefig(f"../PNGs/LAPS {session.event.OfficialEventName}.png", dpi=450)
     plt.show()
 
 
-def session_diff_last_year(year, round_id, prev_year, circuit=None, session='Q'):
+def session_diff_last_year(year, round_id, prev_year, session='Q'):
     """
        Plot the performance of all teams against last year qualify in a specific circuit
 
@@ -216,36 +244,45 @@ def session_diff_last_year(year, round_id, prev_year, circuit=None, session='Q')
     for team in teams_to_plot:
         fast_current = current.laps.pick_team(team).pick_fastest()['LapTime']
         current_top_speed = max(current.laps.pick_team(team).pick_fastest().telemetry['Speed'])
-        if team == 'Alfa Romeo' and year == 2021:
-            team_prev = 'Alfa Romeo Racing'
+        if team == 'Kick Sauber':
+            team_prev = 'Alfa Romeo'
+        elif team == 'RB':
+            team_prev = 'AlphaTauri'
         else:
             team_prev = team
         fast_prev = previous.laps.pick_team(team_prev).pick_fastest()['LapTime']
-        prev_top_speed = max(previous.laps.pick_team(team).pick_fastest().telemetry['Speed'])
+        prev_top_speed = max(previous.laps.pick_team(team_prev).pick_fastest().telemetry['Speed'])
         delta_time = fast_current.total_seconds() - fast_prev.total_seconds()
         delta_times.append(round(delta_time, 3))
         print(f'{team} {current_top_speed - prev_top_speed}')
-        color = '#' + current.results[current.results['TeamName'] == team]['TeamColor'].values[0]
-        if team == 'Alpine':
-            colors.append('#FF69B4')
-        else:
-            colors.append(color)
+        color = team_colors.get(year)[team]
+        colors.append(color)
+
+    tweet = list(zip(teams_to_plot, delta_times))
+    tweet = sorted(tweet, key=lambda x: x[1])
+    slower = False
+    print(f'🟢 Faster than in {prev_year}')
+    for t in tweet:
+        if t[1] > 0 and not slower:
+            print(f'🔴 Slower than in {prev_year}')
+            slower = True
+        print(f'{t[0]}: {"+" if slower else ""}{t[1]}s')
+
 
     fig, ax = plt.subplots(figsize=(8, 8))
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
-    round_bars(bars, ax, colors, y_offset_rounded=0)
-    annotate_bars(bars, ax, 0.02, 13, '+{height}s',
-                  ceil_values=False, round=3, y_negative_offset=-0.06)
+    round_bars(bars, ax, colors, y_offset_rounded=0, linewidth=3.75)
+    annotate_bars(bars, ax, 0.01, 14, '+{height}s',
+                  ceil_values=False, round=3, y_negative_offset=-0.065)
 
-    plt.axhline(0, color='white', linewidth=0.8)
+    plt.axhline(0, color='white', linewidth=4)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
     plt.title(f'{current.event.Location.upper()} {current.name.upper()} COMPARISON: {year} vs. {prev_year}',
               font='Fira Sans',
-              fontsize=18)
-    plt.xlabel('Team', font='Fira Sans', fontsize=16)
-    plt.ylabel('Time diff (seconds)', font='Fira Sans', fontsize=16)
+              fontsize=20)
     plt.xticks(rotation=90, font='Fira Sans', fontsize=16)
+    plt.yticks(font='Fira Sans', fontsize=14)
     plt.tight_layout()
     plt.savefig(f'../PNGs/{current.event.EventName} QUALY COMPARATION {year} vs 2023.png', dpi=450)
     plt.show()
@@ -265,44 +302,45 @@ def telemetry_lap(session, d1, lap):
     d1_lap = None
     for i in session.laps.pick_driver(d1).pick_lap(lap).iterlaps():
         d1_lap = i[1]
+    d1_lap = session.laps.pick_driver(d1).pick_fastest()
     d1_tel = d1_lap.get_telemetry()
+    print(f'{d1_lap["LapTime"]}')
 
     # d1_tel = session.car_data['16'].add_distance()
     # d1_tel = d1_tel[13300:13800]
     # initial_value = d1_tel['Distance'].iloc[0]
     # d1_tel['Distance'] = d1_tel['Distance'] - initial_value
 
-    fig, ax = plt.subplots(nrows=4, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1, 2]}, dpi=150)
+    fig, ax = plt.subplots(nrows=4, figsize=(9, 7.5), gridspec_kw={'height_ratios': [4, 1, 1, 1]}, dpi=150)
 
     ax[0].plot(d1_tel['Distance'], d1_tel['Speed'],
-               color='#FFA500')
+               color='#FFA500', linewidth=2)
 
     ax[0].set_xlabel('Distance')
     ax[0].set_ylabel('Speed')
 
     ax[1].plot(d1_tel['Distance'], d1_tel['Throttle'],
-               color='#FFA500')
+               color='#FFA500', linewidth=2)
     ax[1].set_xlabel('Distance')
     ax[1].set_ylabel('Throttle')
 
     ax[2].plot(d1_tel['Distance'], d1_tel['Brake'],
-               color='#FFA500')
+               color='#FFA500', linewidth=2)
     ax[2].set_xlabel('Distance')
     ax[2].set_ylabel('Brakes')
-
-    ax[3].plot(d1_tel['Distance'], d1_tel['RPM'],
-               color='#FFA500')
-    ax[3].set_xlabel('Distance')
-    ax[3].set_ylabel('RPM')
 
     ax[2].set_yticks([0, 1])  # Assuming the 'Brakes' data is normalized between 0 and 1
     ax[2].set_yticklabels(['OFF', 'ON'])
 
+    ax[3].plot(d1_tel['Distance'], d1_tel['DRS'],
+               color='#FFA500', linewidth=2)
+    ax[3].set_xlabel('Distance')
+    ax[3].set_ylabel('DRS')
+
     ax[0].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
-    ax[0].set_title(f'{d1} LAP {lap} IN {session.event.EventName}', font='Fira Sans', fontsize=18)
+    ax[0].set_title(f'{d1} FASTEST LAP IN {session.event.EventName}', font='Fira Sans', fontsize=18)
     ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
-    ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
 
     plt.tight_layout()
     plt.savefig(f'../PNGs/{d1} lap {lap}.png', dpi=500)
@@ -346,10 +384,11 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
         #         d2_lap = i[1]
         #     count += 1
         # # # d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver('NOR').pick_quicklaps()
-        d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
-        d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
+        d1_lap = session.laps.split_qualifying_sessions()[2].pick_driver(driver_1).pick_fastest()
+        d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver(driver_2).pick_fastest()
 
-    delta_time, ref_tel, compare_tel = utils.delta_time(d1_lap, d2_lap)
+    from fastf1.utils import delta_time as delta_improved
+    delta_time, ref_tel, compare_tel = delta_improved(d1_lap, d2_lap)
 
     final_value = ((d2_lap['LapTime'] - d1_lap['LapTime']).total_seconds())
 
@@ -533,8 +572,8 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
             lap_team_1 = session.laps.pick_driver(team_1).pick_fastest()
             tel_team_1 = lap_team_1.telemetry
             lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
-
-    delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
+    from fastf1.utils import delta_time as delta_improved
+    delta_time, ref_tel, compare_tel = delta_improved(lap_team_1, lap_team_2)
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
 
     def adjust_to_final(series, final_value):
@@ -579,9 +618,10 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
     segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
     plt.subplots(figsize=(8, 7))
     for i, segment in enumerate(segments):
-        seg_x = [segment[0][0], segment[1][0]]
-        seg_y = [segment[0][1], segment[1][1]]
-        plt.plot(seg_x, seg_y, color=cmap(norm(delta_time[i])), linewidth=10)
+        if i > 4:
+            seg_x = [segment[0][0], segment[1][0]]
+            seg_y = [segment[0][1], segment[1][1]]
+            plt.plot(seg_x, seg_y, color=cmap(norm(delta_time[i])), linewidth=10)
 
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
@@ -626,6 +666,7 @@ def track_dominance(session, team_1, team_2):
     lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
+    year = session.date.year
 
     def adjust_to_final(series, final_value):
         diff = final_value - series.iloc[-1]
@@ -674,9 +715,11 @@ def track_dominance(session, team_1, team_2):
 
         return smoothed_data
 
+    color_t1 = team_colors.get(year).get(team_1)
+    color_t2 = team_colors.get(year).get(team_2)
     segments = smooth_data(track, window_size=7)
     segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
-    colors = [plotting.team_color(team_1) if value == 0 else plotting.team_color(team_2) for value in delta_time_team]
+    colors = [color_t1 if value == 0 else color_t2 for value in delta_time_team]
     plt.subplots(figsize=(8, 7))
     for i, segment in enumerate(segments):
         seg_x = [segment[0][0], segment[1][0]]
@@ -686,8 +729,8 @@ def track_dominance(session, team_1, team_2):
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
     plot_turns(session.get_circuit_info(), session.get_circuit_info().rotation / 180 * np.pi, plt)
-    legend_lines = [Line2D([0], [0], color=plotting.team_color(team_1), lw=4),
-                    Line2D([0], [0], color=plotting.team_color(team_2), lw=4)]
+    legend_lines = [Line2D([0], [0], color=color_t1, lw=4),
+                    Line2D([0], [0], color=color_t2, lw=4)]
 
     plt.legend(legend_lines, [f'{team_1} faster', f'{team_2} faster'], loc='lower left', fontsize='x-large')
 
@@ -894,19 +937,29 @@ def drs_efficiency(year):
                         before_finish_line = team_lap.telemetry['Speed'][indexes[0 + d * 2]:max_index]
                         after_finish_line = team_lap.telemetry['Speed'][0:indexes[1 + d * 2] + 1]
                         speed_close = max(pd.concat([before_finish_line, after_finish_line]))
-                    delta_diff = ((speed_close - speed_open) / speed_open) * 100
                     if t not in current_session_delta:
-                        current_session_delta[t] = [delta_diff]
+                        current_session_delta[t] = [[speed_close, speed_open]]
                     else:
-                        current_session_delta[t].append(delta_diff)
+                        current_session_delta[t].append([speed_close, speed_open])
 
             if len(current_session_delta) == 10:
-                for t in current_session_delta.keys():
-                    print(f'{t} - {len(current_session_delta[t])}')
+                result = {}
+                for key, arrays in current_session_delta.items():
+                    min_diff = float('inf')
+                    min_array = None
+                    for array in arrays:
+                        diff = abs(array[0] - array[1])
+                        if diff < min_diff:
+                            min_diff = diff
+                            min_array = array
+                    result[key] = [((min_array[0] - min_array[1]) / min_array[1]) * 100]
+
+                for t in result.keys():
+                    print(f'{t} - {len(result[t])}')
                     if t not in drs_dict:
-                        drs_dict[t] = current_session_delta[t]
+                        drs_dict[t] = result[t]
                     else:
-                        drs_dict[t].extend(current_session_delta[t])
+                        drs_dict[t].extend(result[t])
             else:
                 print(current_session_delta)
         except QualyException:
@@ -996,3 +1049,87 @@ def get_fastest_sectors(session):
                 f'{str(session.name).upper()}',
                 dpi=450)
     plt.show()
+
+
+def all_laps_driver_session(session, driver):
+    laps = session.laps.pick_driver(driver)
+    prev_stint = None
+    prev_lap_time = None
+    for l in laps.iterlaps():
+        current_lap = l[1]
+        tyre_life = current_lap['TyreLife']
+        stint = current_lap['Stint']
+        in_lap = ' --- IN' if not pd.isna(current_lap['PitInTime']) else ''
+        tyre = current_lap['Compound']
+        if not pd.isna(current_lap['LapTime']):
+            lap_time = current_lap['LapTime']
+            lap_time_f = f"{lap_time.seconds // 60:02d}:{lap_time.seconds % 60:02d}.{int(lap_time.microseconds / 1000):03d}"
+            if prev_lap_time is None or prev_stint != stint:
+                time_diff = ''
+            else:
+                time_diff = format_timedelta(abs(prev_lap_time - lap_time))
+                sign = '+' if (prev_lap_time - lap_time).total_seconds() < 0 else '-'
+                time_diff = f'({sign}{time_diff})'
+            try:
+                print(f'{tyre[0]} - ({int(tyre_life)}): {lap_time_f}')
+            except:
+                print('NO VALID LAP')
+            if in_lap != '':
+                print('----------- BOX -----------')
+            prev_lap_time = lap_time
+            prev_stint = stint
+
+
+def race_simulation_test_day(session):
+    plotting.setup_mpl(misc_mpl_mods=False)
+    drivers = list(session.laps['Driver'].unique())
+    driver_stints = {}
+    for d in drivers:
+        d_laps = session.laps.pick_driver(d)
+        max_stint = d_laps[d_laps['Compound'].isin(['HARD', 'MEDIUM', 'SOFT'])]['Stint'].value_counts()
+        max_stint = max_stint.reset_index()
+        max_stint.columns = ['Stint', 'Counts']
+        max_stint = max_stint.sort_values(by=['Counts', 'Stint'], ascending=[False, False])
+        stint_index = 0
+        driver_laps_dict = {}
+
+        for i in range(len(max_stint)):
+            stint_number = max_stint.iloc[stint_index]['Stint']
+            driver_laps_filter = d_laps[d_laps['Stint'] == stint_number].pick_wo_box().pick_quicklaps()
+            driver_laps_dict[stint_number] = len(driver_laps_filter)
+            stint_index += 1
+
+        driver_laps_dict = dict(sorted(driver_laps_dict.items(), key=lambda item: (-int(item[1]), -int(item[0]))))
+        keys = list(driver_laps_dict)[:3]
+        first_three_values = [item[1] for item in list(driver_laps_dict.items())[:3]]
+        if len(first_three_values) == 3 and all(value > 7 for value in first_three_values):
+            driver_stints[d] = keys
+        else:
+            print(f'{d} NOT VALID')
+
+    average_race_simulation = {}
+    for d in list(driver_stints):
+        d_laps = session.laps.pick_driver(d)
+        d_laps = pd.DataFrame(d_laps[d_laps['Stint'].isin(driver_stints[d])].pick_wo_box().pick_quicklaps())
+        d_laps['LapStartDate'] = pd.to_datetime(d_laps['LapStartDate'])
+        d_laps['MinLapStartTimePerStint'] = d_laps.groupby('Stint')['LapStartDate'].transform('min')
+        d_laps['MinLapStartTimePerStint'] = d_laps['MinLapStartTimePerStint'].dt.strftime('%H:%M')
+        stints = pd.DataFrame(d_laps.groupby(['Stint', 'Compound', 'MinLapStartTimePerStint']).size())
+        print(f'-- DATA FOR {d}')
+        for index, row in stints.iterrows():
+            print(f'{index[1]}: {row[0]} - {index[2]}')
+        average_race_simulation[d] = d_laps['LapTime'].mean()
+
+    print('------------------------')
+
+    average_race_simulation = dict(sorted(average_race_simulation.items(), key=lambda item: (item[1].total_seconds())))
+    prev_time = None
+    for d, t in average_race_simulation.items():
+        if prev_time is None:
+            time_diff = ''
+            prev_time = t
+        else:
+            time_diff = t - prev_time
+            time_diff = f'(+{format_timedelta(time_diff)}s)'.replace('00:0', '')
+        print(f'{d}: {format_timedelta(t)} {time_diff}')
+

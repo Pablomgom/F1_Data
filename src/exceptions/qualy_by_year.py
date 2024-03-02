@@ -7,3 +7,6 @@ def year_2023(round):
 
 def year_2022(round):
     a = 1
+
+def year_2024(round):
+    a = 1

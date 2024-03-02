@@ -7,11 +7,13 @@ from adjustText import adjust_text
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import Lasso
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 from src.utils.utils import get_quartiles, find_nearest_non_repeating
 from src.variables.team_colors import team_colors_2023, team_colors
 
@@ -160,12 +162,13 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         race_pace_delta = pd.read_csv('../resources/csv/Race_pace_delta.csv')
     else:
         race_pace_delta = pd.read_csv('../resources/csv/Qualy_pace_delta.csv')
+        race_pace_delta = race_pace_delta[~pd.isna(race_pace_delta['Delta'])]
     circuit_data = pd.read_csv('../resources/csv/Circuit_data.csv')
 
     race_pace_delta['Team'] = race_pace_delta['Team'].replace({'AlphaTauri': 'RB',
                                                                'Alfa Romeo': 'Kick Sauber'})
     race_pace_delta.sort_values(by=['Year', 'Session'], inplace=True)
-    race_pace_delta['Recent_Avg_Delta'] = race_pace_delta.groupby('Team')['Delta'].transform(
+    race_pace_delta['Recent_Avg_Delta'] = race_pace_delta.groupby(['Team', 'Year'])['Delta'].transform(
         lambda x: x.ewm(span=3, adjust=False).mean())
 
 
@@ -188,10 +191,44 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     X = predict_data[feature_columns]
     y = predict_data[[f'Delta_{team}' for team in teams]]
     scaler = StandardScaler()
-    model = RandomForestRegressor(n_estimators=1000, random_state=42, max_depth=10, max_features='sqrt',
+    random_forest = RandomForestRegressor(n_estimators=1000, random_state=42, max_depth=10, max_features='sqrt',
                                   min_samples_leaf=2, min_samples_split=2)
+    estimators = 300 if session == 'R' else 200
+    gb_regressor_multi = GradientBoostingRegressor(n_estimators=estimators, random_state=42, learning_rate=0.01, max_depth=3)
+    gb_regressor_multi = MultiOutputRegressor(gb_regressor_multi)
     X_scaled = scaler.fit_transform(X)
-    model.fit(X_scaled, y)
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+    lasso = Lasso(max_iter=100000, alpha=0.071)
+    param_grid = {'alpha': np.logspace(-4, 0, 50)}
+    grid_search = GridSearchCV(estimator=lasso, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error')
+    grid_search.fit(X_train, y_train)
+    print("Best alpha: ", grid_search.best_params_['alpha'])
+    best_lasso = grid_search.best_estimator_
+    test_score = best_lasso.score(X_test, y_test)
+    print("Test set score: ", test_score)
+    print("Best parameters: ", grid_search.best_params_)
+    print("Best score: ", grid_search.best_score_)
+
+    if session == 'R':
+        used_model = lasso
+        used_model.fit(X_train, y_train)
+    else:
+        used_model = lasso
+        used_model.fit(X_train, y_train)
+
+    y_pred = used_model.predict(X_test)
+    error_mae = mean_absolute_error(y_test, y_pred)
+    error_rmse = mean_squared_error(y_test, y_pred, squared=False)
+    error_mape = mean_absolute_percentage_error(y_test, y_pred)
+    r2 = used_model.score(X_test, y_test)
+
+    print(f"""ERRORS:
+            MAE: {error_mae}
+            RMSE: {error_rmse}    
+            MAPE: {error_mape}
+            R2: {r2} 
+    """)
+
     prev_year_data = circuit_data[(circuit_data['Year'] == year - 1) & (circuit_data['Track'] == track)]
     if len(prev_year_data) == 0:
         raise Exception('No data for that year/track combination')
@@ -208,18 +245,19 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
 
     next_race_df = pd.DataFrame([next_race_data])
     next_race_data_scaled = scaler.transform(next_race_df)
-    next_race_prediction = model.predict(next_race_data_scaled)
+    # next_race_data_scaled = poly.transform(next_race_data_scaled)
+    next_race_prediction = used_model.predict(next_race_data_scaled)
     min_value = min(next_race_prediction[0])
     adjusted_predictions = [value - min_value for value in next_race_prediction[0]]
     next_race_prediction = pd.DataFrame([adjusted_predictions], columns=teams)
     next_race_prediction = next_race_prediction.transpose().sort_values(by=0, ascending=False)
+    print(next_race_prediction)
     ref_session = fastf1.get_session(year - 1, track, session)
     ref_session.load()
     fastest_team = next_race_prediction.index[len(next_race_prediction) - 1]
     delta_time = ref_session.laps.pick_team(fastest_team).pick_quicklaps().pick_wo_box()['LapTime'].median()
     if session == 'Q':
         delta_time = ref_session.laps.pick_team(fastest_team).pick_fastest()['LapTime']
-
     fig, ax = plt.subplots(figsize=(10, 8))
     colors = [team_colors.get(year)[t] for t in next_race_prediction.index]
     bars = plt.barh(next_race_prediction.index, next_race_prediction[0].values, color=colors)

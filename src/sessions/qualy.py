@@ -15,12 +15,12 @@ from src.ergast_api.my_ergast import My_Ergast
 from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
-from src.utils.utils import append_duplicate_number
-from src.variables.team_colors import team_colors_2023
+from src.utils.utils import append_duplicate_number, create_rounded_barh_custom, create_rounded_barh, format_timedelta
+from src.variables.team_colors import team_colors_2023, team_colors
 from scipy import stats
 
 
-def qualy_results(session):
+def qualy_results(session, optimal=False):
     """
        Plot the results of a qualy with fastF1 API
 
@@ -31,45 +31,71 @@ def qualy_results(session):
 
     drivers = pd.unique(session.laps['Driver'])
     list_fastest_laps = list()
+    optimal_data = pd.DataFrame(columns=['LapTime', 'Team', 'Driver'])
     for drv in drivers:
+
         drvs_fastest_lap = session.laps.pick_driver(drv).pick_fastest()
         list_fastest_laps.append(drvs_fastest_lap)
+
+        s1 = session.laps.pick_driver(drv)['Sector1Time'].sort_values(ascending=True).reset_index(drop=True)[0]
+        s2 = session.laps.pick_driver(drv)['Sector2Time'].sort_values(ascending=True).reset_index(drop=True)[0]
+        s3 = session.laps.pick_driver(drv)['Sector3Time'].sort_values(ascending=True).reset_index(drop=True)[0]
+        optimal_lap = s1 + s2 + s3
+        team = session.laps.pick_driver(drv)['Team'][0]
+        optimal_data = optimal_data._append({'LapTime': optimal_lap,
+                                            'Team': team,
+                                            'Driver': drv}, ignore_index=True)
+
     fastest_laps = Laps(list_fastest_laps).sort_values(by='LapTime').reset_index(drop=True)
 
-    pole_lap = fastest_laps.pick_fastest()
-    fastest_laps['LapTimeDelta'] = fastest_laps['LapTime'] - pole_lap['LapTime']
-    fastest_laps.dropna(how='all', inplace=True)
+    if not optimal:
+        pole_lap = fastest_laps.pick_fastest()
+        fastest_laps['LapTimeDelta'] = fastest_laps['LapTime'] - pole_lap['LapTime']
+        pole_sitter = pole_lap['Driver']
+        pole_time = pole_lap['LapTime']
+    else:
+        fastest_optimal_laps = optimal_data.sort_values(by='LapTime').reset_index(drop=True)
+        pole_lap = pd.DataFrame([fastest_optimal_laps.iloc[0]])
+        fastest_optimal_laps['LapTimeDelta'] = fastest_optimal_laps['LapTime'] - pole_lap['LapTime'].loc[0]
+        pole_sitter = pole_lap['Driver'].loc[0]
+        pole_time = pole_lap['LapTime'].loc[0]
+        optimal_diff = pd.DataFrame(pd.merge(left=fastest_laps[['Driver', 'Team', 'LapTime']],
+                                             right=optimal_data, on='Driver', how='inner'))
+        optimal_diff['Delta_diff'] = optimal_diff['LapTime_x'] - optimal_diff['LapTime_y']
+        optimal_diff = optimal_diff.sort_values(by='LapTime_y', ascending=True).reset_index(drop=True)
+        position = 1
+        for index, row in optimal_diff.iterrows():
+            delta_optimal_diff = row["Delta_diff"]
+            formated_lap_time = format_timedelta(row["LapTime_y"])
+            formated_lap_delta = format_timedelta(row["Delta_diff"]).replace('0:0', '')
+            print(f'{position} - {row["Driver"]}: {formated_lap_time} ({"-" if delta_optimal_diff != 0 else ""}{formated_lap_delta}s)')
+            position += 1
+        fastest_laps = fastest_optimal_laps
 
-    team_colors = list()
-    for index, lap in fastest_laps.iterlaps():
-        if lap['Team'] == 'Sauber':
-            color = '#FD8484'
-        else:
-            color = plotting.team_color(lap['Team'])
-        team_colors.append(color)
+
+    fastest_laps.dropna(how='all', inplace=True)
+    fastest_laps['Color'] = fastest_laps.apply(lambda row:
+                                               team_colors.get(session.event.year,
+                                                               {}).get(row['Team'], 'Unknown'), axis=1)
+    fastest_laps['LapTimeDelta'] = fastest_laps['LapTimeDelta'].apply(lambda x: x.total_seconds())
 
     fig, ax = plt.subplots(figsize=(8, 8))
-    ax.barh(fastest_laps.index, fastest_laps['LapTimeDelta'],
-            color=team_colors, edgecolor='grey')
+    create_rounded_barh(ax, fastest_laps, 'LapTimeDelta', 'Color', mode=1)
 
     ax.set_yticks(fastest_laps.index)
     ax.set_yticklabels(fastest_laps['Driver'])
     ax.invert_yaxis()
 
     ax.set_axisbelow(True)
-    ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000)
-    lap_time_string = strftimedelta(pole_lap['LapTime'], '%m:%s.%ms')
+    ax.xaxis.grid(True, which='major', linestyle='--', color='black', zorder=-1000, alpha=0.25)
+    lap_time_string = strftimedelta(pole_time, '%m:%s.%ms')
 
-    plt.title(f"{session.event['EventName']} {session.event.year} Qualifying\n"
-              f"Fastest Lap: {lap_time_string} ({pole_lap['Driver']})", font='Fira Sans', fontsize=20)
+    plt.title(f"{session.event.Location.upper()} {'OPTIMAL' if optimal else ''} {session.name.upper()}\n"
+              f"Fastest Lap: {lap_time_string} ({pole_sitter})", font='Fira Sans', fontsize=20)
 
     plt.xlabel("Diff in seconds (s)", font='Fira Sans', fontsize=17)
     plt.ylabel("Driver", font='Fira Sans', fontsize=17)
 
-    def custom_formatter(x, pos):
-        return round(x * 100000, 1)
-
-    ax.xaxis.set_major_formatter(FuncFormatter(custom_formatter))
     ax.xaxis.grid(True, color='white', linestyle='--')
     plt.xticks(font='Fira Sans', fontsize=15)
     plt.yticks(font='Fira Sans', fontsize=15)
@@ -90,9 +116,9 @@ def qualy_diff(year):
     """
 
     session_names = []
-    n_qualys = Ergast().get_qualifying_results(season=year, limit=1000).content
+    # n_qualys = Ergast().get_qualifying_results(season=year, limit=1000).content
     delta_diff = {}
-    for i in range(len(n_qualys)):
+    for i in range(1):
         qualy_delta_diffs = {}
         session = fastf1.get_session(year, i + 1, 'Q')
         session.load(telemetry=True)
@@ -113,8 +139,14 @@ def qualy_diff(year):
             fastest_laps = pd.DataFrame(q_session.loc[q_session.groupby('Team')['LapTime'].idxmin()]
                                         [['Team', 'LapTime']]).sort_values(by='LapTime')
             fastest_lap_in_session = fastest_laps['LapTime'].iloc[0]
+            fastest_laps['DeltaSeconds'] = fastest_laps['LapTime'] - fastest_lap_in_session
             fastest_laps['DeltaPercent'] = ((fastest_laps['LapTime'] - fastest_lap_in_session)
                                             / fastest_lap_in_session) * 100
+            position = 1
+            for index, row in fastest_laps.iterrows():
+                print(f'{position} - {row["Team"]}: {format_timedelta(row["LapTime"])}'
+                      f' ({"+" if position != 1 else ""}{format_timedelta(row["DeltaSeconds"]).replace("0:0", "")})')
+                position += 1
 
             for t in teams_session:
                 if t not in qualy_delta_diffs:
@@ -147,7 +179,6 @@ def qualy_diff(year):
                 prev_index = max([j for j in range(i - 1, -1, -1) if not np.isnan(deltas[j])], default=None)
                 next_index = min([j for j in range(i + 1, len(deltas)) if not np.isnan(deltas[j])], default=None)
 
-                # If both indices are found, plot a dashed line between them
                 if prev_index is not None and next_index is not None:
                     plt.plot([session_names[prev_index], session_names[next_index]],
                              [deltas[prev_index], deltas[next_index]],
@@ -196,14 +227,14 @@ def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
                     p2_time = q[q['fullName'] == p2][s].loc[0]
                     if not pd.isna(p1_time) and not pd.isna(p2_time):
                         diff = (p2_time - p1_time).total_seconds()
-                        margins[(year, race_name)] = (diff, f'{p1} {diff:.3f}s faster than {p2}')
+                        margins[(year, race_name)] = (diff, f'{p1.split(" ", 1)[1]} {diff:.3f}s faster than {p2.split(" ", 1)[1]}')
                         break
 
             elif year == 2005 and round < 7:
                 p1_time = q[q['fullName'] == p1]['q1'].loc[0] + q[q['fullName'] == p1]['q2'].loc[0]
                 p2_time = q[q['fullName'] == p2]['q1'].loc[0] + q[q['fullName'] == p2]['q2'].loc[0]
                 diff = (p2_time - p1_time).total_seconds()
-                margins[(year, race_name)] = (diff, f'{p1} {diff:.3f}s faster than {p2}')
+                margins[(year, race_name)] = (diff, f'{p1.split(" ", 1)[1]} {diff:.3f}s faster than {p2.split(" ", 1)[1]}')
             else:
                 final_times = []
                 for d in [p1, p2]:
@@ -215,7 +246,7 @@ def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
                             times.append(d_data[s_2].loc[0])
                     final_times.append(min(times))
                 diff_2 = (final_times[1] - final_times[0]).total_seconds()
-                margins[(year, race_name)] = (diff_2, f'{p1} {diff_2:.3f}s faster than {p2}')
+                margins[(year, race_name)] = (diff_2, f'{p1.split(" ", 1)[1]} {diff_2:.3f}s faster than {p2.split(" ", 1)[1]}')
 
     if order == 'Ascending':
         margins = dict(sorted(margins.items(), key=lambda item: item[1][0]))
@@ -227,7 +258,7 @@ def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
 
 def percentage_qualy_ahead(start=2001, end=2024):
     ergast = My_Ergast()
-    circuits = ['baku', 'monaco', 'jeddah', 'vegas', 'marina_bay', 'miami', 'valencia', 'villeneuve']
+    circuits = ['bahrain']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:
@@ -235,20 +266,24 @@ def percentage_qualy_ahead(start=2001, end=2024):
             drivers_in_q = q['fullName'].unique()
             for d in drivers_in_q:
                 driver_data = q[q['fullName'] == d]
-                driver_pos = min(driver_data['position'])
-                driver_teams = driver_data['constructorName'].unique()
-                for driver_team in driver_teams:
-                    team_data = q[q['constructorName'] == driver_team]
-                    team_data = team_data[team_data['fullName'] != d]
-                    for teammate in team_data['fullName'].unique():
-                        teammate_pos = min(q[q['fullName'] == teammate]['position'])
-                        win = 1
-                        if driver_pos > teammate_pos:
-                            win = 0
-                        if d not in drivers_dict:
-                            drivers_dict[d] = [win]
-                        else:
-                            drivers_dict[d].append(win)
+                is_valid = driver_data['Valid'].loc[0]
+                if is_valid:
+                    driver_pos = min(driver_data['position'])
+                    driver_teams = driver_data['constructorName'].unique()
+                    for driver_team in driver_teams:
+                        team_data = q[q['constructorName'] == driver_team]
+                        team_data = team_data[team_data['fullName'] != d]
+                        valid_teammate = team_data['Valid'].loc[0]
+                        if valid_teammate:
+                            for teammate in team_data['fullName'].unique():
+                                teammate_pos = min(q[q['fullName'] == teammate]['position'])
+                                win = 1
+                                if driver_pos > teammate_pos:
+                                    win = 0
+                                if d not in drivers_dict:
+                                    drivers_dict[d] = [win]
+                                else:
+                                    drivers_dict[d].append(win)
             print(f'{q["year"].loc[0]}: {q["circuitName"].loc[0]}')
     final_dict = {}
     h2h_dict = {}
@@ -281,7 +316,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
 
     def process_times(year, q, full_data, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year, d1, d2):
         diff = round(d1_time - d2_time, 3)
-        if abs(diff) < 5:
+        if abs(diff) < 1000:
             d1_pos = full_data[full_data['fullName'] == d1]['position'].loc[0]
             d2_pos = full_data[full_data['fullName'] == d2]['position'].loc[0]
             display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos)
@@ -299,17 +334,21 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
             d1_time, d2_time = s_data[s_data['fullName'] == d1][s].iloc[0].total_seconds(), \
                 s_data[s_data['fullName'] == d2][s].iloc[0].total_seconds()
             diff = round(d1_time - d2_time, 3)
+            if year in ('2003', '2004', '2005'):
+                s_print = 'Q2'
+            else:
+                s_print = s
             if abs(diff) < 5:
                 positions = q.sort_values(by=s, ascending=True).reset_index(drop=True)
                 d1_pos = positions[positions['fullName'] == d1].index[0] + 1
                 d2_pos = positions[positions['fullName'] == d2].index[0] + 1
-                display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos, s)
+                display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos, s_print)
                 total_laps_d1.append(d1_time)
                 total_laps_d2.append(d2_time)
                 delta_per_year.setdefault((year, d2), []).append(diff)
                 break
             else:
-                print(f'No data for {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")} {s.upper()}')
+                print(f'No data for {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")} {s_print.upper()}')
 
     def display_time_comparison(year, q, d1_time, d2_time, diff, code_1, code_2, d1_pos, d2_pos, session=None):
         session_info = f" in {session.upper()}" if session else ""
@@ -347,7 +386,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
         for d2 in teammates:
             teammates_per_year.setdefault(year, []).append(d2)
             full_data = q[q['fullName'].isin([d1, d2])]
-            comparison_years = set(range(1950, 1996)) | {2003, 2004, 2005}
+            comparison_years = set(range(1950, 1996)) | {2005}
 
             if year in comparison_years:
                 d1_time, d2_time = get_min_times(full_data, d1, d2)

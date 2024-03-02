@@ -45,6 +45,7 @@ def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=24,
                 cell.set_facecolor(row_colors[k[0] % len(row_colors)])
             if k[1] == len(data.columns) - 1:
                 cell.set_text_props(color='w')
+                cell.set_edgecolor('black')
 
     plt.title(title, fontsize=1)
 

@@ -81,7 +81,7 @@ pit_stop_schema = ['year', 'round', 'raceName', 'fullName', 'stop', 'lap', 'pitT
 class My_Ergast:
 
     def __init__(self):
-        self.circuits = load_csv('circuits')
+        self.circuits = load_csv('circuits').drop('url', axis=1)
         self.constructor_results = load_csv('constructor_results')
         self.constructor_standings = load_csv('constructor_standings')
         self.constructors = load_csv('constructors')

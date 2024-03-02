@@ -106,6 +106,7 @@ def get_position_changes(year, round):
     finish['Grid change'] = finish['grid'] - finish['Finish']
     # finish['grid'].replace(20, 'Pit Lane', inplace=True)
     finish['Team'] = finish['constructorName']
+    finish = finish.reset_index(drop=True)
 
     race_diff_times = []
     for index, row in race.iterrows():
@@ -328,7 +329,7 @@ def winning_positions_per_circuit(circuit, start=1950, end=2024):
                 positions_dict[grid_pos].append(f'{year}: {d_name}')
             else:
                 positions_dict[grid_pos] = [f'{year}: {d_name}']
-    positions_dict = dict(sorted(positions_dict.items()))
+    positions_dict = dict(sorted(positions_dict.items(), reverse=True))
     for key, values in positions_dict.items():
         print(f'FROM P{key}:')
         for v in values:
@@ -409,9 +410,9 @@ def results_from_grid_position(driver, start=1950, end=2024, grid=1):
     sankey_plot(finish_positions, driver, f'{driver.upper()} RESULTS STARTING FROM P{grid}')
 
 
-def comebacks_in_circuit(circuit):
+def comebacks_in_circuit(circuit, start=1950, end=2050):
     ergast = My_Ergast()
-    r = ergast.get_race_results([i for i in range(1950, 2023)])
+    r = ergast.get_race_results([i for i in range(start, end)])
     comeback_dict = {}
     for race in r.content:
         if race["circuitRef"].iloc[0] == circuit:
