@@ -1,5 +1,6 @@
 import statistics
 
+from matplotlib.ticker import FuncFormatter
 from tabulate import tabulate
 
 from src.ergast_api.my_ergast import My_Ergast
@@ -244,13 +245,30 @@ def race_pace_top_10(session, threshold=1.07):
     """
     fastf1.plotting.setup_mpl(mpl_timedelta_support=False, misc_mpl_mods=False)
     session_year = session.event.year
-    point_finishers = session.drivers[:10]
-    point_finishers = ['VER', 'SAI', 'RUS', 'NOR', 'ALO', 'ZHO', 'MAG', 'RIC', 'TSU', 'OCO']
-    driver_laps = session.laps.pick_drivers(point_finishers).pick_quicklaps(threshold).pick_wo_box()
-    driver_laps = driver_laps.reset_index()
-    finishing_order = [session.get_driver(i)["Abbreviation"] for i in point_finishers]
+    drivers = set(session.laps['Driver'])
+    total_laps = pd.DataFrame()
+    for d in drivers:
+        d_laps = pd.DataFrame(session.laps.pick_driver(d).pick_quicklaps(threshold).pick_wo_box())
+        total_laps = total_laps._append(d_laps)
+    total_laps = total_laps.groupby(['Driver', 'Team'])['LapTime'].mean().reset_index()
+    total_laps['FastestLapTime'] = total_laps.groupby('Team')['LapTime'].transform(min)
+    total_laps['IsFastest'] = total_laps['LapTime'] == total_laps['FastestLapTime']
+    total_laps = total_laps[total_laps['IsFastest']]
+    total_laps = total_laps.sort_values('LapTime')
+    finishing_order = total_laps['Driver'].values
+
+    driver_laps = pd.DataFrame()
+    for d in finishing_order:
+        d_laps = session.laps.pick_drivers(d).pick_quicklaps(threshold).pick_wo_box()
+        driver_laps = driver_laps._append(d_laps)
+
     team_colors_dict = team_colors.get(session_year)
-    driver_colors = [team_colors_dict[session.laps.pick_driver(d)['Team'].loc[0]] for d in point_finishers]
+    driver_colors = []
+    for d in finishing_order:
+        color = team_colors_dict[session.laps.pick_driver(d)['Team'].loc[0]]
+        if color == '#ffffff':
+            color = '#FF7C7C'
+        driver_colors.append(color)
     fig, ax = plt.subplots(figsize=(8, 6))
     driver_laps["LapTime(s)"] = driver_laps["LapTime"].dt.total_seconds()
     mean_lap_times = driver_laps.groupby("Driver")["LapTime"].mean()
@@ -275,10 +293,10 @@ def race_pace_top_10(session, threshold=1.07):
                   size=5,
                   )
 
-    all_drivers = set(session.laps['Driver'].values)
-    for d in all_drivers:
-        d_laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps(threshold)
-        print(f'{d} - {format_timedelta(d_laps["LapTime"].mean())}')
+    # all_drivers = set(session.laps['Driver'].values)
+    # for d in all_drivers:
+    #     d_laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps(threshold)
+    #     print(f'{d} - {format_timedelta(d_laps["LapTime"].mean())}')
 
     fastest_time = None
     position = 1
@@ -297,9 +315,18 @@ def race_pace_top_10(session, threshold=1.07):
         print(f'{position} - {team}: {f_mean_time} {time_diff}')
         position += 1
 
-
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
              max(driver_laps['LapTime']).total_seconds() + 2)
+
+    def format_timedelta_to_mins(seconds, pos):
+        mins = int(seconds // 60)
+        secs = int(seconds % 60)
+        millis = int((seconds - int(seconds)) * 1000)
+        return f'{mins:01d}:{secs:02d}.{millis:03d}'
+
+    formatter = FuncFormatter(format_timedelta_to_mins)
+    plt.gca().yaxis.set_major_formatter(formatter)
+
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     ax.set_xlabel("Driver", font='Fira Sans', fontsize=17)
@@ -537,10 +564,10 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
                 from src.utils.utils import call_function_from_module
                 min_laps_d1, max_laps_d1 = call_function_from_module(race_same_team_exceptions,
                                                                      f"{team_d1.replace(' ', '_')}_{year}",
-                                                                     i + 1, session.total_laps)
+                                                                     i + 1 if round_id is None else round_id, session.total_laps)
                 min_laps_d2, max_laps_d2 = call_function_from_module(race_same_team_exceptions,
                                                                      f"{team_d2.replace(' ', '_')}_{year}",
-                                                                     i + 1, session.total_laps)
+                                                                     i + 1 if round_id is None else round_id, session.total_laps)
                 min_laps = max(min_laps_d1, min_laps_d2, 1)
                 max_laps = min(max_laps_d1, max_laps_d2)
                 d1_laps = session.laps.pick_driver(d1)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
@@ -553,29 +580,28 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
                 comparable_laps = comparable_laps[comparable_laps['Compound_d1'] == comparable_laps['Compound_d2']]
                 comparable_laps = comparable_laps[abs(comparable_laps['TyreLife_d1'] - comparable_laps['TyreLife_d2']) <= 3]
                 print(tabulate(comparable_laps, headers='keys', tablefmt='fancy_grid'))
-                if len(comparable_laps) >= 5:
-                    total_laps_d1.extend(comparable_laps['LapTime_d1'])
-                    total_laps_d2.extend(comparable_laps['LapTime_d2'])
+                total_laps_d1.extend(comparable_laps['LapTime_d1'])
+                total_laps_d2.extend(comparable_laps['LapTime_d2'])
+                if len(comparable_laps) > 0:
+                    mean_d1 = stats.trim_mean(total_laps_d1, 0.05)
+                    mean_d2 = stats.trim_mean(total_laps_d2, 0.05)
+                    mean_diff = (mean_d1 - mean_d2).total_seconds()
+                    if mean_diff < 0:
+                        print_output += (f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} '
+                                         f' ({mean_diff:.3f}s)\n'
+                                         f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")}\n')
+                    else:
+                        print_output += (f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")} '
+                                         f' (-{mean_diff:.3f}s)\n'
+                                         f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} \n')
                     if all_teams:
-                        mean_d1 = stats.trim_mean(total_laps_d1, 0.05)
-                        mean_d2 = stats.trim_mean(total_laps_d2, 0.05)
-                        mean_diff = (mean_d1 - mean_d2).total_seconds()
-                        if mean_diff < 0:
-                            print_output += (f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} '
-                                             f' ({mean_diff:.3f}s)\n'
-                                             f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")}\n')
-                        else:
-                            print_output += (f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")} '
-                                             f' (-{mean_diff:.3f}s)\n'
-                                             f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} \n')
                         total_laps_d1 = []
                         total_laps_d2 = []
-                else:
-                    print(f'NOT ENOUGH LAPS FOR {d1} vs. {d2}')
+                print(print_output)
             except (RaceException, IndexError):
                 print(f'{session}')
 
-    print(print_output)
+
     if not all_teams:
         race_differences = []
         for l1, l2 in zip(total_laps_d1, total_laps_d2):
@@ -664,15 +690,16 @@ def driver_fuel_corrected_laps(session, driver):
     plt.show()
 
 
-def race_diff_v2(year, save=False):
+def race_diff_v2(year, round=None, save=False):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
+    schedule = [1] if round is not None else schedule
     tyres = ['SOFT', 'MEDIUM', 'HARD']
     fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
     raw_race_pace = pd.read_csv('../resources/csv/Raw_race_pace_delta.csv')
     delta_by_race = {}
     sessions_names = []
     for i in range(len(schedule)):
-        session = fastf1.get_session(year, i + 1, 'R')
+        session = fastf1.get_session(year, round if round is not None else i + 1, 'R')
         session.load(messages=False)
         sessions_names.append(session.event['Location'].split('-')[0])
         race_fuel_factor = fuel_factors[(fuel_factors['Year'] == year) & (fuel_factors['Round'] == i + 1)]['FuelFactor']
@@ -723,6 +750,7 @@ def race_diff_v2(year, save=False):
                     delta_by_race[t].append(team_pace)
 
     session_names = append_duplicate_number(sessions_names)
+    print(delta_by_race)
 
     if save:
         df_save = pd.DataFrame(delta_by_race)

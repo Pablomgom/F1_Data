@@ -60,6 +60,7 @@ def get_funcs():
         'avg_driver_position': avg_driver_position,
         'full_compare_drivers_season': full_compare_drivers_season,
         'simulate_season_different_psystem': simulate_season_different_psystem,
+        'simulate_qualy_championship': simulate_qualy_championship,
         'wins_per_year': wins_per_year,
         'compare_my_ergast_teammates': compare_my_ergast_teammates,
         'laps_completed': laps_completed,
@@ -104,6 +105,7 @@ def get_funcs():
         'points_per_year': points_per_year,
         'all_laps_driver_session': all_laps_driver_session,
         'race_simulation_test_day': race_simulation_test_day,
+        'difference_Q3': difference_Q3,
         'help': help
     }
 

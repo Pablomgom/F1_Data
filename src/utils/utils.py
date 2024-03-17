@@ -64,6 +64,10 @@ def parse_args(args_input, function_map, session):
         else:
             if arg == 'session':
                 args.append(session)
+            elif arg == 'False':
+                args.append(False)
+            elif arg == 'True':
+                args.append(True)
             elif arg == 'dict':
                 args.append(function_map)
             elif arg in function_map:
@@ -106,8 +110,8 @@ def plot_turns(circuit_info, track_angle, plt):
         text_y = corner['Y'] + offset_y
         text_x, text_y = rotate([text_x, text_y], angle=track_angle)
         track_x, track_y = rotate([corner['X'], corner['Y']], angle=track_angle)
-        plt.scatter(text_x, text_y, color='grey', s=350, zorder=10000)
-        plt.plot([track_x, text_x], [track_y, text_y], color='grey', zorder=10000)
+        # plt.scatter(text_x, text_y, color='grey', s=350, zorder=10000)
+        # plt.plot([track_x, text_x], [track_y, text_y], color='grey', zorder=10000)
         plt.text(text_x, text_y, txt,
                  va='center_baseline', ha='center', size='large', color='white', zorder=10000)
 

@@ -260,7 +260,7 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100):
             percentage = (d_data[i] / total) * 100
             print(f'{category}: {d_data[i]} vs. {t_data[i]} ({percentage:.2f}%)')
     print('\n*Only races in which both drivers finished')
-    print('Sprint are not considered')
+    print('Sprints are not considered')
 
 
 def laps_completed(year):
@@ -331,7 +331,7 @@ def winning_positions_per_circuit(circuit, start=1950, end=2024):
                 positions_dict[grid_pos] = [f'{year}: {d_name}']
     positions_dict = dict(sorted(positions_dict.items(), reverse=True))
     for key, values in positions_dict.items():
-        print(f'FROM P{key}:')
+        print(f'- FROM P{key}:')
         for v in values:
             print(v)
 

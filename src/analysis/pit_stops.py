@@ -9,11 +9,11 @@ import matplotlib.patheffects as path_effects
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import round_bars, annotate_bars, get_font_properties
 from src.utils.utils import update_name, name_count, restart_name_count
-from src.variables.team_colors import team_colors_2023
+from src.variables.team_colors import team_colors_2023, team_colors
 from src.plots.plots import lighten_color
 
 
-def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False):
+def dhl_pitstops(year, groupBy='Driver', round=None, points=False):
     """
         Print pitstops given the dhl data
 
@@ -86,8 +86,12 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
         restart_name_count()
         pitstops = pitstops.sort_values(by='Time', ascending=True)
 
-    if exclude is not None:
-        pitstops = pitstops[~pitstops['Driver'].isin(exclude)]
+    if groupBy == 'Team':
+        pitstops = pitstops.groupby(groupBy)['Time'].median().reset_index()
+        colors = [team_colors.get(year)[i] for i in pitstops['Team'].values]
+        annotate_fontsize = 20
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
 
     if points:
         bars = ax1.bar(pitstops['Team'], pitstops['Points'], color=colors,
@@ -95,12 +99,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, exclude=None, points=False)
     else:
         bars = ax1.bar(pitstops[groupBy], pitstops['Time'], color=colors,
                        edgecolor='white')
-
-    if groupBy == 'Team':
-        colors = [team_colors_2023[i] for i in pitstops['Team'].values]
-        annotate_fontsize = 20
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
 
     round_bars(bars, ax1, colors, y_offset_rounded=y_offset_rounded, linewidth=linewidth)
     annotate_bars(bars, ax1, y_offset_annotate, annotate_fontsize, round=round)

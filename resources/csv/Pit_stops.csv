@@ -764,3 +764,65 @@ Pos,Team,Driver,Time,Lap,Points,Race_ID,Year,Race_Name
 35,Alpine,Gasly,3.54,17,,22,2023,Abu Dhabi
 36,Alpine,Gasly,4.13,32,,22,2023,Abu Dhabi
 37,McLaren,Norris,5.16,14,,22,2023,Abu Dhabi
+1,Ferrari,Leclerc,2.23,11,25,1,2024,Bahrain
+2,Ferrari,Sainz,2.27,35,18,1,2024,Bahrain
+3,Red Bull,Verstappen,2.27,37,15,1,2024,Bahrain
+4,Red Bull,Perez,2.29,12,12,1,2024,Bahrain
+5,McLaren,Norris,2.33,13,10,1,2024,Bahrain
+6,RB,Tsunoda,2.34,34,8,1,2024,Bahrain
+7,Ferrari,Leclerc,2.37,34,,1,2024,Bahrain
+8,Mercedes,Hamilton,2.51,33,6,1,2024,Bahrain
+9,RB,Tsunoda,2.51,14,,1,2024,Bahrain
+10,Haas,Magnussen,2.56,32,4,1,2024,Bahrain
+11,Aston Martin,Stroll,2.57,9,2,1,2024,Bahrain
+12,Ferrari,Sainz,2.60,14,,1,2024,Bahrain
+13,Alpine,Ocon,2.64,10,1,1,2024,Bahrain
+14,RB,Ricciardo,2.73,35,,1,2024,Bahrain
+15,Haas,Hulkenberg,2.74,41,,1,2024,Bahrain
+16,Red Bull,Perez,2.76,36,,1,2024,Bahrain
+17,Sauber,Zhou,2.77,28,,1,2024,Bahrain
+18,Haas,Hulkenberg,2.79,20,,1,2024,Bahrain
+19,Mercedes,Russell,2.81,11,,1,2024,Bahrain
+20,RB,Ricciardo,2.83,13,,1,2024,Bahrain
+21,Williams,Albon,2.84,36,,1,2024,Bahrain
+22,Aston Martin,Stroll,2.85,27,,1,2024,Bahrain
+23,McLaren,Norris,2.94,33,,1,2024,Bahrain
+24,Mercedes,Russell,2.94,31,,1,2024,Bahrain
+25,Red Bull,Verstappen,2.97,17,,1,2024,Bahrain
+26,Williams,Albon,3.01,15,,1,2024,Bahrain
+27,Alpine,Ocon,3.01,30,,1,2024,Bahrain
+28,Sauber,Zhou,3.03,9,,1,2024,Bahrain
+29,Aston Martin,Alonso,3.14,15,,1,2024,Bahrain
+30,Williams,Sargeant,3.15,28,,1,2024,Bahrain
+31,McLaren,Piastri,3.20,34,,1,2024,Bahrain
+32,Aston Martin,Alonso,3.26,41,,1,2024,Bahrain
+33,Mercedes,Hamilton,3.40,12,,1,2024,Bahrain
+34,Alpine,Gasly,3.42,43,,1,2024,Bahrain
+35,Williams,Sargeant,3.45,40,,1,2024,Bahrain
+36,McLaren,Piastri,3.57,12,,1,2024,Bahrain
+37,Haas,Magnussen,3.88,11,,1,2024,Bahrain
+38,Sauber,Bottas,4.30,12,,1,2024,Bahrain
+39,Alpine,Gasly,4.37,31,,1,2024,Bahrain
+40,Alpine,Gasly,8.03,12,,1,2024,Bahrain
+41,Williams,Sargeant,13.54,10,,1,2024,Bahrain
+42,Haas,Hulkenberg,14.35,1,,1,2024,Bahrain
+43,Sauber,Bottas,52.44,30,,1,2024,Bahrain
+1,Red Bull,Verstappen,2.44,7,25,2,2024,Jeddah
+2,Mercedes,Hamilton,2.51,36,18,2,2024,Jeddah
+3,Red Bull,Perez,2.70,7,15,2,2024,Jeddah
+4,Aston Martin,Alonso,2.74,7,12,2,2024,Jeddah
+5,Mercedes,Russell,2.97,7,10,2,2024,Jeddah
+6,Haas,Hulkenberg,3.03,33,8,2,2024,Jeddah
+7,McLaren,Piastri,3.28,7,6,2,2024,Jeddah
+8,Haas,Magnussen,3.29,7,4,2,2024,Jeddah
+9,Ferrari,Bearman,3.48,7,2,2,2024,Jeddah
+10,RB,Tsunoda,3.59,7,1,2,2024,Jeddah
+11,Sauber,Bottas,3.62,35,,2,2024,Jeddah
+12,Williams,Albon,3.66,7,,2,2024,Jeddah
+13,McLaren,Norris,4.04,37,,2,2024,Jeddah
+14,Alpine,Ocon,4.05,7,,2,2024,Jeddah
+15,Sauber,Bottas,5.14,7,,2,2024,Jeddah
+16,Ferrari,Leclerc,5.31,7,,2,2024,Jeddah
+17,Williams,Sargeant,5.36,7,,2,2024,Jeddah
+18,Sauber,Zhou,28.71,41,,2,2024,Jeddah
+19,RB,Ricciardo,41.61,7,,2,2024,Jeddah

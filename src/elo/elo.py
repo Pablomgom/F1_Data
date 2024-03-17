@@ -4,6 +4,8 @@ import re
 import numpy as np
 from fastf1.ergast import Ergast
 
+from src.ergast_api.my_ergast import My_Ergast
+
 
 class Driver:
     def __init__(self, name, initial_rating=1500):
@@ -38,17 +40,17 @@ def get_avg_teamamte_elo(drivers, teammates):
 
 def get_avg_teammate_pos(given_name, family_name, results, drivers, da_pos):
     teams = set(
-        results[(results['givenName'] == given_name) & (results['familyName'] == family_name)]['constructorId'].values)
+        results[(results['givenName'] == given_name) & (results['familyName'] == family_name)]['constructorName'].values)
     avg_pos = []
     teammates_to_delete = []
     for team in teams:
         avg_team_pos = []
-        teammates = set(results[(results['constructorId'] == team)
+        teammates = set(results[(results['constructorName'] == team)
                                 & (results['givenName'] != given_name)
                                 & (results['familyName'] != family_name)
-                                ]['driverId'].values)
+                                ]['driverRef'].values)
         for teammate in teammates:
-            teammate_pos = results[results['driverId'] == teammate]['position'].max()
+            teammate_pos = results[results['driverRef'] == teammate]['position'].max()
             teammate_status = results[results['position'] == teammate_pos]['status'].max()
             if get_finish_status(status=teammate_status):
                 avg_team_pos.append(teammate_pos)
@@ -63,7 +65,7 @@ def get_avg_teammate_pos(given_name, family_name, results, drivers, da_pos):
         teammates.remove(d_remove)
     full_names = []
     for driver in teammates:
-        teammate = results[results['driverId'] == driver]
+        teammate = results[results['driverRef'] == driver]
         full_name = teammate['givenName'].max() + '//' + teammate['familyName'].max()
         full_names.append(full_name)
     drivers_to_check = []
@@ -136,15 +138,13 @@ def get_valid_drivers(drivers, results, year):
     valid_drivers = []
     for d in drivers:
         name = d.name.split('//')
-        if name[0] == 'Jacques':
-            a = 1
         if get_finish_status(name[0], name[1], results):
             valid_drivers.append(d)
         else:
             if is_accident(name[0], name[1], results) and year >= 2000:
                 team = results[(results['givenName'] == name[0])
-                               & (results['familyName'] == name[1])]['constructorId'].max()
-                team_results = results[results['constructorId'] == team]
+                               & (results['familyName'] == name[1])]['constructorName'].max()
+                team_results = results[results['constructorName'] == team]
                 teammate_data = team_results[(team_results['givenName'] != name[0])
                                              & (team_results['familyName'] != name[1])]
                 if len(teammate_data) == 1:
@@ -170,7 +170,7 @@ def update_ratings(drivers, race_results, race_index, race_name):
         scaled_factors = min_max_scale_factors(factors, current_year)
         normalized_factors = normalize_factors(scaled_factors)
 
-        years = np.array(list(range(1950, 2024)))
+        years = np.array(list(range(1950, 2025)))
         n_drivers = np.array(list(range(1, len(drivers) + 1)))
         values_k_pos = np.linspace(25, 7.5, len(years))
         values_k_team = np.linspace(82.5, 35, len(years))
@@ -288,11 +288,9 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
         races = []
         races_name = []
         if restore:
-            data = ergast.get_race_results(season=year, round=round, limit=1000)
-            races += [race for race in data.content]
-            for i in range(len(data.description)):
-                race_names = data.description['raceName'].values[i]
-                races_name.append(f'{year} - {race_names}')
+            data = My_Ergast().get_race_results([year], round)
+            races = [data.content[0]]
+            races_name.append(f'{data.content[0]["year"].loc[0]} - {data.content[0]["raceName"].loc[0]}')
             with open("elo/elo_data.pkl", "rb") as file:
                 drivers = pickle.load(file)
             with open("elo/elo_data_bk.pkl", "wb") as file:
@@ -314,14 +312,19 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
         for race in races:
             drivers_in_race = [code for code in race['givenName'] + '//' + race['familyName']]
             intersection = [value for value in driver_names if value in drivers_in_race]
-            drivers_in_race = [d for d in drivers if d.name in intersection]
+            new_drivers = [d for d in drivers_in_race if d not in driver_names]
+            new_drivers = [Driver(name) for name in new_drivers]
+            for d in new_drivers:
+                for r in list(drivers[0].historical_elo.keys()):
+                    d.historical_elo[r] = 0
+            drivers_in_race = [d for d in drivers if d.name in intersection] + new_drivers
             for d in drivers_in_race:
                 d.elo_changes = 0
                 d.num_races += 1
             update_ratings(drivers_in_race, race, race_index, races_name[race_index])
             print(f'{race_index}/{len(races)}')
             race_index += 1
-
+            drivers += new_drivers
     total_elo = 0
     for driver in drivers:
         total_elo += driver.rating
@@ -380,13 +383,14 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
         print('Not enough data for the MA')
 
     print('----------------------------------------------------------------------')
+    season_races = []
     if restore or only_print:
-        current_season = ergast.get_race_results(season=year, round=round, limit=1000)
+        current_season = My_Ergast().get_race_results([int(year)], round)
+        season_races = current_season.content[0]
     else:
         current_season = ergast.get_race_results(season=end - 1, limit=1000)
-    season_races = []
-    season_races += [race for race in current_season.content]
-    season_races = season_races[-1]
+        season_races += [race for race in current_season.content]
+        season_races = season_races[-1]
     current_drivers_names = (season_races['givenName'] + '//' + season_races['familyName']).values
 
     current_drivers = sorted(drivers, key=lambda driver: driver.rating, reverse=True)

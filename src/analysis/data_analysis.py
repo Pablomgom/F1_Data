@@ -160,15 +160,17 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
 
     if session == 'R':
         race_pace_delta = pd.read_csv('../resources/csv/Race_pace_delta.csv')
+        ewm_cols = ['Team', 'Year']
     else:
         race_pace_delta = pd.read_csv('../resources/csv/Qualy_pace_delta.csv')
         race_pace_delta = race_pace_delta[~pd.isna(race_pace_delta['Delta'])]
+        ewm_cols = ['Team', 'Year']
     circuit_data = pd.read_csv('../resources/csv/Circuit_data.csv')
 
     race_pace_delta['Team'] = race_pace_delta['Team'].replace({'AlphaTauri': 'RB',
                                                                'Alfa Romeo': 'Kick Sauber'})
     race_pace_delta.sort_values(by=['Year', 'Session'], inplace=True)
-    race_pace_delta['Recent_Avg_Delta'] = race_pace_delta.groupby(['Team', 'Year'])['Delta'].transform(
+    race_pace_delta['Recent_Avg_Delta'] = race_pace_delta.groupby(ewm_cols)['Delta'].transform(
         lambda x: x.ewm(span=3, adjust=False).mean())
 
 
@@ -181,12 +183,6 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     predict_data = predict_data.drop(['Session_y'], axis=1).rename({'Session_x': 'Session'}, axis=1)
     predict_data = predict_data.sort_values(by=['Year', 'Session'], ascending=[True, True]).reset_index(drop=True)
     predict_data['ID'] = range(1, len(predict_data) + 1)
-    for team in teams:
-        for metric in ['Delta', 'Recent_Avg_Delta']:
-            column_name = f'{metric}_{team}'
-            if column_name in predict_data.columns:
-                median_per_year = predict_data.groupby('Year')[column_name].transform('median')
-                predict_data[column_name] = predict_data[column_name].fillna(median_per_year)
     feature_columns = ['Year', 'ID'] + track_features + [f'{metric}_{team}' for team in teams for metric in ['Recent_Avg_Delta']]
     X = predict_data[feature_columns]
     y = predict_data[[f'Delta_{team}' for team in teams]]
@@ -198,8 +194,8 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     gb_regressor_multi = MultiOutputRegressor(gb_regressor_multi)
     X_scaled = scaler.fit_transform(X)
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
-    lasso = Lasso(max_iter=100000, alpha=0.071)
-    param_grid = {'alpha': np.logspace(-4, 0, 50)}
+    lasso = Lasso(alpha=0.1)
+    param_grid = {'alpha': np.logspace(-4, 0, 5)}
     grid_search = GridSearchCV(estimator=lasso, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error')
     grid_search.fit(X_train, y_train)
     print("Best alpha: ", grid_search.best_params_['alpha'])
@@ -208,13 +204,8 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     print("Test set score: ", test_score)
     print("Best parameters: ", grid_search.best_params_)
     print("Best score: ", grid_search.best_score_)
-
-    if session == 'R':
-        used_model = lasso
-        used_model.fit(X_train, y_train)
-    else:
-        used_model = lasso
-        used_model.fit(X_train, y_train)
+    used_model = lasso
+    used_model.fit(X_train, y_train)
 
     y_pred = used_model.predict(X_test)
     error_mae = mean_absolute_error(y_test, y_pred)

@@ -692,3 +692,18 @@ def pole_position_evolution(circuit, start=1950, end=2050):
 
     final_log = '\n'.join(log_entries)
     print(final_log)
+
+
+def difference_Q3(start=2014, end=2050):
+
+    qualys = My_Ergast().get_qualy_results([i for i in range(start, end)])
+    dict_race = {}
+    for q in qualys.content:
+        year = q['year'].loc[0]
+        race_name = q['raceName'].loc[0]
+        time_diff = (max(q["q3"]) - min(q["q3"])).total_seconds()
+        if not np.isnan(time_diff):
+            dict_race[f'{year} {race_name}'] = time_diff
+    dict_race = {k: v for k, v in sorted(dict_race.items(), key=lambda item: item[1])}
+    for r, v in dict_race.items():
+        print(f'{r} - {v:.3f}s')

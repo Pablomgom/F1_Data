@@ -127,6 +127,8 @@ def Williams_2023(round, max_laps=0):
 
 
 def Alfa_Romeo_2023(round, max_laps=0):
+    if round == 2:
+        raise RaceException
     return 0, max_laps
 
 

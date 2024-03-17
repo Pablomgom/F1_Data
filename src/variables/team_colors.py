@@ -70,6 +70,7 @@ team_colors_2024 = {
     'Aston Martin': '#006f62',
     'Alfa Romeo': '#900000',
     'Kick Sauber': '#00e701',
+    'Sauber': '#00e701',
     'RB': '#8F00FF',
     'Haas': '#ffffff',
     'Haas F1 Team': '#ffffff',

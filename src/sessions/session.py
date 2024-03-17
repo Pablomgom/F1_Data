@@ -106,7 +106,7 @@ def long_runs_driver(session, driver, threshold=1.07):
     ax.yaxis.set_major_formatter(plt.FuncFormatter(format_func))
     sns.despine(left=True, bottom=True)
     ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
+    plt.figtext(0.01, 0.02, '@F1BigData', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f"../PNGs/{driver} LAPS {session.event.OfficialEventName}.png", dpi=450)
     plt.show()
@@ -179,15 +179,14 @@ def long_runs_scatter(session, threshold=1.07):
     driver_laps = driver_laps.sort_values(by=['Compound', 'Average'], ascending=[False, True])
     for idx, row in driver_laps.iterrows():
         driver = row['Driver']
-        laps = row['Laps']
+        laps = row['Average']
         tyre = row['Compound']
-        driver_median_lap = np.median(laps)
         if prev_time is not None and tyre == prev_tyre:
-            time_diff = f'(+{format_timedelta(driver_median_lap - prev_time)}s)'.replace('0:0', '')
+            time_diff = f'(+{format_timedelta(laps - prev_time)}s)'.replace('0:0', '')
         else:
             time_diff = ''
-            prev_time = driver_median_lap
-        print(f'{driver.split(" (")[0]}: {format_timedelta(driver_median_lap)} {time_diff}')
+            prev_time = laps
+        print(f'{driver.split(" (")[0]}: {format_timedelta(laps)} {time_diff}')
         prev_tyre = tyre
 
     def format_timedelta_to_mins(seconds, pos):
@@ -208,7 +207,7 @@ def long_runs_scatter(session, threshold=1.07):
     plt.title(f'LONG RUNS IN {str(session.event.year) + " " + session.event.Country + " " + session.name}',
               font='Fira Sans', fontsize=20)
     sns.despine(left=True, bottom=True)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
+    plt.figtext(0.01, 0.02, '@F1BigData', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f"../PNGs/LAPS {session.event.OfficialEventName}.png", dpi=450)
     plt.show()
@@ -266,7 +265,7 @@ def session_diff_last_year(year, round_id, prev_year, session='Q'):
         if t[1] > 0 and not slower:
             print(f'🔴 Slower than in {prev_year}')
             slower = True
-        print(f'{t[0]}: {"+" if slower else ""}{t[1]}s')
+        print(f'{t[0]}: {"+" if slower else ""}{t[1]:.3f}s')
 
 
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -274,7 +273,7 @@ def session_diff_last_year(year, round_id, prev_year, session='Q'):
 
     round_bars(bars, ax, colors, y_offset_rounded=0, linewidth=3.75)
     annotate_bars(bars, ax, 0.01, 14, '+{height}s',
-                  ceil_values=False, round=3, y_negative_offset=-0.065)
+                  ceil_values=False, round=3, y_negative_offset=-0.05)
 
     plt.axhline(0, color='white', linewidth=4)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
@@ -368,11 +367,10 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     plt.rcParams['ytick.color'] = 'white'
 
     if lap is not None:
-        for i in session.laps.pick_driver(driver_1).pick_lap(lap).iterlaps():
+        for i in session.laps.pick_driver(driver_1).pick_lap(15).iterlaps():
             d1_lap = i[1]
 
-        for i in session.laps.pick_driver(driver_2).pick_lap(lap).iterlaps():
-            d2_lap = i[1]
+        d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
     else:
         # d1_lap = session.laps.pick_driver('HAM')
@@ -384,8 +382,8 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
         #         d2_lap = i[1]
         #     count += 1
         # # # d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver('NOR').pick_quicklaps()
-        d1_lap = session.laps.split_qualifying_sessions()[2].pick_driver(driver_1).pick_fastest()
-        d2_lap = session.laps.split_qualifying_sessions()[2].pick_driver(driver_2).pick_fastest()
+        d1_lap = session.laps.pick_driver(driver_1).pick_fastest()
+        d2_lap = session.laps.pick_driver(driver_2).pick_fastest()
 
     from fastf1.utils import delta_time as delta_improved
     delta_time, ref_tel, compare_tel = delta_improved(d1_lap, d2_lap)
@@ -403,26 +401,24 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
 
     ax[0].plot(ref_tel['Distance'], ref_tel['Speed'],
                color='#3399FF',
-               label=driver_1, linewidth=2.75)
+               label=driver_1, linewidth=3)
     ax[0].plot(compare_tel['Distance'], compare_tel['Speed'],
                color='#FFA500',
-               label=driver_2, linewidth=2.75)
+               label=driver_2, linewidth=3)
 
     colors = ['green' if x > 0 else 'red' for x in delta_time]
     twin = ax[0].twinx()
     for i in range(1, len(delta_time)):
         twin.plot(ref_tel['Distance'][i - 1:i + 1], delta_time[i - 1:i + 1], color=colors[i],
-                  alpha=0.6, label='delta', linewidth=2)
+                  alpha=0.6, label='delta', linewidth=2.75)
 
     # Set the labels for the axes
     ax[0].set_xlabel('Distance')
     ax[0].set_ylabel('Speed')
     ax[0].set_title(f'{str(session.date.year) + " " + session.event.EventName + " " + session.name}'
                     f'{" Lap " + str(lap) if lap is not None else ""} comparison: {driver_1} VS {driver_2}',
-                    font='Fira Sans', fontsize=16, y=1.1)
+                    font='Fira Sans', fontsize=20, y=1.1)
 
-    # ax[0].set_title(f'ALONSO POTENTIAL BRAKE CHECK',
-    #                 font='Fira Sans', fontsize=18, y=1.1)
 
     twin.grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     twin.set_ylabel('Time diff (s)')
@@ -435,51 +431,38 @@ def overlying_laps(session, driver_1, driver_2, lap=None):
     handles1, labels1 = ax[0].get_legend_handles_labels()
     handles1 = handles1 + legend_elements
     labels1 = labels1 + [entry.get_label() for entry in legend_elements]
-    ax[0].legend(handles1, labels1, loc='lower right')
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    ax[0].legend(handles1, labels1, loc='lower left')
+    plt.figtext(0.01, 0.02, '@F1BigData', fontsize=15, color='gray', alpha=0.5)
 
     ax[1].plot(ref_tel['Distance'], ref_tel['Brake'],
                color='#3399FF',
-               label=driver_1, linewidth=2)
+               label=driver_1, linewidth=2.75)
     ax[1].plot(compare_tel['Distance'], compare_tel['Brake'],
                color='#FFA500',
-               label=driver_2, linewidth=2)
+               label=driver_2, linewidth=2.75)
 
     ax[1].set_xlabel('Distance')
     ax[1].set_ylabel('Brakes')
 
-    ax[1].set_yticks([0, 1])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[1].set_yticks([0, 1])
     ax[1].set_yticklabels(['OFF', 'ON'])
 
     ax[2].plot(ref_tel['Distance'], ref_tel['Throttle'],
                color='#3399FF',
-               label=driver_1, linewidth=2)
+               label=driver_1, linewidth=2.75)
     ax[2].plot(compare_tel['Distance'], compare_tel['Throttle'],
                color='#FFA500',
-               label=driver_2, linewidth=2)
+               label=driver_2, linewidth=2.75)
 
     ax[2].set_xlabel('Distance')
     ax[2].set_ylabel('Throttle')
 
-    ax[2].set_yticks([0, 50, 100])  # Assuming the 'Brakes' data is normalized between 0 and 1
+    ax[2].set_yticks([0, 50, 100])
     ax[2].set_yticklabels(['0%', '50%', '100%'])
 
-    # ax[3].plot(ref_tel['Distance'], ref_tel['nGear'],
-    #            color='#0000FF',
-    #            label=driver_1)
-    # ax[3].plot(compare_tel['Distance'], compare_tel['nGear'],
-    #            color='#FFA500',
-    #            label=driver_2)
-    #
-    # ax[3].set_xlabel('Distance')
-    # ax[3].set_ylabel('Gear')
-    #
-    # ax[3].set_yticks([2, 3, 4, 5, 6, 7, 8])
-    # ax[3].set_yticklabels(['2', '3', '4', '5', '6', '7', '8'])
 
     ax[1].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
     ax[2].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
-    # ax[3].grid(axis='y', linestyle='--', linewidth=0.5, alpha=0.5)
 
     plt.tight_layout()
     plt.savefig(f'../PNGs/{driver_1} - {driver_2} + {session.event.EventName + " " + session.name}.png', dpi=450)
@@ -621,7 +604,7 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
         if i > 4:
             seg_x = [segment[0][0], segment[1][0]]
             seg_y = [segment[0][1], segment[1][1]]
-            plt.plot(seg_x, seg_y, color=cmap(norm(delta_time[i])), linewidth=10)
+            plt.plot(seg_x, seg_y, color=cmap(norm(delta_time[i])), linewidth=5)
 
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
@@ -642,7 +625,8 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
         label.set_family('Fira Sans')
 
     plt.suptitle(f"{team_1} vs {team_2}:"
-                 f" {str(session.session_info['StartDate'].year) + ' ' + session.event.EventName + ' ' + session.name} \n",
+                 f" {str(session.session_info['StartDate'].year)} "
+                 f"{session.event.EventName.replace('Grand Prix', 'GP') + ' ' + session.name} \n",
                  font='Fira Sans', fontsize=24)
     plt.tight_layout()
     path = (f"../PNGs/Dif by point {team_1} vs {team_2} - {str(session.session_info['StartDate'].year)}"
@@ -724,7 +708,7 @@ def track_dominance(session, team_1, team_2):
     for i, segment in enumerate(segments):
         seg_x = [segment[0][0], segment[1][0]]
         seg_y = [segment[0][1], segment[1][1]]
-        plt.plot(seg_x, seg_y, color=colors[i], linewidth=10)
+        plt.plot(seg_x, seg_y, color=colors[i], linewidth=5)
 
     plt.axis('equal')
     plt.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
@@ -744,7 +728,7 @@ def track_dominance(session, team_1, team_2):
     plt.show()
 
 
-def get_fastest_data(session, fastest_lap=False, DRS=True):
+def get_fastest_data(session, fastest_lap=True):
     """
         Get the fastest data in a session
 
@@ -758,6 +742,8 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    if 'GAS' in drivers:
+        drivers.remove('GAS')
     year = session.date.year
     circuit_speed = {}
     colors_dict = {}
@@ -767,8 +753,6 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
             if fastest_lap:
                 d_laps = session.laps.pick_driver(driver).pick_fastest()
             if len(d_laps) > 0:
-                if not DRS:
-                    d_laps = d_laps.telemetry[d_laps.telemetry['DRS'] >= 10]
                 top_speed = max(d_laps.telemetry['Speed'])
                 if fastest_lap:
                     team = d_laps['Team']
@@ -784,7 +768,7 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
 
     x_fix = 5
     y_fix = 0.25
-    annotate_fontsize = 13
+    annotate_fontsize = 14
     y_offset_rounded = 0.035
     round_decimals = 0
 
@@ -803,14 +787,10 @@ def get_fastest_data(session, fastest_lap=False, DRS=True):
 
     ax1.set_title(f'{column} in {str(session.event.year) + " " + session.event.Location + " " + session.name}',
                   font='Fira Sans', fontsize=16)
-    ax1.set_xlabel('Driver', fontweight='bold', fontsize=12)
 
-    y_label = 'Max speed'
-    ax1.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
-    ax1.set_ylabel(y_label, fontweight='bold', fontsize=12)
     max_value = max(circuit_speed.values())
     ax1.set_ylim(min(circuit_speed.values()) - x_fix, max_value + x_fix)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.figtext(0.725, 0.88, '@F1BigData', fontsize=15, color='gray', alpha=0.5)
 
     def format_ticks(val, pos):
         return '{:.0f}'.format(val)
@@ -996,7 +976,7 @@ def drs_efficiency(year):
     plt.show()
 
 
-def get_fastest_sectors(session):
+def get_fastest_sectors(session, average=False):
     """
         Get the fastest data in a session
 
@@ -1007,6 +987,8 @@ def get_fastest_sectors(session):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    if 'GAS' in drivers:
+        drivers.remove('GAS')
     year = session.date.year
     sector_times = pd.DataFrame(columns=['Sector1Time', 'Sector2Time', 'Sector3Time', 'Color'])
     for driver in drivers:
@@ -1014,7 +996,13 @@ def get_fastest_sectors(session):
             d_laps = session.laps.pick_driver(driver)
             for sector in ['Sector1Time', 'Sector2Time', 'Sector3Time']:
                 if len(d_laps) > 0:
-                    time = round(min(d_laps[sector].dropna()).total_seconds(), 3)
+                    if average:
+                        d_laps = d_laps.pick_quicklaps().pick_wo_box()
+                        time = round(np.mean(d_laps[sector].dropna()).total_seconds(), 3)
+                        method = 'AVERAGE'
+                    else:
+                        time = round(min(d_laps[sector].dropna()).total_seconds(), 3)
+                        method = 'FASTEST'
                     team = d_laps['Team'].values[0]
                     sector_times.loc[driver, sector] = time
                     sector_times.loc[driver, f'Color'] = team_colors[year][team]
@@ -1022,7 +1010,7 @@ def get_fastest_sectors(session):
             print(f'No data for {driver}')
 
     fig, ax = plt.subplots(ncols=3, figsize=(8, 8), dpi=150)
-    fig.suptitle(f'SECTOR TIMES IN {session.event.year} {str(session.event.Country).upper()} '
+    fig.suptitle(f'{method} SECTOR TIMES IN {session.event.year} {str(session.event.Country).upper()} '
                  f'{str(session.name).upper()}',
                  font='Fira Sans', fontsize=20, fontweight='bold')
     for i in range(3):

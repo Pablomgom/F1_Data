@@ -99,12 +99,12 @@ def qualy_results(session, optimal=False):
     ax.xaxis.grid(True, color='white', linestyle='--')
     plt.xticks(font='Fira Sans', fontsize=15)
     plt.yticks(font='Fira Sans', fontsize=15)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.figtext(0.01, 0.02, '@F1BigData', fontsize=15, color='gray', alpha=0.5)
     plt.savefig(f"../PNGs/QUALY OVERVIEW {session.event.OfficialEventName}.png", dpi=400)
     plt.show()
 
 
-def qualy_diff(year):
+def qualy_diff(year, round):
     """
        Plot the qualy time diff between 2 teams
 
@@ -116,11 +116,12 @@ def qualy_diff(year):
     """
 
     session_names = []
-    # n_qualys = Ergast().get_qualifying_results(season=year, limit=1000).content
+    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    schedule = [1] if round is not None else schedule
     delta_diff = {}
-    for i in range(1):
+    for i in range(len(schedule)):
         qualy_delta_diffs = {}
-        session = fastf1.get_session(year, i + 1, 'Q')
+        session = fastf1.get_session(year, i + 1 if round is None else round, 'Q')
         session.load(telemetry=True)
         session_names.append(session.event['Location'].split('-')[0])
         from src.utils.utils import call_function_from_module
