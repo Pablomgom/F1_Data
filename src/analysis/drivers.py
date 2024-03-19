@@ -481,7 +481,9 @@ def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
             grid = results['grid'].values[0]
             position = results['position'].values[0]
             status = results['status'].values[0]
-            if '+' not in status and 'Finished' not in status:
+            if status == 'Disqualified':
+                position = 'DSQ'
+            elif '+' not in status and 'Finished' not in status:
                 position = 'DNF'
             else:
                 position = 'P' + str(position)

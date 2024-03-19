@@ -192,13 +192,9 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     predict_data = predict_data.drop(['Session_y'], axis=1).rename({'Session_x': 'Session'}, axis=1)
     predict_data = predict_data.sort_values(by=['Year', 'Session'], ascending=[True, True]).reset_index(drop=True)
     predict_data['ID'] = range(1, len(predict_data) + 1)
-    feature_columns = ['Year', 'ID'] + track_features + [f'{metric}_{team}' for team in teams
-                                                         for metric in ['Recent_Avg_Delta']]
     for team in teams:
         for feature in track_features:
-            # Note: The 'Delta_{team}' column name generation pattern must match exactly how you've named these columns
-            # Ensure the delta column exists or adjust the naming pattern as necessary
-            delta_column = f'Delta_{team}'  # Assuming this is the correct column name for deltas
+            delta_column = f'Delta_{team}'
             if delta_column in predict_data.columns:
                 interaction_column_name = f'{feature}*Delta_{team}'
                 predict_data[interaction_column_name] = predict_data[feature].astype(float) * predict_data[
