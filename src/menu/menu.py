@@ -106,6 +106,7 @@ def get_funcs():
         'all_laps_driver_session': all_laps_driver_session,
         'race_simulation_test_day': race_simulation_test_day,
         'difference_Q3': difference_Q3,
+        'performance_by_turns': performance_by_turns,
         'help': help
     }
 

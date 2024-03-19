@@ -13,7 +13,8 @@ from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error, \
+    median_absolute_error
 from src.utils.utils import get_quartiles, find_nearest_non_repeating
 from src.variables.team_colors import team_colors_2023, team_colors
 
@@ -158,14 +159,23 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     teams = ['Red Bull Racing', 'Aston Martin', 'Alpine', 'Mercedes', 'RB',
              'Kick Sauber', 'Williams', 'Haas F1 Team', 'McLaren', 'Ferrari']
 
+    ewm_cols = ['Team', 'Year']
+    ordinal_mapping = {'Low': 1, 'Medium': 2, 'High': 3}
+
     if session == 'R':
         race_pace_delta = pd.read_csv('../resources/csv/Race_pace_delta.csv')
-        ewm_cols = ['Team', 'Year']
     else:
         race_pace_delta = pd.read_csv('../resources/csv/Qualy_pace_delta.csv')
         race_pace_delta = race_pace_delta[~pd.isna(race_pace_delta['Delta'])]
-        ewm_cols = ['Team', 'Year']
+
+
     circuit_data = pd.read_csv('../resources/csv/Circuit_data.csv')
+    for t in track_features:
+        if t == 'Corner Density':
+            circuit_data[t] = pd.qcut(circuit_data[t], q=3, labels=['High', 'Medium', 'Low'])
+        else:
+            circuit_data[t] = pd.qcut(circuit_data[t], q=3, labels=['Low', 'Medium', 'High'])
+        circuit_data[t] = circuit_data[t].map(ordinal_mapping)
 
     race_pace_delta['Team'] = race_pace_delta['Team'].replace({'AlphaTauri': 'RB',
                                                                'Alfa Romeo': 'Kick Sauber'})
@@ -173,29 +183,38 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     race_pace_delta['Recent_Avg_Delta'] = race_pace_delta.groupby(ewm_cols)['Delta'].transform(
         lambda x: x.ewm(span=3, adjust=False).mean())
 
-
-
-    race_pace_delta_pivot = race_pace_delta.pivot_table(index=['Year', 'Track', 'Session'], columns='Team',
-                                                        values=['Delta', 'Recent_Avg_Delta']).reset_index()
+    race_pace_delta_pivot = race_pace_delta.pivot_table(index=['Year', 'Track', 'Session'],
+                                                        columns='Team',
+                                                        values=['Delta', 'Recent_Avg_Delta']
+                                                        ).reset_index()
     race_pace_delta_pivot.columns = [f'{i}_{j}' if j != '' else f'{i}' for i, j in race_pace_delta_pivot.columns]
-
     predict_data = pd.merge(race_pace_delta_pivot, circuit_data, on=['Year', 'Track'], how='inner')
     predict_data = predict_data.drop(['Session_y'], axis=1).rename({'Session_x': 'Session'}, axis=1)
     predict_data = predict_data.sort_values(by=['Year', 'Session'], ascending=[True, True]).reset_index(drop=True)
     predict_data['ID'] = range(1, len(predict_data) + 1)
-    feature_columns = ['Year', 'ID'] + track_features + [f'{metric}_{team}' for team in teams for metric in ['Recent_Avg_Delta']]
-    X = predict_data[feature_columns]
-    y = predict_data[[f'Delta_{team}' for team in teams]]
+    feature_columns = ['Year', 'ID'] + track_features + [f'{metric}_{team}' for team in teams
+                                                         for metric in ['Recent_Avg_Delta']]
+    for team in teams:
+        for feature in track_features:
+            # Note: The 'Delta_{team}' column name generation pattern must match exactly how you've named these columns
+            # Ensure the delta column exists or adjust the naming pattern as necessary
+            delta_column = f'Delta_{team}'  # Assuming this is the correct column name for deltas
+            if delta_column in predict_data.columns:
+                interaction_column_name = f'{feature}*Delta_{team}'
+                predict_data[interaction_column_name] = predict_data[feature].astype(float) * predict_data[
+                    delta_column].astype(float)
+            else:
+                print(f"Column {delta_column} not found in DataFrame.")
+
+    cols_to_predict = [f'Delta_{team}' for team in teams]
+    X = predict_data[[c for c in predict_data.columns if c not in cols_to_predict and c not in ['Track', 'Session']]]
+    y = predict_data[cols_to_predict]
     scaler = StandardScaler()
-    random_forest = RandomForestRegressor(n_estimators=1000, random_state=42, max_depth=10, max_features='sqrt',
-                                  min_samples_leaf=2, min_samples_split=2)
-    estimators = 300 if session == 'R' else 200
-    gb_regressor_multi = GradientBoostingRegressor(n_estimators=estimators, random_state=42, learning_rate=0.01, max_depth=3)
-    gb_regressor_multi = MultiOutputRegressor(gb_regressor_multi)
+
     X_scaled = scaler.fit_transform(X)
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
-    lasso = Lasso(alpha=0.1)
-    param_grid = {'alpha': np.logspace(-4, 0, 5)}
+    lasso = Lasso(alpha=0.007543120063354615)
+    param_grid = {'alpha': np.logspace(-4, 0, 50)}
     grid_search = GridSearchCV(estimator=lasso, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error')
     grid_search.fit(X_train, y_train)
     print("Best alpha: ", grid_search.best_params_['alpha'])
@@ -204,21 +223,45 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     print("Test set score: ", test_score)
     print("Best parameters: ", grid_search.best_params_)
     print("Best score: ", grid_search.best_score_)
-    used_model = lasso
+    used_model = Lasso(alpha=grid_search.best_params_['alpha'])
     used_model.fit(X_train, y_train)
 
     y_pred = used_model.predict(X_test)
     error_mae = mean_absolute_error(y_test, y_pred)
+    medae = median_absolute_error(y_test, y_pred)
     error_rmse = mean_squared_error(y_test, y_pred, squared=False)
-    error_mape = mean_absolute_percentage_error(y_test, y_pred)
+    rmse = mean_squared_error(y_test, y_pred, squared=False)
+    cv_rmse = rmse / np.mean(y_test)
+    mbe = np.mean(y_pred - y_test)
+    n = len(y_test)  # number of samples
+    p = X_test.shape[1]  # number of independent variables
+    r2 = used_model.score(X_test, y_test)  # assuming 'used_model' is your model variable
+    adjusted_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
     r2 = used_model.score(X_test, y_test)
 
     print(f"""ERRORS:
-            MAE: {error_mae}
-            RMSE: {error_rmse}    
-            MAPE: {error_mape}
-            R2: {r2} 
-    """)
+                MAE: {error_mae}
+                MEDAE: {medae}
+                CV(RMSE): {cv_rmse}
+                RMSE: {error_rmse}  
+                MBE: {mbe}
+                R2: {r2} 
+                ADJUSTED R2: {adjusted_r2}
+        """)
+
+
+    coefficients = best_lasso.coef_
+    for target_index in range(coefficients.shape[0]):
+        target_coefficients = coefficients[target_index, :]
+        coefficients_series = pd.Series(target_coefficients,
+                                        index=[c for c in predict_data.columns if c not in cols_to_predict and c not in ['Track', 'Session']])
+        plt.figure(figsize=(14, 12))
+        coefficients_series.plot(kind='bar')
+        plt.title(f'Feature Importance for Target {target_index + 1}')
+        plt.xlabel('Feature')
+        plt.ylabel('Coefficient Magnitude')
+        plt.tight_layout()
+        plt.show()
 
     prev_year_data = circuit_data[(circuit_data['Year'] == year - 1) & (circuit_data['Track'] == track)]
     if len(prev_year_data) == 0:
@@ -232,11 +275,12 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         next_race_data[feature] = prev_year_data[feature].iloc[0]
 
     for t in teams:
-        next_race_data[f'Recent_Avg_Delta_{t}'] = predict_data[f'Recent_Avg_Delta_{t}'].values[-1]
+        for c in predict_data.columns:
+            if ('Recent' in c or '*' in c) and t in c:
+                next_race_data[c] = predict_data[c].values[-1]
 
-    next_race_df = pd.DataFrame([next_race_data])
+    next_race_df = pd.DataFrame([next_race_data])[X.columns]
     next_race_data_scaled = scaler.transform(next_race_df)
-    # next_race_data_scaled = poly.transform(next_race_data_scaled)
     next_race_prediction = used_model.predict(next_race_data_scaled)
     min_value = min(next_race_prediction[0])
     adjusted_predictions = [value - min_value for value in next_race_prediction[0]]
@@ -268,5 +312,65 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     plt.tight_layout()
     plt.savefig(f'../PNGs/{year} {track} {session} PREDICTION.png', dpi=450)
     plt.show()
+
+
+
+def performance_by_turns(session):
+
+    teams = set(session.laps['Team'])
+    turns = session.get_circuit_info().corners[['Number', 'Distance']]
+    circuit_data = pd.DataFrame(session.laps.pick_fastest().telemetry[['X', 'Y', 'Throttle']])
+    dx = np.diff(circuit_data['X'])
+    dy = np.diff(circuit_data['Y'])
+    angles = np.arctan2(dy, dx)
+    angle_changes = np.abs(np.diff(np.unwrap(angles)))
+    angle_change_threshold = 0.04
+    straight_segments = angle_changes < angle_change_threshold
+    straight_segments_with_start = np.insert(straight_segments, 0, [True, True])
+    window_size = 10
+    kernel = np.ones(window_size) / window_size
+    smoothed_segments = np.convolve(straight_segments_with_start, kernel, mode='same')
+    threshold = 0.5
+    straight_segments_with_start_s = smoothed_segments > threshold
+    change_indices = np.where(np.diff(straight_segments_with_start_s))[0] + 1
+    all_indices = np.concatenate(([0], change_indices, [straight_segments_with_start_s.size]))
+    segment_lengths = np.diff(all_indices)
+    for i, (start, length) in enumerate(zip(all_indices[:-1], segment_lengths), 1):
+        if straight_segments_with_start_s[start] == False and length < 10:
+            if (i == 1 or straight_segments_with_start_s[all_indices[i - 2]] == True) and (
+                    i == len(segment_lengths) or straight_segments_with_start_s[all_indices[i]] == True):
+                straight_segments_with_start_s[start:start + length] = True
+
+    for i in range(len(straight_segments_with_start_s)):
+        if circuit_data['Throttle'].reset_index(drop=True)[i] != 100:
+            straight_segments_with_start_s[i] = False
+
+    plt.figure(figsize=(10, 6))
+    for i in range(len(circuit_data) - 1):
+        if straight_segments_with_start_s[i]:
+            plt.plot(circuit_data['X'].iloc[i:i + 2], circuit_data['Y'].iloc[i:i + 2], 'g-')
+        else:
+            plt.plot(circuit_data['X'].iloc[i:i + 2], circuit_data['Y'].iloc[i:i + 2], 'r-')
+
+    plt.grid(True)
+    plt.axis('equal')
+    plt.show()
+
+
+    for t in teams:
+        team_lap = session.laps.pick_team(t).pick_fastest()
+        team_tel = pd.DataFrame(team_lap.telemetry[['Distance', 'Speed', 'Time']])
+        team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
+        max_distance = max(team_tel['Distance'])
+        print(f'---{t}---')
+        for index, row in turns.iterrows():
+            turn_distance = row[1]
+            start_point = max(0, turn_distance - 100)
+            end_point = min(max_distance, turn_distance + 100)
+
+            start_time = np.interp(start_point, team_tel['Distance'], team_tel['Time'])
+            end_time = np.interp(end_point, team_tel['Distance'], team_tel['Time'])
+
+            print(f'TURN {row[0]}: {end_time - start_time}')
 
 
