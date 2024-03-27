@@ -648,14 +648,14 @@ def fuel_correct_factor(year, session_id=None):
         if len(session_fuel_correct_factor) > 25:
             print(f'TOTAL VALUES {len(session_fuel_correct_factor)}')
             truncated_mean = stats.trim_mean(session_fuel_correct_factor, 0.1)
-            delta_dict[session] = truncated_mean
+            delta_dict[session_id] = truncated_mean
         else:
-            delta_dict[session] = np.NaN
+            delta_dict[session_id] = np.NaN
 
     df = pd.DataFrame([delta_dict]).T.reset_index(drop=True)
     df.columns = ['FuelFactor']
     df['Year'] = year
-    df['Round'] = df.index + 1
+    df['Round'] = df.index + 1 if session_id is None else session_id
     existing_data = pd.read_csv('../resources/csv/Fuel_factor.csv')
     composite_pk_columns = ['Year', 'Round']
     merged = pd.merge(existing_data[composite_pk_columns], df, how='outer', on=composite_pk_columns, indicator=True)
