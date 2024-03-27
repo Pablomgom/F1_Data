@@ -11,7 +11,7 @@ from matplotlib import cm
 from src.ergast_api.my_ergast import My_Ergast
 from src.plots.plots import round_bars, annotate_bars
 from src.utils.utils import get_medal
-from src.variables.driver_colors import driver_colors_2023
+from src.variables.driver_colors import driver_colors_2023, driver_colors
 
 
 def avg_driver_position(driver, team, year, session='Q'):
@@ -43,7 +43,6 @@ def avg_driver_position(driver, team, year, session='Q'):
                     drivers.append(d)
         drivers_array = set(drivers)
         drivers = {d: [] for d in drivers_array}
-        prev_points = {d: [] for d in drivers_array}
         race_count = 0
         for gp in data.content:
             for d in drivers_array:
@@ -51,48 +50,32 @@ def avg_driver_position(driver, team, year, session='Q'):
                 if len(gp_data) > 0:
                     pos = gp_data['position'].values[0]
                     drivers[d].append(pos)
-                    if race_count < len(data.content) - 1:
-                        prev_points[d].append(pos)
             race_count += 1
         avg_grid = {}
-        avg_grid_pre = {}
         for key, pos_array in drivers.items():
             mean_pos = round(np.mean(pos_array), 2)
             avg_grid[key] = mean_pos
-        for key, pos_array in prev_points.items():
-            mean_pos = round(np.mean(pos_array), 2)
-            avg_grid_pre[key] = mean_pos
-        difference = {key: avg_grid[key] - avg_grid_pre[key] for key in avg_grid}
+
         avg_grid = dict(sorted(avg_grid.items(), key=lambda item: item[1]))
-        avg_grid_pre = dict(sorted(avg_grid_pre.items(), key=lambda item: item[1]))
         drivers = list(avg_grid.keys())
         avg_pos = list(avg_grid.values())
-        colors = [driver_colors_2023.get(key, '#FFFFFF') for key in drivers]
+        colors = [driver_colors.get(year).get(key, '#FFFFFF') for key in drivers]
         fig, ax = plt.subplots(figsize=(9, 7.2), dpi=150)  # Set the figure size (optional)
         bars = plt.bar(drivers, avg_pos, color=colors)  # Plot the bar chart with specific colors (optional)
 
         round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=-0.1, corner_radius=0.1)
         annotate_bars(bars, ax, 0.2, 10.5, text_annotate='default',
                       ceil_values=False, round=2)
-
-        plt.xlabel('Drivers', font='Fira Sans', fontsize=14)  # x-axis label (optional)
-        plt.ylabel('Avg Grid Position', font='Fira Sans', fontsize=14)  # y-axis label (optional)
-        plt.title('Average Qualy Position Per Driver', font='Fira Sans', fontsize=20)  # Title (optional)
-        plt.xticks(rotation=90, fontsize=11)
-        plt.yticks(fontsize=11)
+        plt.title('Average Qualy Position Per Driver', font='Fira Sans', fontsize=24)
+        plt.xticks(rotation=90, fontsize=14)
+        plt.yticks(fontsize=14)
         ax.yaxis.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
         plt.savefig(f'../PNGs/Average grid position {year}.png', dpi=450)
         plt.show()
-        pre_positions = list(avg_grid_pre.keys())
         for i in range(len(drivers)):
             driver = drivers[i]
-            pre_pos = pre_positions.index(driver) + 1
-            diff = round(difference[driver], 2)
-            if diff > 0:
-                diff = f'+{diff}'
-
-            print(f'{i + 1}: {driver} - {avg_pos[i]} ({diff}) from {pre_pos}')
+            print(f'{i + 1}: {driver} - {avg_pos[i]:.2f}')
     else:
         for gp in data.content:
             session_data = gp[(gp['familyName'] == driver) & (gp['constructorRef'] == team)]
@@ -454,8 +437,10 @@ def race_qualy_h2h(d_1, start=1950, end=3000):
                 printed_line = f'{dot}{printed_line}'
                 print(printed_line)
                 printed_line = ''
-
-        print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
+        try:
+            print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
+        except:
+            print('No data')
 
     print_results(race_result)
     print_results(qualy_result)

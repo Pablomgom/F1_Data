@@ -33,37 +33,31 @@ if __name__ == '__main__':
 
 
 #     data = """
-# 1	18	Argentina Juan Manuel Fangio	Alfa Romeo	1:58.6	 –
-# 2	16	Italy Alberto Ascari	Ferrari	1:58.8	+ 0.2
-# 3	10	Italy Nino Farina	Alfa Romeo	2:00.2	+ 1.6
-# 4	46	Italy Consalvo Sanesi	Alfa Romeo	2:00.4	+ 1.8
-# 5	36	Italy Luigi Fagioli	Alfa Romeo	2:04.0	+ 5.4
-# 6	48	Italy Dorino Serafini	Ferrari	2:05.6	+ 7.0
-# 7	60	Italy Piero Taruffi	Alfa Romeo	2:05.8	+ 7.2
-# 8	12	France Raymond Sommer	Talbot-Lago-Talbot	2:08.6	+ 10.0
-# 9	4	Italy Franco Rol	Maserati	2:10.0	+ 11.4
-# 10	44	France Robert Manzon	Simca-Gordini	2:12.4	+ 13.8
-# 11	40	France Guy Mairesse	Talbot-Lago-Talbot	2:13.2	+ 14.6
-# 12	42	France Maurice Trintignant	Simca-Gordini	2:13.4	+ 14.8
-# 13	58	France Louis Rosier	Talbot-Lago-Talbot	2:13.4	+ 14.8
-# 14	64	France Henri Louveau	Talbot-Lago-Talbot	2:13.8	+ 15.2
-# 15	30	Thailand Prince Bira	Maserati	2:14.0	+ 15.4
-# 16	24	France Philippe Étancelin	Talbot-Lago-Talbot	2:14.4	+ 15.8
-# 17	38	Switzerland Toulo de Graffenried	Maserati	2:14.4	+ 15.8
-# 18	8	United Kingdom Peter Whitehead	Ferrari	2:16.2	+ 17.6
-# 19	6	Monaco Louis Chiron	Maserati	2:17.2	+ 18.6
-# 20	56	France Pierre Levegh	Talbot-Lago-Talbot	2:17.2	+ 18.6
-# 21	32	United Kingdom Cuth Harrison	ERA	2:18.4	+ 19.8
-# 22	2	Belgium Johnny Claes	Talbot-Lago-Talbot	2:18.6	+ 20.0
-# 23	52	Italy Felice Bonetto	Milano-Speluzzi	2:19.8	+ 21.2
-# 24	50	United Kingdom David Murray	Maserati	2:22.0	+ 23.4
-# 25	22	Italy Clemente Biondetti	Ferrari-Jaguar	2:30.6	+ 32.0
-# 26	62	Italy Franco Comotti	Maserati-Milano	2:33.6	+ 35.0
-# 27	28	Germany Paul Pietsch	Maserati	3:00.2	+ 61.9
+# 1	1	Max Verstappen	Red Bull-Honda RBPT	1:16.819	1:16.387	1:15.915	1
+# 2	55	Carlos Sainz	Ferrari	1:16.731	1:16.189	1:16.185	2
+# 3	11	Sergio Pérez	Red Bull-Honda RBPT	1:16.805	1:16.631	1:16.274	3
+# 4	4	Lando Norris	McLaren-Mercedes	1:17.430	1:16.750	1:16.315	4
+# 5	16	Charles Leclerc	Ferrari	1:16.984	1:16.304	1:16.435	5
+# 6	81	Oscar Piastri	McLaren-Mercedes	1:17.369	1:16.601	1:16.572	6
+# 7	63	George Russell	Mercedes	1:17.062	1:16.901	1:16.724	7
+# 8	22	Yuki Tsunoda	RB-Honda RBPT	1:17.356	1:16.791	1:16.788	8
+# 9	18	Lance Stroll	Aston Martin Aramco-Mercedes	1:17.376	1:16.780	1:17.072	9
+# 10	14	Fernando Alonso	Aston Martin Aramco-Mercedes	1:16.991	1:16.710	1:17.552	10
+# 11	44	Lewis Hamilton	Mercedes	1:17.499	1:16.960		11
+# 12	23	Alexander Albon	Williams-Mercedes	1:17.130	1:17.167		12
+# 13	77	Valtteri Bottas	Kick Sauber-Ferrari	1:17.543	1:17.340		13
+# 14	20	Kevin Magnussen	Haas-Ferrari	1:17.709	1:17.427		14
+# 15	31	Esteban Ocon	Alpine-Renault	1:17.617	1:17.697		15
+# 16	27	Nico Hülkenberg	Haas-Ferrari	1:17.976			16
+# 17	10	Pierre Gasly	Alpine-Renault	1:17.982			17
+# 18	3	Daniel Ricciardo	RB-Honda RBPT	1:18.085			18
+# 19	24	Guanyu Zhou	Kick Sauber-Ferrari	1:18.188			19
 # """
 #
-#     My_Ergast().insert_qualy_data(1950, 7, data,
-#                                   offset=0, character_sep='-', have_country=True, number=1)
+#     My_Ergast().insert_qualy_data(2024, 3, data,
+#                                   offset=0, character_sep='-', have_country=False, number=1)
+
+
 
 
     while True:

@@ -148,14 +148,14 @@ def get_position_changes(year, round):
     render_mpl_table(finish)
     plt.title(f"Race Results - {race['raceName'].loc[0]} - {race['year'].loc[0]}",
               font='Fira Sans', fontsize=40)
-    plt.figtext(0.01, 0.02, '@Big_Data_Master', fontsize=15, color='gray', alpha=0.5)
+    plt.figtext(0.01, 0.02, '@F1BigData', fontsize=15, color='gray', alpha=0.5)
     plt.tight_layout()
     plt.savefig(f"../PNGs/Race Results - {race['raceName'].loc[0]} - {race['year'].loc[0]}",
                 bbox_inches='tight', dpi=400)
     plt.show()
 
 
-def compare_my_ergast_teammates(driver, start=1950, end=2100):
+def compare_my_ergast_teammates(driver, start=1950, end=2100, specific_driver=None):
     """
     Compare a driver against his teammates
     :param given: Name
@@ -172,25 +172,26 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100):
             team_data = session[session['constructorName'] == team]
             team_data = team_data[team_data['fullName'] != driver]
             for t in team_data['fullName'].values:
-                team_data_teammate = team_data[team_data['fullName'] == t]
-                d_position = driver_data[col].values[0]
-                t_position = team_data_teammate[col].values[0]
-                driver_valid = driver_data['Valid'].loc[0]
-                teammate_valid = team_data_teammate['Valid'].loc[0]
-                if d_position < t_position and (driver_valid and teammate_valid):
-                    d_data[0] += 1
-                elif d_position > t_position and (driver_valid and teammate_valid):
-                    t_data[0] += 1
-                else:
-                    print(f'{session["year"].loc[0]}: {session["raceName"].loc[0]}')
-                driver_race_data = race_data[race_data['fullName'] == driver]
-                team_race_data = race_data[race_data['fullName'] == t]
-                d_grid = driver_race_data['grid'].values[0]
-                t_grid = team_race_data['grid'].values[0]
-                if d_grid == 1:
-                    d_data[1] += 1
-                elif t_grid == 1:
-                    t_data[1] += 1
+                if specific_driver is None or (specific_driver is not None and specific_driver == t):
+                    team_data_teammate = team_data[team_data['fullName'] == t]
+                    d_position = driver_data[col].values[0]
+                    t_position = team_data_teammate[col].values[0]
+                    driver_valid = driver_data['Valid'].loc[0]
+                    teammate_valid = team_data_teammate['Valid'].loc[0]
+                    if d_position < t_position and (driver_valid and teammate_valid):
+                        d_data[0] += 1
+                    elif d_position > t_position and (driver_valid and teammate_valid):
+                        t_data[0] += 1
+                    else:
+                        print(f'{session["year"].loc[0]}: {session["raceName"].loc[0]}')
+                    driver_race_data = race_data[race_data['fullName'] == driver]
+                    team_race_data = race_data[race_data['fullName'] == t]
+                    d_grid = driver_race_data['grid'].values[0]
+                    t_grid = team_race_data['grid'].values[0]
+                    if d_grid == 1:
+                        d_data[1] += 1
+                    elif t_grid == 1:
+                        t_data[1] += 1
 
     my_ergast = My_Ergast()
     q = my_ergast.get_qualy_results([i for i in range(start, end)])
@@ -212,10 +213,9 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100):
             team_data = race[race['constructorName'] == team]
             team_data = team_data[team_data['fullName'] != driver]
             d_points = driver_data['points'].values[0]
-            d_data[7] += d_points
             for t in team_data['fullName'].values:
                 teammate_data = team_data[team_data['fullName'] == t]
-                if len(teammate_data) == 1:
+                if len(teammate_data) == 1 and (specific_driver is None or (specific_driver is not None and specific_driver == t)):
                     d_status = driver_data['status'].values[0]
                     t_status = teammate_data['status'].values[0]
                     d_position = driver_data['position'].values[0]
@@ -238,6 +238,8 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100):
                     if t_points > 0:
                         t_data[5] += 1
                     # TOTAL POINTS
+                    if can_append:
+                        d_data[7] += d_points
                     t_data[7] += t_points
                     # RACE H2H AND DNF
                     if re.search(r'(Finished|\+)', d_status) and re.search(r'(Finished|\+)', t_status):

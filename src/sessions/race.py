@@ -306,7 +306,7 @@ def race_pace_top_10(session, threshold=1.07):
         f_mean_time = format_timedelta(mean_time)
         ax.text(i, min(driver_laps['LapTime(s)']) - 1.5,
                 f"{f_mean_time}",
-                font='Fira Sans', fontsize=9, ha='center')
+                font='Fira Sans', fontsize=10, ha='center')
         if fastest_time is None:
             time_diff = ''
             fastest_time = mean_time
@@ -783,7 +783,7 @@ def race_diff_v2(year, round=None, save=False):
 def percentage_race_ahead(start=2001, end=2024):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['bahrain']
+    circuits = ['albert_park']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:
@@ -820,7 +820,7 @@ def percentage_race_ahead(start=2001, end=2024):
 
     final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
     for d, w in final_dict.items():
-        print(f'{d}: {w}% {h2h_dict[d]}')
+        print(f'{d}: {w:.2f}% {h2h_dict[d]}')
 
 
 def delta_reference_team(year, round=None):

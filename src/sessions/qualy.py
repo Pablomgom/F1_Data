@@ -104,7 +104,7 @@ def qualy_results(session, optimal=False):
     plt.show()
 
 
-def qualy_diff(year, round):
+def qualy_diff(year, round=None):
     """
        Plot the qualy time diff between 2 teams
 
@@ -199,7 +199,7 @@ def qualy_diff(year, round):
     plt.show()
 
 
-def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
+def qualy_margin(circuit, start=1950, end=2050, order='Descending'):
     """
        Prints the qualy margins in a given circuits
 
@@ -259,7 +259,7 @@ def qualy_margin(circuit, start=1950, end=2050, order='Ascending'):
 
 def percentage_qualy_ahead(start=2001, end=2024):
     ergast = My_Ergast()
-    circuits = ['bahrain']
+    circuits = ['albert_park']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:
@@ -295,7 +295,7 @@ def percentage_qualy_ahead(start=2001, end=2024):
 
     final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
     for d, w in final_dict.items():
-        print(f'{d}: {w}% {h2h_dict[d]}')
+        print(f'{d}: {w:.2f}% {h2h_dict[d]}')
 
 
 def qualy_diff_teammates(d1, start=1900, end=3000):

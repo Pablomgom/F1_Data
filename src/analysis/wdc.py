@@ -281,7 +281,7 @@ def proccess_season_data(data, drivers, driver_points, system):
 
     def print_wdc(driver_points):
         for pos, (d, p) in enumerate(sorted(driver_points.items(), key=lambda item: item[1], reverse=True), start=1):
-            print(f'{pos}: {d} - {p}')
+            print(f'{pos} - {d} - {p}')
         print(sum(driver_points.values()))
 
     driver_points = {driver: 0 for driver in drivers}

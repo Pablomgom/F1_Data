@@ -54,6 +54,39 @@ driver_colors_2023 = {
     'ALB': '#005aff',
     'SAR': '#012564'}
 
+driver_colors_2024 = {
+    'BOT': '#00e701',
+    'ZHO': '#00e701',
+    'DEV': '#1e3d61',
+    'TSU': '#8F00FF',
+    'RIC': '#8F00FF',
+    'LAW': '#2b4562',
+    'GAS': '#FF69B4',
+    'OCO': '#FF69B4',
+    'ALO': '#006f62',
+    'STR': '#006f62',
+    'DRU': '#006f62',
+    'LEC': '#dc0000',
+    'SAI': '#dc0000',
+    'BEA': '#dc0000',
+    'SHW': '#9c0000',
+    'MAG': '#ffffff',
+    'HUL': '#ffffff',
+    'PIA': '#ff8700',
+    'NOR': '#ff8700',
+    'HAM': '#27F4D2',
+    'RUS': '#27F4D2',
+    'VER': '#0600ef',
+    'PER': '#0600ef',
+    'ALB': '#005aff',
+    'SAR': '#005aff'}
+
+
+driver_colors = {
+    2023: driver_colors_2023,
+    2024: driver_colors_2024
+}
+
 driver_colors_historical = {
     'michael schumacher': '#dc0000',
     'sebastian vettel': '#239eda',

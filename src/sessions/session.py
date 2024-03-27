@@ -5,7 +5,7 @@ import fastf1
 import numpy as np
 import pandas as pd
 from adjustText import adjust_text
-from fastf1 import plotting
+from fastf1 import plotting, set_log_level
 from matplotlib import pyplot as plt, ticker, cm
 from matplotlib.collections import LineCollection
 from matplotlib.colors import TwoSlopeNorm
@@ -13,8 +13,7 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 import matplotlib.patheffects as path_effects
-
-from src.exceptions import qualy_by_year
+from scipy import stats
 from src.exceptions.custom_exceptions import QualyException
 from src.utils import utils
 from src.plots.plots import round_bars, annotate_bars
@@ -124,7 +123,7 @@ def long_runs_scatter(session, threshold=1.07):
 
     plotting.setup_mpl(misc_mpl_mods=False)
     drivers = list(session.laps['Driver'].unique())
-    driver_laps = pd.DataFrame(columns=['Driver', 'Laps', 'Compound', 'Average'])
+    driver_laps = pd.DataFrame(columns=['Driver', 'Laps', 'Compound', 'Average', 'Top speeds', 'RPMs'])
     for d in drivers:
         d_laps = session.laps.pick_driver(d)
         max_stint = d_laps[d_laps['Compound'].isin(['HARD', 'MEDIUM', 'SOFT'])]['Stint'].value_counts()
@@ -147,14 +146,26 @@ def long_runs_scatter(session, threshold=1.07):
             print(f'{d} - STINT: {final_stint_number} - LAPS: {number_laps}')
             driver_laps_filter = d_laps[d_laps['Stint'] == final_stint_number].pick_quicklaps(threshold).pick_wo_box()
             driver_laps_filter = driver_laps_filter.reset_index()
+            top_speeds = []
+            total_rpms = []
+            for l in driver_laps_filter.iterlaps():
+                current_lap = l[1].telemetry
+                speed = max(current_lap['Speed'])
+                top_speeds.append(speed)
+                rpms = current_lap[current_lap['nGear'] == 7]['RPM'].values
+                total_rpms.extend(rpms)
+
             df_append = pd.DataFrame({
                 'Driver': f'{d} ({len(driver_laps_filter)})',
                 'Laps': [driver_laps_filter['LapTime'].to_list()],
                 'Compound': [driver_laps_filter['Compound'].iloc[0]],
-                'Average': driver_laps_filter['LapTime'].mean()
+                'Average': driver_laps_filter['LapTime'].mean(),
+                'Top speeds': np.median(top_speeds),
+                'RPMs': stats.trim_mean(total_rpms, 0.10)
             })
             driver_laps = pd.concat([driver_laps, df_append], ignore_index=True)
-        except:
+        except Exception as e:
+            print(e)
             print(f'NO DATA FOR {d}')
 
     driver_laps = driver_laps.sort_values(by=['Compound', 'Average'], ascending=[True, False])
@@ -188,6 +199,15 @@ def long_runs_scatter(session, threshold=1.07):
             prev_time = laps
         print(f'{driver.split(" (")[0]}: {format_timedelta(laps)} {time_diff}')
         prev_tyre = tyre
+    print("""
+        The higher the RPMs -> the higher the engine mode.
+        These are the average RPMs while being in 7th gear.
+    """)
+    for idx, row in driver_laps.iterrows():
+        driver = row['Driver']
+        speeds = row['Top speeds']
+
+        print(f'{driver.split(" (")[0]}: {speeds} km/h - {row["RPMs"]:.2f}')
 
     def format_timedelta_to_mins(seconds, pos):
         mins = int(seconds // 60)
@@ -267,13 +287,17 @@ def session_diff_last_year(year, round_id, prev_year, session='Q'):
             slower = True
         print(f'{t[0]}: {"+" if slower else ""}{t[1]:.3f}s')
 
+    combined = zip(teams_to_plot, colors, delta_times)
+    sorted_combined = sorted(combined, key=lambda x: x[2])
+    unzipped = zip(*sorted_combined)
+    teams_to_plot, colors, delta_times = [list(t) for t in unzipped]
 
     fig, ax = plt.subplots(figsize=(8, 8))
     bars = ax.bar(teams_to_plot, delta_times, color=colors)
 
     round_bars(bars, ax, colors, y_offset_rounded=0, linewidth=3.75)
     annotate_bars(bars, ax, 0.01, 14, '+{height}s',
-                  ceil_values=False, round=3, y_negative_offset=-0.05)
+                  ceil_values=False, round=3, y_negative_offset=-0.075)
 
     plt.axhline(0, color='white', linewidth=4)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
@@ -742,8 +766,6 @@ def get_fastest_data(session, fastest_lap=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
-    if 'GAS' in drivers:
-        drivers.remove('GAS')
     year = session.date.year
     circuit_speed = {}
     colors_dict = {}
@@ -882,89 +904,68 @@ def air_track_temps():
     plt.show()
 
 
-def drs_efficiency(year):
-    schedule = fastf1.get_event_schedule(year, include_testing=False)
-    drs_dict = {}
-    for i in range(len(schedule)):
-        from src.utils.utils import call_function_from_module
-        try:
-            call_function_from_module(qualy_by_year, f"year_{year}", i + 1)
-            if i == 3:
-                raise QualyException
-            current_session_delta = {}
-            session = fastf1.get_session(year, i + 1, 'Q')
-            session.load()
-            teams = session.laps['Team'].unique()
-            teams = [t for t in teams if not pd.isna(t)]
-            for t in teams:
-                team_lap = session.laps.pick_team(t).pick_fastest()
-                drs_data = team_lap.telemetry['DRS'].replace(14, 12).replace(10, 12).diff().fillna(0)
-                open_close = drs_data[drs_data != 0]
-                open_close = remove_close_rows(open_close)
-                if len(open_close) == 0:
-                    raise QualyException
-                indexes = list(open_close.index.values)
-                if open_close[0] == -4:
-                    first_index = open_close.index[0]
-                    indexes.remove(first_index)
-                    indexes.append(first_index)
-                for d in range(int(len(indexes) / 2)):
-                    speed_open = team_lap.telemetry['Speed'][indexes[0 + d * 2]]
-                    try:
-                        speed_close = max(team_lap.telemetry['Speed'][indexes[0 + d * 2]:indexes[1 + d * 2]])
-                    except ValueError:
-                        max_index = max(team_lap.telemetry['Speed'].index)
-                        before_finish_line = team_lap.telemetry['Speed'][indexes[0 + d * 2]:max_index]
-                        after_finish_line = team_lap.telemetry['Speed'][0:indexes[1 + d * 2] + 1]
-                        speed_close = max(pd.concat([before_finish_line, after_finish_line]))
-                    if t not in current_session_delta:
-                        current_session_delta[t] = [[speed_close, speed_open]]
-                    else:
-                        current_session_delta[t].append([speed_close, speed_open])
+def drs_efficiency(session):
 
-            if len(current_session_delta) == 10:
-                result = {}
-                for key, arrays in current_session_delta.items():
-                    min_diff = float('inf')
-                    min_array = None
-                    for array in arrays:
-                        diff = abs(array[0] - array[1])
-                        if diff < min_diff:
-                            min_diff = diff
-                            min_array = array
-                    result[key] = [((min_array[0] - min_array[1]) / min_array[1]) * 100]
+    teams = set(session.laps['Team'])
+    drs_data = pd.DataFrame(columns=['Team', 'DRS_Zone', 'Efficiency'])
+    year = session.event.year
+    for t in teams:
+        fastest_lap = session.laps.pick_team(t).pick_fastest()
+        telemetry = fastest_lap.telemetry.reset_index(drop=True)
+        telemetry['DRS'] = telemetry['DRS'].replace(14, 12)
+        telemetry['DRS'] = telemetry['DRS'].replace(10, 8)
+        drs_zones = telemetry['DRS'].diff().fillna(0)
+        sequences_indices = []
+        current_sequence_indices = []
+        in_sequence = False
 
-                for t in result.keys():
-                    print(f'{t} - {len(result[t])}')
-                    if t not in drs_dict:
-                        drs_dict[t] = result[t]
-                    else:
-                        drs_dict[t].extend(result[t])
-            else:
-                print(current_session_delta)
-        except QualyException:
-            print(f'No data for {year}-{i + 1}')
-    df = pd.DataFrame(drs_dict).melt(var_name='Team', value_name='Delta').groupby('Team')['Delta'].mean().reset_index()
-    df = df.sort_values(by='Delta', ascending=False)
-    df['Team'].replace({'Haas F1 Team': 'Haas', 'Red Bull Racing': 'Red Bull'}, inplace=True)
+        for index, value in drs_zones.items():
+            if value == 4:
+                if in_sequence:
+                    sequences_indices.append(current_sequence_indices)
+                in_sequence = True
+                current_sequence_indices = [index]
+
+            elif value == -4 and in_sequence:
+                current_sequence_indices.append(index)
+                sequences_indices.append(current_sequence_indices)
+                in_sequence = False
+
+            elif in_sequence:
+                current_sequence_indices.append(index)
+        count = 1
+        for d_zone in sequences_indices:
+            first_point = d_zone[0] - 1
+            start_speed = telemetry['Speed'][first_point]
+            top_speed = max(telemetry['Speed'][d_zone])
+            percentage_difference = ((top_speed - start_speed) / start_speed) * 100
+            current_drs_zone = pd.DataFrame([[t, count, percentage_difference]], columns=drs_data.columns)
+            drs_data = pd.concat([drs_data, current_drs_zone], ignore_index=True)
+
+    print_data = drs_data.groupby('Team')['Efficiency'].mean().reset_index().sort_values('Efficiency', ascending=False).reset_index(drop=True)
+
+    colors = []
+    for index, row in print_data.iterrows():
+        print(f'{index + 1} - {row[0]}: {row[1]:.2f}%')
+        colors.append(team_colors.get(year)[row[0]])
+
     fix, ax = plt.subplots(figsize=(9, 8))
-    bars = plt.bar(df['Team'], df['Delta'])
-    colors = [team_colors_2023.get(i) for i in df['Team']]
+    bars = plt.bar(print_data['Team'], print_data['Efficiency'])
     round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.1, linewidth=4)
     annotate_bars(bars, ax, 0.1, 14, text_annotate='default', ceil_values=False, round=2,
                   y_negative_offset=0.04, annotate_zero=False, negative_offset=0, add_character='%')
 
-    plt.title(f'DRS EFFICIENCY IN {year} SEASON', font='Fira Sans', fontsize=24)
+    plt.title(f'DRS EFFICIENCY IN {session.event.year} {str(session.event.Country).upper()} '
+                 f'{str(session.name).upper()} SEASON', font='Fira Sans', fontsize=20)
     plt.xlabel('Team', font='Fira Sans', fontsize=20)
     plt.ylabel('Drs efficiency (%)', font='Fira Sans', fontsize=20)
-    plt.xticks(rotation=35, font='Fira Sans', fontsize=18)
+    plt.xticks(rotation=90, font='Fira Sans', fontsize=18)
     plt.yticks(font='Fira Sans', fontsize=16)
-    plt.ylim(bottom=min(df['Delta']) - 1, top=max(df['Delta']) + 1)
+    plt.ylim(bottom=min(print_data['Efficiency']) - 1, top=max(print_data['Efficiency']) + 1)
     color_index = 0
     for label in ax.get_xticklabels():
         label.set_color('white')
         label.set_fontsize(16)
-        label.set_rotation(35)
         for_color = colors[color_index]
         if for_color == '#ffffff':
             for_color = '#FF7C7C'
@@ -975,6 +976,10 @@ def drs_efficiency(year):
     plt.savefig(f'../PNGs/DRS EFFICIENCY {year}.png', dpi=450)
     plt.show()
 
+    print("""
+    This is done by taking the speed just before open the DRS, and the top speed, reached during each DRS zone. 
+    Lap corresponds to the fastest lap of each team.
+    """)
 
 def get_fastest_sectors(session, average=False):
     """
@@ -987,8 +992,6 @@ def get_fastest_sectors(session, average=False):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
-    if 'GAS' in drivers:
-        drivers.remove('GAS')
     year = session.date.year
     sector_times = pd.DataFrame(columns=['Sector1Time', 'Sector2Time', 'Sector3Time', 'Color'])
     for driver in drivers:
@@ -1041,31 +1044,20 @@ def get_fastest_sectors(session, average=False):
 
 def all_laps_driver_session(session, driver):
     laps = session.laps.pick_driver(driver)
-    prev_stint = None
-    prev_lap_time = None
     for l in laps.iterlaps():
         current_lap = l[1]
         tyre_life = current_lap['TyreLife']
-        stint = current_lap['Stint']
         in_lap = ' --- IN' if not pd.isna(current_lap['PitInTime']) else ''
         tyre = current_lap['Compound']
         if not pd.isna(current_lap['LapTime']):
             lap_time = current_lap['LapTime']
             lap_time_f = f"{lap_time.seconds // 60:02d}:{lap_time.seconds % 60:02d}.{int(lap_time.microseconds / 1000):03d}"
-            if prev_lap_time is None or prev_stint != stint:
-                time_diff = ''
-            else:
-                time_diff = format_timedelta(abs(prev_lap_time - lap_time))
-                sign = '+' if (prev_lap_time - lap_time).total_seconds() < 0 else '-'
-                time_diff = f'({sign}{time_diff})'
             try:
-                print(f'{tyre[0]} - ({int(tyre_life)}): {lap_time_f}')
+                print(f'{tyre[0]} - ({int(tyre_life)}): {lap_time_f} - {max(current_lap.get_telemetry()["Speed"])}')
             except:
                 print('NO VALID LAP')
             if in_lap != '':
                 print('----------- BOX -----------')
-            prev_lap_time = lap_time
-            prev_stint = stint
 
 
 def race_simulation_test_day(session):

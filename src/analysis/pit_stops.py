@@ -136,9 +136,8 @@ def dhl_pitstops(year, groupBy='Driver', round=None, points=False):
 
 def fastest_pit_stop_by_team(year):
 
-    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep='|')
+    pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep=',')
     pitstops = pitstops[pitstops['Year'] == year]
-    pitstops = pitstops[pitstops['Time'] < 4]
     fastest_pitstops = pitstops.groupby(['Team', 'Race_Name', 'Race_ID'])['Time'].min().reset_index()
     races = pitstops.sort_values(by='Race_ID')['Race_Name'].unique()
     teams = fastest_pitstops['Team'].unique()
@@ -156,9 +155,9 @@ def fastest_pit_stop_by_team(year):
         team_races = set(team_pit_stops['Race_Name'])
         team_races = [item for item in races if item in team_races]
         plt.plot(team_races, team_pit_stops['Time'],
-                     label=t, marker='o', color=team_colors_2023.get(t), markersize=10, linewidth=3)
+                     label=t, marker='o', color=team_colors_2023.get(t), markersize=10, linewidth=4)
 
-    plt.title('FASTEST PIT STOP PER TEAM/RACE (ONLY LESS THAN 4s STOPS)',
+    plt.title('FASTEST PIT STOP PER TEAM/RACE',
               font='Fira Sans', fontsize=22)
     plt.ylabel('Time (s)', font='Fira Sans', fontsize=16)
     plt.xticks(rotation=90, font='Fira Sans', fontsize=16)

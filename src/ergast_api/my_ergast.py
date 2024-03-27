@@ -156,7 +156,7 @@ class My_Ergast:
 
         self.qualifying = load_csv('qualifying', False)
         raceId = self.races[(self.races['year'] == year) & (self.races['round'] == round)]['raceId'].values[0]
-        team_data = My_Ergast().get_race_results([year], round).content[0]
+        team_data = My_Ergast().get_race_results([year], 1).content[0]
         nltk.download('maxent_ne_chunker')
         nltk.download('words')
         nltk.download('punkt')
@@ -239,12 +239,13 @@ class My_Ergast:
                 new_time = fastest_lap + timedelta(seconds=additional_seconds)
                 columns[4-offset] = new_time.strftime('%M:%S.%f')[:-3]
             processed_line = [pos_counter, 0 if number == 0 else columns[1], full_name, constructor_name,
-                              columns[4-offset].replace(',', '.'), columns[5-offset].replace(',', '.')]
+                              columns[4-offset].replace(',', '.'), columns[5-offset].replace(',', '.')
+                              , columns[6-offset].replace(',', '.')]
             processed_data.append(processed_line)
             pos_counter += 1
 
         data_to_append = pd.DataFrame(processed_data, columns=["position", "number", "fullName",
-                                                               "constructorName", "q1", "q2"])
+                                                               "constructorName", "q1", "q2", "q3"])
 
         og_len = len(data_to_append)
         qualyId = self.qualifying['qualifyId'].max() + 1
