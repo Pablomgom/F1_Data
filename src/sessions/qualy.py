@@ -154,7 +154,7 @@ def qualy_diff(year, round=None):
                     qualy_delta_diffs[t] = fastest_laps[fastest_laps['Team'] == t]['DeltaPercent'].loc[0]
 
             for t, v in qualy_delta_diffs.items():
-                print(f'{t}: {v}')
+                print(f'{t},{v}')
                 if t not in delta_diff:
                     delta_diff[t] = [v]
                 else:

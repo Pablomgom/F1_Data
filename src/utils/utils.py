@@ -328,6 +328,7 @@ def create_rounded_barh(ax, data, sector_time, color_col, height=0.8, mode=0):
     else:
         ax.set_xlim(0, max(times[sector_time]) + 0.5)
 
+
 def create_rounded_barh_custom(ax, x_data, y_data, colors, text_to_annotate, height=0.8):
     ax.set_ylim(min(y_data) - 1, max(y_data) + 1)
     ax.set_xlim(min(x_data) - 10, max(x_data) + 50)

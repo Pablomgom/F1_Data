@@ -15,7 +15,7 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error, \
-    median_absolute_error
+    median_absolute_error, euclidean_distances
 
 from src.plots.plots import round_bars, annotate_bars
 from src.utils.utils import get_quartiles, find_nearest_non_repeating
@@ -104,7 +104,6 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None, 
 
         circuits.append(session.event.Location)
 
-
     if save_data:
         data_to_save = pd.DataFrame(data)
         data_to_save.to_csv('../resources/csv/Circuit_data_intermediate.csv', index=False)
@@ -155,7 +154,6 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None, 
 
 
 def predict_race_pace(year=2024, track='Bahrain', session='R'):
-
     track_features = ['Corner Density', 'Top Speed', 'Full Gas', 'Lifting', 'Q1 Corner Speed',
                       'Median Corner Speed', 'Q3 Corner Speed', 'Average Corner Speed', 'Corner Speed Variance']
 
@@ -170,7 +168,6 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     else:
         race_pace_delta = pd.read_csv('../resources/csv/Qualy_pace_delta.csv')
         race_pace_delta = race_pace_delta[~pd.isna(race_pace_delta['Delta'])]
-
 
     circuit_data = pd.read_csv('../resources/csv/Circuit_data.csv')
     for t in track_features:
@@ -248,39 +245,82 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
                 ADJUSTED R2: {adjusted_r2}
         """)
 
-
-    coefficients = best_lasso.coef_
-    for target_index in range(coefficients.shape[0]):
-        target_coefficients = coefficients[target_index, :]
-        coefficients_series = pd.Series(target_coefficients,
-                                        index=[c for c in predict_data.columns if c not in cols_to_predict and c not in ['Track', 'Session']])
-        plt.figure(figsize=(14, 12))
-        coefficients_series.plot(kind='bar')
-        plt.title(f'Feature Importance for Target {target_index + 1}')
-        plt.xlabel('Feature')
-        plt.ylabel('Coefficient Magnitude')
-        plt.tight_layout()
-        plt.show()
+    # coefficients = best_lasso.coef_
+    # for target_index in range(coefficients.shape[0]):
+    #     target_coefficients = coefficients[target_index, :]
+    #     coefficients_series = pd.Series(target_coefficients,
+    #                                     index=[c for c in predict_data.columns if c not in cols_to_predict and c not in ['Track', 'Session']])
+    #     plt.figure(figsize=(14, 12))
+    #     coefficients_series.plot(kind='bar')
+    #     plt.title(f'Feature Importance for Target {target_index + 1}')
+    #     plt.xlabel('Feature')
+    #     plt.ylabel('Coefficient Magnitude')
+    #     plt.tight_layout()
+    #     plt.show()
 
     prev_year_data = circuit_data[(circuit_data['Year'] == year - 1) & (circuit_data['Track'] == track)]
     if len(prev_year_data) == 0:
         raise Exception('No data for that year/track combination')
 
-    next_race_data = {
-        'Year': year,
-        'ID': predict_data['ID'].max() + 1
-    }
-    for feature in track_features:
-        next_race_data[feature] = prev_year_data[feature].iloc[0]
+    def find_similar_tracks(target_features, historical_data, track_features, top_n=5, current_year=year):
+        """
+        Identifies the top_n most similar tracks based on track features, adjusted for recency.
+        """
+        current_year_data = historical_data[historical_data['Year'] == year]
+        distances = euclidean_distances(current_year_data[track_features], target_features)
+        recency_factor = 1 / (current_year - current_year_data['Year'] + 1) ** 4
+        adjusted_distances = distances.flatten() * recency_factor
+        current_year_data['adjusted_similarity_score'] = adjusted_distances
+        similar_tracks = current_year_data.sort_values(by='adjusted_similarity_score')
+        return similar_tracks.head(top_n)
 
-    for t in teams:
-        for c in predict_data.columns:
-            if ('Recent' in c or '*' in c) and t in c:
-                next_race_data[c] = predict_data[c].values[-1]
+    def calculate_additional_features(similar_tracks, teams, track_features, predict_data, current_year=year):
+        """
+        Calculate additional features for each team based on recent similar tracks.
+        """
+        calculated_features = {}
+        circuit_recent_data = pd.merge(predict_data, similar_tracks, 'inner', ['Year', 'Track'])
+        max_score = circuit_recent_data['adjusted_similarity_score'].max()
+        circuit_recent_data['weight'] = 1 / (circuit_recent_data['adjusted_similarity_score'] + max_score)
+        for team in teams:
+            for feature in track_features + ['Recent_Avg_Delta']:
+                if feature == 'Recent_Avg_Delta':
+                    feature_name = f'Recent_Avg_Delta_{team}'
+                else:
+                    feature_name = f"{feature}*Delta_{team}"
+                weighted_sum = (circuit_recent_data[feature_name] * circuit_recent_data['weight']).sum()
+                total_weight = circuit_recent_data['weight'].sum()
+                calculated_value = weighted_sum / total_weight
+                calculated_features[feature_name] = calculated_value
+        return calculated_features
 
-    next_race_df = pd.DataFrame([next_race_data])[X.columns]
-    next_race_data_scaled = scaler.transform(next_race_df)
-    next_race_prediction = used_model.predict(next_race_data_scaled)
+    def scale_features(prediction_data, scaler):
+        return scaler.transform(prediction_data)
+
+    def make_prediction(model, prediction_data):
+        y_pred = model.predict(prediction_data)
+        return y_pred
+
+    def prepare_prediction_data(similar_tracks, additional_features, model_features, track_features):
+        """
+        Prepare the complete set of prediction data.
+        """
+        basic_aggregated_data = similar_tracks[track_features].astype(float).mean()
+        prediction_data = {**basic_aggregated_data.to_dict(), **additional_features}
+        prediction_data_ordered = {feature: prediction_data.get(feature, 0) for feature in model_features}
+        return pd.DataFrame([prediction_data_ordered])
+
+    upcoming_race_features = prev_year_data[track_features]
+    similar_tracks = find_similar_tracks(upcoming_race_features, circuit_data, track_features)
+    additional_features = calculate_additional_features(similar_tracks, teams, track_features, predict_data)
+    prediction_data = prepare_prediction_data(similar_tracks, additional_features,
+                                              [c for c in predict_data.columns if c not in cols_to_predict
+                                               and c not in ['Track', 'Session']], track_features)
+    prediction_data['Year'] = year
+    prediction_data['ID'] = predict_data['ID'].max() + 1
+    prediction_data_scaled = scale_features(prediction_data, scaler)
+    next_race_prediction = make_prediction(used_model, prediction_data_scaled)
+
     min_value = min(next_race_prediction[0])
     adjusted_predictions = [value - min_value for value in next_race_prediction[0]]
     next_race_prediction = pd.DataFrame([adjusted_predictions], columns=teams)
@@ -298,7 +338,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     for bar in bars:
         width = bar.get_width()
         label_x_pos = width + 0.02
-        diff_in_seconds = round(((width/100) * delta_time).total_seconds(), 3)
+        diff_in_seconds = round(((width / 100) * delta_time).total_seconds(), 3)
         ax.text(label_x_pos, bar.get_y() + bar.get_height() / 2, f'{width:.2f}% (+{diff_in_seconds:.3f}s)',
                 va='center', ha='left', font='Fira Sans', fontsize=16)
     if session == 'R':
@@ -313,9 +353,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     plt.show()
 
 
-
 def performance_by_turns(session):
-
     teams = set(session.laps['Team'])
     turns = session.get_circuit_info().corners[['Number', 'Distance']]
     circuit_data = pd.DataFrame(session.laps.pick_fastest().get_telemetry()[['X', 'Y', 'Throttle', 'Distance']])
@@ -370,7 +408,8 @@ def performance_by_turns(session):
 
     for segment in filtered_segments:
         if len(segment) > 0:
-            first_last_distances = (circuit_data['Distance'].iloc[segment[0]], circuit_data['Distance'].iloc[segment[-1]])
+            first_last_distances = (
+            circuit_data['Distance'].iloc[segment[0]], circuit_data['Distance'].iloc[segment[-1]])
             segment_distances.append(first_last_distances)
 
     turns_speeed = pd.DataFrame(columns=['Turn', 'Team', 'Driver', 'Speed'])
@@ -441,7 +480,7 @@ def performance_by_turns(session):
     turns_speeed_filtered = turns_speeed_filtered[turns_speeed_filtered['_merge'] == 'left_only']
     print(turns_speeed_filtered['Turn'].drop_duplicates())
     turns_speeed_filtered = (turns_speeed_filtered.groupby(['Team', 'Category'])['Speed'].median().reset_index()
-                            .sort_values(['Category', 'Speed'], ascending=[True, False]))
+                             .sort_values(['Category', 'Speed'], ascending=[True, False]))
     print(turns_speeed_filtered)
 
     unique_categories = turns_speeed_filtered['Category'].unique()

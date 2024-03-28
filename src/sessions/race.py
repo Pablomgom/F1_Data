@@ -1,6 +1,10 @@
 import statistics
 
+import openpyxl
 from matplotlib.ticker import FuncFormatter
+from openpyxl.styles import PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.table import Table, TableStyleInfo
 from tabulate import tabulate
 
 from src.ergast_api.my_ergast import My_Ergast
@@ -537,28 +541,34 @@ def race_distance(session, top=10):
 
 def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
+    fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
     schedule = [1] if round_id is not None else schedule
     total_laps_d1 = []
     total_laps_d2 = []
+    all_comparisons = {}
     for i in range(len(schedule)):
         session = fastf1.get_session(year, i + 1 if round_id is None else round_id, 'R')
         session.load()
-        print_output = ''
+        fuel_data_session = i + 1 if round_id is None else round_id
+        race_fuel_factor = fuel_factors[(fuel_factors['Round'] == fuel_data_session) &
+                                        (fuel_factors['Year'] == year)]['FuelFactor'][0]
+        if pd.isna(race_fuel_factor):
+            race_fuel_factor = 0.07159325297758017
+        print(f'FUEL FACTOR: {race_fuel_factor}')
         loops = 1
         if all_teams:
             teams = session.laps['Team'].unique()
             teams = [t for t in teams if not pd.isna(t)]
             loops = len(teams)
-        for i in range(loops):
+        for n_loops in range(loops):
             try:
                 if all_teams:
-                    team = teams[i]
+                    team = teams[n_loops]
                     drivers = session.laps[session.laps['Team'] == team]['Driver'].unique()
                     if len(drivers) != 2:
                         raise RaceException
                     d1 = drivers[0]
                     d2 = drivers[1]
-                    print(f'{team.upper()} - {d1} vs. {d2}')
                 team_d1 = session.laps.pick_driver(d1)['Team'].unique()[0]
                 team_d2 = session.laps.pick_driver(d2)['Team'].unique()[0]
                 from src.utils.utils import call_function_from_module
@@ -569,38 +579,110 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
                                                                      f"{team_d2.replace(' ', '_')}_{year}",
                                                                      i + 1 if round_id is None else round_id, session.total_laps)
                 min_laps = max(min_laps_d1, min_laps_d2, 1)
-                max_laps = min(max_laps_d1, max_laps_d2)
+                max_laps = min(max_laps_d1, max_laps_d2, len(session.laps.pick_driver(d1)), len(session.laps.pick_driver(d2)))
                 d1_laps = session.laps.pick_driver(d1)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
                 d2_laps = session.laps.pick_driver(d2)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
                 d1_compare = pd.DataFrame(d1_laps[['Driver', 'LapNumber', 'LapTime', 'Compound', 'TyreLife']])
                 d2_compare = pd.DataFrame(d2_laps[['LapNumber', 'LapTime', 'Compound', 'TyreLife', 'Driver']])
-                d1_compare.columns = ['Driver_d1','LapNumber', 'LapTime_d1', 'Compound_d1', 'TyreLife_d1']
-                d2_compare.columns = ['LapNumber', 'LapTime_d2', 'Compound_d2', 'TyreLife_d2', 'Driver_d2']
-                comparable_laps = pd.merge(d1_compare, d2_compare, how='inner', on='LapNumber')
-                comparable_laps = comparable_laps[comparable_laps['Compound_d1'] == comparable_laps['Compound_d2']]
-                comparable_laps = comparable_laps[abs(comparable_laps['TyreLife_d1'] - comparable_laps['TyreLife_d2']) <= 3]
-                print(tabulate(comparable_laps, headers='keys', tablefmt='fancy_grid'))
-                total_laps_d1.extend(comparable_laps['LapTime_d1'])
-                total_laps_d2.extend(comparable_laps['LapTime_d2'])
+                d1_compare['EvoCorrected'] = (d1_compare['LapTime'].dt.total_seconds() - race_fuel_factor *
+                                               (session.total_laps - d1_compare['LapNumber']))
+                d2_compare['EvoCorrected'] = (d2_compare['LapTime'].dt.total_seconds() - race_fuel_factor *
+                                               (session.total_laps - d2_compare['LapNumber']))
+                d1_compare.columns = ['Driver 1', 'LapNumber D1', 'LapTime D1', 'Compound', 'TyreLife', 'EvoCorrected D1']
+                d2_compare.columns = ['LapNumber D2', 'LapTime D2', 'Compound', 'TyreLife', 'Driver 2', 'EvoCorrected D2']
+                comparable_laps = pd.merge(d1_compare, d2_compare, how='inner', on=['Compound', 'TyreLife'])
+                total_laps_d1.extend(pd.to_timedelta(comparable_laps['EvoCorrected D1'], unit='s'))
+                total_laps_d2.extend(pd.to_timedelta(comparable_laps['EvoCorrected D2'], unit='s'))
                 if len(comparable_laps) > 0:
-                    mean_d1 = stats.trim_mean(total_laps_d1, 0.05)
-                    mean_d2 = stats.trim_mean(total_laps_d2, 0.05)
-                    mean_diff = (mean_d1 - mean_d2).total_seconds()
-                    if mean_diff < 0:
-                        print_output += (f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} '
-                                         f' ({mean_diff:.3f}s)\n'
-                                         f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")}\n')
-                    else:
-                        print_output += (f'{d2}: {format_timedelta(mean_d2).replace("0:0", "")} '
-                                         f' (-{mean_diff:.3f}s)\n'
-                                         f'{d1}: {format_timedelta(mean_d1).replace("0:0", "")} \n')
-                    if all_teams:
-                        total_laps_d1 = []
-                        total_laps_d2 = []
-                print(print_output)
+
+                    sorted_laps_d1 = comparable_laps.sort_values(by='EvoCorrected D1')['EvoCorrected D1'].drop_duplicates()
+                    sorted_laps_d2 = comparable_laps.sort_values(by='EvoCorrected D2')['EvoCorrected D2'].drop_duplicates()
+                    trim_percent = 0.05
+                    num_rows = len(comparable_laps)
+                    rows_to_trim = int(trim_percent * num_rows)
+                    start_trimmed_laps_d1 = sorted_laps_d1[:rows_to_trim]
+                    end_trimmed_laps_d1 = sorted_laps_d1[-rows_to_trim:] if rows_to_trim != 0 else sorted_laps_d1[0:0]
+                    trimmed_laps_d1 = pd.concat([start_trimmed_laps_d1, end_trimmed_laps_d1])
+
+                    start_trimmed_laps_d2 = sorted_laps_d2[:rows_to_trim]
+                    end_trimmed_laps_d2 = sorted_laps_d2[-rows_to_trim:] if rows_to_trim != 0 else sorted_laps_d2[0:0]
+                    trimmed_laps_d2 = pd.concat([start_trimmed_laps_d2, end_trimmed_laps_d2])
+
+                    excluded_d1 = comparable_laps[comparable_laps['EvoCorrected D1'].isin(trimmed_laps_d1)]
+                    excluded_d2 = comparable_laps[comparable_laps['EvoCorrected D2'].isin(trimmed_laps_d2)]
+
+                    comparable_laps['Exclude'] = 'No'
+                    comparable_laps.loc[comparable_laps.index.isin(excluded_d1.index) | comparable_laps.index.isin(
+                        excluded_d2.index), 'Exclude'] = 'Yes'
+
+                    all_comparisons[(f'{team_d1 if round_id is not None else ""} '
+                                     f' {" - " + session.event.EventName if not all_teams else ""}')] = comparable_laps
+                else:
+                    print(f'NO DATA FOR {team_d1}')
             except (RaceException, IndexError):
                 print(f'{session}')
 
+    path_to_save = f'../resources/race_pace/{year}/'
+    file_name = f"Round - {round_id}" if all_teams else f"{d1} VS. {d2}"
+    full_path = f'{path_to_save}/{file_name}.xlsx'
+    with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
+        for sheet_name, df, in all_comparisons.items():
+            df = df[['Driver 1', 'LapNumber D1', 'EvoCorrected D1', 'Compound', 'TyreLife',
+                     'EvoCorrected D2', 'LapNumber D2', 'Driver 2', 'Exclude']]
+            d1 = df['Driver 1'].loc[0]
+            d2 = df['Driver 2'].loc[0]
+            mean_values = df[df['Exclude'] != 'Yes'][['EvoCorrected D1', 'EvoCorrected D2']].mean()
+            mean_row = pd.Series([None] * df.shape[1], index=df.columns)
+            mean_row[['EvoCorrected D1', 'EvoCorrected D2']] = mean_values
+            df = df._append(mean_row, ignore_index=True).sort_values(['LapNumber D1', 'LapNumber D2'], ascending=[True, True])
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+            worksheet = writer.sheets[sheet_name]
+
+            red_fill = PatternFill(start_color='FFFF0000', end_color='FFFF0000', fill_type='solid')
+            orange_fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
+            yellow_fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
+            white_fill = PatternFill(start_color='FFFFFF', end_color='FFFFFF', fill_type='solid')
+            compound_color = {'MEDIUM': yellow_fill, 'HARD': white_fill, 'SOFT': red_fill}
+            for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+                for cell in row:
+                    if row[-1].value == 'Yes':
+                        cell.fill = orange_fill
+                    elif row[3].value != '':
+                        cell.fill = compound_color[row[3].value]
+
+            time_diff = mean_values[0] - mean_values[1]
+            if time_diff < 0:
+                message = f'{d1} FASTER BY'
+            else:
+                message = f'{d2} FASTER BY'
+
+            print(f'{message} {abs(time_diff):.3f}s')
+
+            worksheet.cell(row=1, column=worksheet.max_column + 2, value=f"{d1} Average Time")
+            worksheet.cell(row=2, column=worksheet.max_column, value=f"{d2} Average Time")
+            worksheet.cell(row=1, column=worksheet.max_column + 1, value=mean_values[0])
+            worksheet.cell(row=2, column=worksheet.max_column, value=mean_values[1])
+            worksheet.cell(row=3, column=worksheet.max_column - 1, value=message)
+            worksheet.cell(row=3, column=worksheet.max_column, value=f'{abs(time_diff):.3f}s')
+
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = get_column_letter(column[0].column)
+                for cell in column:
+                    cell.alignment = Alignment(horizontal='center')
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+                adjusted_width = (max_length + 5)
+                worksheet.column_dimensions[column_letter].width = adjusted_width
+
+            for cell in worksheet[worksheet.max_row]:
+                cell.font = openpyxl.styles.Font(bold=True)
+
+
+        writer._save()
 
     if not all_teams:
         race_differences = []
@@ -620,6 +702,7 @@ def fuel_correct_factor(year, session_id=None):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
     schedule = [1] if session_id is not None else schedule
     tyres = ['HARD', 'MEDIUM', 'SOFT']
+    all_laps = pd.DataFrame()
     delta_dict = {}
     for i in range(len(schedule)):
         session = fastf1.get_session(year, i + 1 if session_id is None else session_id, 'R')
@@ -635,19 +718,48 @@ def fuel_correct_factor(year, session_id=None):
                 if len(stint_tyre) > 1:
                     stint_numbers = stint_tyre['Stint'].values[0:2]
                     stint_1 = pd.DataFrame(laps[laps['Stint'] == stint_numbers[0]])[
-                        ['TyreLife', 'LapNumber', 'LapTime']]
+                        ['Driver', 'TyreLife', 'LapNumber', 'LapTime']]
                     stint_2 = pd.DataFrame(laps[laps['Stint'] == stint_numbers[1]])[
-                        ['TyreLife', 'LapNumber', 'LapTime']]
-                    compare_stints = pd.merge(stint_1, stint_2, how='inner', on='TyreLife')
-                    compare_stints['DeltaLap'] = ((compare_stints['LapTime_x'].apply(lambda x: x.total_seconds())
+                        ['Driver', 'TyreLife', 'LapNumber', 'LapTime']]
+                    compare_stints = pd.merge(stint_1, stint_2, how='inner', on=['Driver', 'TyreLife'])
+
+                    compare_stints['Evo Factor'] = ((compare_stints['LapTime_x'].apply(lambda x: x.total_seconds())
                                                    - compare_stints['LapTime_y'].apply(lambda x: x.total_seconds()))
                                                   / (compare_stints['LapNumber_y'] - compare_stints['LapNumber_x']))
 
-                    for value in compare_stints['DeltaLap']:
+                    compare_stints = compare_stints.rename(columns={'LapNumber_x': 'Lap First Stint',
+                                                                    'LapNumber_y': 'Lap Second Stint',
+                                                                    'LapTime_x': 'LapTime First Stint',
+                                                                    'LapTime_y': 'LapTime Second Stint'
+                                                                    })
+                    compare_stints['LapTime First Stint'] = compare_stints['LapTime First Stint'].apply(lambda x: format_timedelta(x))
+                    compare_stints['LapTime Second Stint'] = compare_stints['LapTime Second Stint'].apply(lambda x: format_timedelta(x))
+                    all_laps = pd.concat([all_laps, compare_stints])
+
+                    for value in compare_stints['Evo Factor']:
                         session_fuel_correct_factor.append(value)
+
         if len(session_fuel_correct_factor) > 25:
             print(f'TOTAL VALUES {len(session_fuel_correct_factor)}')
-            truncated_mean = stats.trim_mean(session_fuel_correct_factor, 0.1)
+            truncated_mean = np.mean(session_fuel_correct_factor)
+            with pd.ExcelWriter(f'../resources/evo_factor/{year}_{session_id}.xlsx', engine='openpyxl') as writer:
+                all_laps.to_excel(writer, sheet_name='Evolution Factor', index=False)
+                worksheet = writer.sheets['Evolution Factor']
+                for column in worksheet.columns:
+                    max_length = 0
+                    column_letter = get_column_letter(column[0].column)
+                    for cell in column:
+                        cell.alignment = Alignment(horizontal='center')
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(cell.value)
+                        except:
+                            pass
+                    adjusted_width = (max_length + 5)
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
+
+                writer._save()
+            print(truncated_mean)
             delta_dict[session_id] = truncated_mean
         else:
             delta_dict[session_id] = np.NaN
