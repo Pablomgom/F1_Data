@@ -707,3 +707,23 @@ def difference_Q3(start=2014, end=2050):
     dict_race = {k: v for k, v in sorted(dict_race.items(), key=lambda item: item[1])}
     for r, v in dict_race.items():
         print(f'{r} - {v:.3f}s')
+
+
+def streak_without_wins():
+
+    races = My_Ergast().get_race_results([i for i in range(1950, 2100)]).content
+    streaks = {}
+    for r in races:
+        driver_in_race = r[r['position'] != 1]['fullName'].values
+        winner = r[r['position'] == 1]['fullName'].values
+        for w in winner:
+            streaks[w] = 0
+        for d in driver_in_race:
+            if d in streaks:
+                streaks[d] += 1
+
+    sorted_max_streak_data = sorted(streaks.items(), key=lambda x: x[1], reverse=True)
+    sorted_max_streak_dict = {driver: data for driver, data in sorted_max_streak_data}
+
+    for r, d in sorted_max_streak_dict.items():
+        print(f'{r} - {d}')

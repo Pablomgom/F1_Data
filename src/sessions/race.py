@@ -4,13 +4,13 @@ import openpyxl
 from matplotlib.ticker import FuncFormatter
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.table import Table, TableStyleInfo
+import matplotlib.patheffects as path_effects
 from tabulate import tabulate
 
 from src.ergast_api.my_ergast import My_Ergast
 from src.exceptions import race_same_team_exceptions
 from src.exceptions.custom_exceptions import RaceException
-from src.plots.plots import get_font_properties
+from src.plots.plots import get_font_properties, round_bars, annotate_bars
 import fastf1
 from fastf1.ergast import Ergast
 from fastf1 import plotting
@@ -23,7 +23,7 @@ import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
 
 from src.utils.utils import append_duplicate_number, split_at_discontinuities, format_timedelta
-from src.variables.driver_colors import driver_colors_2023
+from src.variables.driver_colors import driver_colors_2023, driver_colors
 from src.variables.team_colors import team_colors_2023, team_colors
 import matplotlib.dates as mdates
 from scipy import stats
@@ -304,6 +304,7 @@ def race_pace_top_10(session, threshold=1.07):
 
     fastest_time = None
     position = 1
+    percentage_dict = {}
     for i, driver in enumerate(finishing_order):
         team = session.laps.pick_driver(driver)['Team'].loc[0]
         mean_time = mean_lap_times[driver]
@@ -313,11 +314,18 @@ def race_pace_top_10(session, threshold=1.07):
                 font='Fira Sans', fontsize=10, ha='center')
         if fastest_time is None:
             time_diff = ''
+            percentage_diff = 0.0  # No percentage difference for the fastest driver
             fastest_time = mean_time
         else:
+            time_diff_seconds = (mean_time - fastest_time).total_seconds()
             time_diff = f'(+{format_timedelta(mean_time - fastest_time)}s)'.replace('0:0', '')
+            percentage_diff = time_diff_seconds / fastest_time.total_seconds() * 100
+        percentage_dict[team] = percentage_diff
         print(f'{position} - {team}: {f_mean_time} {time_diff}')
         position += 1
+
+    for t, p in percentage_dict.items():
+        print(f'{t},{p}')
 
     plt.ylim(min(driver_laps['LapTime']).total_seconds() - 2,
              max(driver_laps['LapTime']).total_seconds() + 2)
@@ -660,8 +668,8 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
 
             worksheet.cell(row=1, column=worksheet.max_column + 2, value=f"{d1} Average Time")
             worksheet.cell(row=2, column=worksheet.max_column, value=f"{d2} Average Time")
-            worksheet.cell(row=1, column=worksheet.max_column + 1, value=mean_values[0])
-            worksheet.cell(row=2, column=worksheet.max_column, value=mean_values[1])
+            worksheet.cell(row=1, column=worksheet.max_column + 1, value=f'{mean_values[0]:.3f}')
+            worksheet.cell(row=2, column=worksheet.max_column, value=f'{mean_values[1]:.3f}')
             worksheet.cell(row=3, column=worksheet.max_column - 1, value=message)
             worksheet.cell(row=3, column=worksheet.max_column, value=f'{abs(time_diff):.3f}s')
 
@@ -695,8 +703,6 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
         print(race_differences)
         print(f'MEDIAN DIFF {d1 if median < 0 else d2} FASTER: {median}')
         print(f'MEAN DIFF {d1 if mean < 0 else d2} FASTER: {mean}')
-
-    print('Only comparing laps that match in lap number, tyre and with 3 or less laps of tyre age difference')
 
 def fuel_correct_factor(year, session_id=None):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
@@ -780,14 +786,18 @@ def fuel_correct_factor(year, session_id=None):
 def driver_fuel_corrected_laps(session, driver):
     laps = session.laps.pick_driver(driver).pick_quicklaps().pick_wo_box()[['Compound', 'LapNumber', 'LapTime']]
     fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
-    race_fuel_factor = fuel_factors[fuel_factors['Round'] == str(session)]['FuelFactor']
-    if not pd.isna(race_fuel_factor.loc[0]):
-        race_fuel_factor = race_fuel_factor.loc[0]
-    else:
-        race_fuel_factor = fuel_factors['FuelFactor'].median()
+    round_id = session.event.RoundNumber
+    year = session.event.year
+    race_fuel_factor = fuel_factors[(fuel_factors['Round'] == round_id) &
+                                    (fuel_factors['Year'] == year)]['FuelFactor'][0]
+    if pd.isna(race_fuel_factor):
+        print('NO FUEL FACTOR')
+        race_fuel_factor = 0.06
+
     laps['LapTime'] = laps['LapTime'].dt.total_seconds()
     laps['FuelCorrected'] = laps['LapTime'] - race_fuel_factor * (session.total_laps - laps['LapNumber'])
-    laps['FuelCorrected'] = pd.to_timedelta(laps['FuelCorrected'], unit='s')
+    # laps['FuelCorrected'] = pd.to_timedelta(laps['FuelCorrected'], unit='s')
+    laps = laps[laps['Compound'] == 'HARD']
     laps = laps.reset_index(drop=True)
     color_dict = {
         'HARD': 'white',
@@ -798,7 +808,27 @@ def driver_fuel_corrected_laps(session, driver):
     fig, ax = plt.subplots(figsize=(8, 8))
     for i in range(len(laps) - 1):
         plt.plot(laps['LapNumber'][i:i + 2], laps['FuelCorrected'][i:i + 2], marker='o', color=colors[i])
-    ax.yaxis.set_major_formatter(mdates.DateFormatter('%M:%S.%f'))
+
+    def format_timedelta_to_mins(seconds, pos):
+        mins = int(seconds // 60)
+        secs = int(seconds % 60)
+        millis = int((seconds - int(seconds)) * 1000)
+        return f'{mins:01d}:{secs:02d}.{millis:03d}'
+
+    formatter = FuncFormatter(format_timedelta_to_mins)
+    plt.gca().yaxis.set_major_formatter(formatter)
+    ax.set_xlabel("Lap", font='Fira Sans', fontsize=16)
+    ax.set_ylabel("Fuel Corrected Lap Time", font='Fira Sans', fontsize=16)
+    plt.grid(color='w', which='major', axis='x', linestyle='--', alpha=0.4)
+    plt.grid(color='w', which='major', axis='y', linestyle='--', alpha=0.4)
+    plt.xticks(font='Fira Sans', fontsize=14)
+    plt.yticks(font='Fira Sans', fontsize=14)
+    plt.title(f'{driver} FUEL CORRECTED LAPS IN {str(session.event.year) + " " + session.event.Country.upper() + " " + session.name.upper()}',
+              font='Fira Sans', fontsize=20)
+    sns.despine(left=True, bottom=True)
+    plt.figtext(0.01, 0.02, '@F1BigData', font='Fira Sans', fontsize=17, color='gray', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/{driver} FUEL CORRECTED LAPS IN {str(session.event.year) + " " + session.event.Country + " " + session.name}.png', dpi=450)
     plt.show()
 
 
@@ -895,7 +925,7 @@ def race_diff_v2(year, round=None, save=False):
 def percentage_race_ahead(start=2001, end=2024):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['albert_park']
+    circuits = ['suzuka']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:
@@ -1105,3 +1135,75 @@ def all_drivers_race_h2h(start=1950, end=2100):
         total_runs = sum(drivers_dict[driver])
         num_runs = len(drivers_dict[driver])
         print(f'{rank} - {driver}: {percentage:.2f}% ({total_runs}/{num_runs})')
+
+
+def tyre_deg(session):
+
+    fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
+    round_id = session.event.RoundNumber
+    year = session.event.year
+    total_laps = session.total_laps
+    race_fuel_factor = fuel_factors[(fuel_factors['Round'] == round_id) &
+                                    (fuel_factors['Year'] == year)]['FuelFactor'][0]
+
+    deg_evo = pd.DataFrame(columns=['Driver', 'Compound', 'Stint', 'LapTime', 'EvoCorrected', 'Evo'])
+
+    if pd.isna(race_fuel_factor):
+        race_fuel_factor = 0.06
+    drivers = set(session.laps['Driver'])
+    for d in drivers:
+        d_laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps()
+        d_laps['EvoCorrected'] = (d_laps['LapTime'].dt.total_seconds() - race_fuel_factor *
+                                      (total_laps - d_laps['LapNumber']))
+
+        stints = set(d_laps['Stint'].values)
+        for s in stints:
+            stint_laps = d_laps[d_laps['Stint'] == s]
+            stint_laps['Evo'] = stint_laps['EvoCorrected'].diff()
+            df_to_append = pd.DataFrame(stint_laps[['Driver', 'Compound', 'Stint', 'LapTime', 'EvoCorrected', 'Evo']])
+            deg_evo = deg_evo._append(df_to_append)
+
+    def filter_by_iqr(x):
+        Q1 = x.quantile(0.3)
+        Q3 = x.quantile(0.8)
+        IQR = Q3 - Q1
+        return x[(x >= (Q1 - 1.5 * IQR)) & (x <= (Q3 + 1.5 * IQR))]
+
+    filtered_iqr = deg_evo.groupby('Compound')['Evo'].transform(filter_by_iqr)
+    deg_evo['Evo_filtered'] = filtered_iqr
+    deg_evo = deg_evo.dropna(subset=['Evo_filtered'])
+    laps_per_driver_compound = deg_evo.groupby(['Driver', 'Compound']).size()
+    valid_groups = laps_per_driver_compound[laps_per_driver_compound >= 5].reset_index()[['Driver', 'Compound']]
+    deg_evo = pd.merge(deg_evo, valid_groups, how='inner', on=['Driver', 'Compound'])
+    deg_evo = deg_evo.groupby(['Compound', 'Driver'])['Evo_filtered'].mean().reset_index().sort_values(['Compound', 'Evo_filtered'])
+    for index, row in deg_evo.iterrows():
+        print(f'{row["Compound"]} - {row["Driver"]} - {row["Evo_filtered"]}')
+
+    for tyre in ['HARD', 'MEDIUM', 'SOFT']:
+        df_to_plot = deg_evo[deg_evo['Compound'] == tyre]
+        fix, ax = plt.subplots(figsize=(9, 8))
+        bars = plt.bar(df_to_plot['Driver'], df_to_plot['Evo_filtered'])
+        colors = [driver_colors.get(year).get(i) for i in df_to_plot['Driver']]
+        round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.050, linewidth=4)
+        annotate_bars(bars, ax, 0.01, 14, text_annotate='default', ceil_values=False, round=2,
+                      y_negative_offset=-0.01, annotate_zero=False, negative_offset=0)
+
+        plt.title(f'TYRE DEG WITH THE {tyre.upper()} COMPOUND', font='Fira Sans', fontsize=24)
+        plt.ylabel('Average time loss per lap (s)', font='Fira Sans', fontsize=20)
+        plt.xticks(rotation=90, font='Fira Sans', fontsize=18)
+        plt.yticks(font='Fira Sans', fontsize=16)
+        plt.ylim(bottom=min(df_to_plot['Evo_filtered']) - 0.05, top=max(df_to_plot['Evo_filtered']) + 0.05)
+        color_index = 0
+        for label in ax.get_xticklabels():
+            label.set_color('white')
+            label.set_fontsize(16)
+            for_color = colors[color_index]
+            if for_color == '#ffffff':
+                for_color = '#FF7C7C'
+            label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=for_color)])
+            color_index += 1
+        ax.yaxis.grid(True, linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.savefig(f'../PNGs/TYRE DEG WITH THE {tyre.upper()} COMPOUND.png', dpi=450)
+        plt.show()
+

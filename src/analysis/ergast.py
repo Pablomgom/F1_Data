@@ -202,8 +202,11 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100, specific_driver=No
     for qualy in q.content:
         year = qualy['year'].loc[0]
         round = qualy['round'].loc[0]
-        race_gp = my_ergast.get_race_results([year], round).content[0]
-        process_data(qualy, d_data, t_data, 'position', race_gp)
+        try:
+            race_gp = my_ergast.get_race_results([year], round).content[0]
+            process_data(qualy, d_data, t_data, 'position', race_gp)
+        except IndexError:
+            print(f'No data for {year} - {round}')
 
     for race in r.content:
         can_append = True
@@ -368,7 +371,7 @@ def q3_appearances(year):
         print(f'{v} - {d}')
 
 
-def results_from_grid_position(driver, start=1950, end=2024, grid=1):
+def results_from_grid_position(driver, start=1950, end=2050, grid=1):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
     finish_positions = Counter()

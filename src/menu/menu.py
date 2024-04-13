@@ -107,6 +107,9 @@ def get_funcs():
         'race_simulation_test_day': race_simulation_test_day,
         'difference_Q3': difference_Q3,
         'performance_by_turns': performance_by_turns,
+        'streak_without_wins': streak_without_wins,
+        'track_limits': track_limits,
+        'tyre_deg': tyre_deg,
         'help': help
     }
 

@@ -1,4 +1,5 @@
 import math
+import warnings
 
 import fastf1
 import numpy as np
@@ -8,6 +9,7 @@ from matplotlib import pyplot as plt
 from scipy import stats
 from scipy.interpolate import CubicSpline
 from sklearn.cluster import KMeans
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import Lasso
 import matplotlib.patheffects as path_effects
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
@@ -22,7 +24,7 @@ from src.utils.utils import get_quartiles, find_nearest_non_repeating
 from src.variables.team_colors import team_colors_2023, team_colors, team_colors_2024
 
 
-def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None, save_data=False):
+def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, save_data=False):
     """
         Cluster circuits
 
@@ -149,7 +151,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=None, 
     ax.grid(False)
     plt.title('SIMILARITY BETWEEN CIRCUITS', font='Fira Sans', fontsize=28)
     plt.tight_layout()
-    plt.savefig('../PNGs/Track clusterss.png', dpi=450)
+    plt.savefig(f'../PNGs/Track clusters {year}.png', dpi=450)
     plt.show()
 
 
@@ -212,6 +214,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     lasso = Lasso(alpha=0.007543120063354615)
     param_grid = {'alpha': np.logspace(-4, 0, 50)}
     grid_search = GridSearchCV(estimator=lasso, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error')
+    warnings.filterwarnings('ignore', category=ConvergenceWarning)
     grid_search.fit(X_train, y_train)
     print("Best alpha: ", grid_search.best_params_['alpha'])
     best_lasso = grid_search.best_estimator_
@@ -262,36 +265,44 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     if len(prev_year_data) == 0:
         raise Exception('No data for that year/track combination')
 
-    def find_similar_tracks(target_features, historical_data, track_features, top_n=5, current_year=year):
-        """
-        Identifies the top_n most similar tracks based on track features, adjusted for recency.
-        """
-        current_year_data = historical_data[historical_data['Year'] == year]
-        distances = euclidean_distances(current_year_data[track_features], target_features)
-        recency_factor = 1 / (current_year - current_year_data['Year'] + 1) ** 4
+    def find_similar_tracks(target_features, historical_data, track_features, top_n=3, current_year=year):
+        relevant_years_data = historical_data[historical_data['Year'].isin([current_year, current_year - 1])]
+        distances = euclidean_distances(relevant_years_data[track_features], target_features)
+        recency_factor = 1 / (current_year - relevant_years_data['Year'] + 1)
         adjusted_distances = distances.flatten() * recency_factor
-        current_year_data['adjusted_similarity_score'] = adjusted_distances
-        similar_tracks = current_year_data.sort_values(by='adjusted_similarity_score')
-        return similar_tracks.head(top_n)
+        relevant_years_data['adjusted_similarity_score'] = adjusted_distances
+        similar_tracks = relevant_years_data.sort_values(by='adjusted_similarity_score')
+        if current_year - 1 in similar_tracks['Year'].values:
+            previous_year_track = similar_tracks[similar_tracks['Year'] == current_year - 1].iloc[0]
+            current_year_similar_tracks = similar_tracks[similar_tracks['Year'] == current_year].head(top_n)
+            final_similar_tracks = pd.concat([current_year_similar_tracks, previous_year_track.to_frame().T])
+        else:
+            final_similar_tracks = similar_tracks.head(top_n)
+
+        return final_similar_tracks
 
     def calculate_additional_features(similar_tracks, teams, track_features, predict_data, current_year=year):
-        """
-        Calculate additional features for each team based on recent similar tracks.
-        """
         calculated_features = {}
         circuit_recent_data = pd.merge(predict_data, similar_tracks, 'inner', ['Year', 'Track'])
+        circuit_recent_data['year_weight'] = circuit_recent_data['Year'].apply(
+            lambda x: 0.26666 if x == current_year else 0.2)
+
         max_score = circuit_recent_data['adjusted_similarity_score'].max()
         circuit_recent_data['weight'] = 1 / (circuit_recent_data['adjusted_similarity_score'] + max_score)
+        circuit_recent_data['final_weight'] = circuit_recent_data['weight'] * circuit_recent_data['year_weight']
+
         for team in teams:
             for feature in track_features + ['Recent_Avg_Delta']:
                 if feature == 'Recent_Avg_Delta':
                     feature_name = f'Recent_Avg_Delta_{team}'
                 else:
                     feature_name = f"{feature}*Delta_{team}"
-                weighted_sum = (circuit_recent_data[feature_name] * circuit_recent_data['weight']).sum()
-                total_weight = circuit_recent_data['weight'].sum()
+
+                weighted_sum = (circuit_recent_data[feature_name] * circuit_recent_data['final_weight']).sum()
+                total_weight = circuit_recent_data['final_weight'].sum()
                 calculated_value = weighted_sum / total_weight
                 calculated_features[feature_name] = calculated_value
+
         return calculated_features
 
     def scale_features(prediction_data, scaler):
@@ -302,9 +313,6 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         return y_pred
 
     def prepare_prediction_data(similar_tracks, additional_features, model_features, track_features):
-        """
-        Prepare the complete set of prediction data.
-        """
         basic_aggregated_data = similar_tracks[track_features].astype(float).mean()
         prediction_data = {**basic_aggregated_data.to_dict(), **additional_features}
         prediction_data_ordered = {feature: prediction_data.get(feature, 0) for feature in model_features}

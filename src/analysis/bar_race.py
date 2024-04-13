@@ -124,8 +124,6 @@ def bar_season(year, mode='Driver'):
     df = pd.DataFrame(family_points_dict, index=index)
     filename = f'../MP4/F1 Championship - {races.description.season[0]} Season.mp4'
     title = f'F1 Championship - {races.description.season[0]} Season'
-    # df.columns = ['AlphaTauri', 'Alpine', 'Haas', 'Alfa Romeo', 'Mercedes',
-    #               'Aston Martin', 'Williams', 'McLaren', 'Ferrari', 'Red Bull']
     figsize = (1920 / 200, 1080 / 200)
     bcr.bar_chart_race(
         df=df.cumsum(),

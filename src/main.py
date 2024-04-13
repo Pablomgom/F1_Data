@@ -10,6 +10,7 @@ from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 
 import src.utils.utils
+from src.analysis.drivers import race_qualy_h2h
 from src.awards.awards import awards_2023
 from src.db.db import Database
 from src.ergast_api.my_ergast import My_Ergast
@@ -33,28 +34,30 @@ if __name__ == '__main__':
 
 
 #     data = """
-# 1	1	Max Verstappen	Red Bull-Honda RBPT	1:16.819	1:16.387	1:15.915	1
-# 2	55	Carlos Sainz	Ferrari	1:16.731	1:16.189	1:16.185	2
-# 3	11	Sergio Pérez	Red Bull-Honda RBPT	1:16.805	1:16.631	1:16.274	3
-# 4	4	Lando Norris	McLaren-Mercedes	1:17.430	1:16.750	1:16.315	4
-# 5	16	Charles Leclerc	Ferrari	1:16.984	1:16.304	1:16.435	5
-# 6	81	Oscar Piastri	McLaren-Mercedes	1:17.369	1:16.601	1:16.572	6
-# 7	63	George Russell	Mercedes	1:17.062	1:16.901	1:16.724	7
-# 8	22	Yuki Tsunoda	RB-Honda RBPT	1:17.356	1:16.791	1:16.788	8
-# 9	18	Lance Stroll	Aston Martin Aramco-Mercedes	1:17.376	1:16.780	1:17.072	9
-# 10	14	Fernando Alonso	Aston Martin Aramco-Mercedes	1:16.991	1:16.710	1:17.552	10
-# 11	44	Lewis Hamilton	Mercedes	1:17.499	1:16.960		11
-# 12	23	Alexander Albon	Williams-Mercedes	1:17.130	1:17.167		12
-# 13	77	Valtteri Bottas	Kick Sauber-Ferrari	1:17.543	1:17.340		13
-# 14	20	Kevin Magnussen	Haas-Ferrari	1:17.709	1:17.427		14
-# 15	31	Esteban Ocon	Alpine-Renault	1:17.617	1:17.697		15
-# 16	27	Nico Hülkenberg	Haas-Ferrari	1:17.976			16
-# 17	10	Pierre Gasly	Alpine-Renault	1:17.982			17
-# 18	3	Daniel Ricciardo	RB-Honda RBPT	1:18.085			18
-# 19	24	Guanyu Zhou	Kick Sauber-Ferrari	1:18.188			19
+#
+# 1//1//Max Verstappen//Red Bull Racing-Honda RBPT//1:28.866//1:28.740//1:28.197//1
+# 2//11//Sergio Pérez//Red Bull Racing-Honda RBPT//1:29.303//1:28.752//1:28.263//2
+# 3//4//Lando Norris//McLaren-Mercedes//1:29.536//1:28.940//1:28.489//3
+# 4//55//Carlos Sainz//Ferrari//1:29.513//1:29.099//1:28.682//4
+# 5//14//Fernando Alonso//Aston Martin Aramco-Mercedes//1:29.254//1:29.082//1:28.686//5
+# 6//81//Oscar Piastri//McLaren-Mercedes//1:29.425//1:29.148//1:28.760//6
+# 7//44//Lewis Hamilton//Mercedes//1:29.661//1:28.887//1:28.766//7
+# 8//16//Charles Leclerc//Ferrari//1:29.338//1:29.196//1:28.786//8
+# 9//63//George Russell//Mercedes//1:29.799//1:29.140//1:29.008//9
+# 10//22//Yuki Tsunoda//RB-Honda RBPT//1:29.775//1:29.417//1:29.413//10
+# 11//3//Daniel Ricciardo//RB-Honda RBPT//1:29.727//1:29.472//N/A//11
+# 12//27//Nico Hülkenberg//Haas-Ferrari//1:29.821//1:29.494//N/A//12
+# 13//77//Valtteri Bottas//Kick Sauber-Ferrari//1:29.602//1:29.593//N/A//13
+# 14//23//Alexander Albon//Williams-Mercedes//1:29.963//1:29.714//N/A//14
+# 15//31//Esteban Ocon//Alpine-Renault//1:29.811//1:29.816//N/A//15
+# 16//18//Lance Stroll//Aston Martin Aramco-Mercedes//1:30.024//N/A//N/A//16
+# 17//10//Pierre Gasly//Alpine-Renault//1:30.119//N/A//N/A//17
+# 18//20//Kevin Magnussen//Haas-Ferrari//1:30.131//N/A//N/A//18
+# 19//2//Logan Sargeant//Williams-Mercedes//1:30.139//N/A//N/A//19
+# 20//24//Guanyu Zhou//Kick Sauber-Ferrari//1:30.143//N/A//N/A//20
 # """
 #
-#     My_Ergast().insert_qualy_data(2024, 3, data,
+#     My_Ergast().insert_qualy_data(2024, 4, data,
 #                                   offset=0, character_sep='-', have_country=False, number=1)
 
 

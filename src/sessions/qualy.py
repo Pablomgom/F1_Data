@@ -259,7 +259,7 @@ def qualy_margin(circuit, start=1950, end=2050, order='Descending'):
 
 def percentage_qualy_ahead(start=2001, end=2024):
     ergast = My_Ergast()
-    circuits = ['albert_park']
+    circuits = ['suzuka']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:

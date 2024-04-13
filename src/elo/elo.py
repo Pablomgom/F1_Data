@@ -407,7 +407,7 @@ def elo_execution(start=None, end=None, restore=False, year=None, round=None, on
                 prev_rating = np.round(driver.rating - diff, 2)
             else:
                 diff = np.round(driver.rating - prev_rating, 2)
-            print(f'{count}: {driver.name} - {prev_rating} -> {driver.rating}({diff}) - Prev: {prev_rank}')
+            print(f'{count} - {driver.name} - {prev_rating} -> {driver.rating} ({diff}) - Prev: {prev_rank}')
             count += 1
 
     if restore or save:

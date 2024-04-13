@@ -340,7 +340,7 @@ def get_retirements_per_driver(driver, start=1950, end=2100):
         print(f'{rank} - {position}: {percentage}% ({times}/{positions.sum()})')
 
 
-def race_qualy_h2h(d_1, start=1950, end=3000):
+def race_qualy_h2h(d_1, start=1950, end=2100):
     """
         Compare a season for 2 drivers
 
@@ -361,11 +361,15 @@ def race_qualy_h2h(d_1, start=1950, end=3000):
     qualy_result = {}
     d1_points = {}
     d2_points = {}
+    race_h2h = pd.DataFrame(columns=['Driver', 'Rival', 'Team', 'Year', 'Round', 'Result', 'Reason'])
+    qualy_h2h = pd.DataFrame(columns=['Driver', 'Rival', 'Team', 'Year', 'Round', 'Result', 'Reason'])
 
-    def process_drivers(array, race_type, d1_points, d2_points):
+    def process_drivers(array, race_type, d1_points, d2_points, dataframe):
         for race in array:
+            df_data = {'Driver': d_1}
+            year = race['year'].loc[0]
+            round_id = race['round'].loc[0]
             if len(race[race['fullName'] == d_1]) == 1:
-                year = race['year'].loc[0]
                 team = race[race['fullName'] == d_1]['constructorName'].loc[0]
                 teammates = race[(race['constructorName'] == team) & (race['fullName'] != d_1)]['fullName'].values
                 for d_2 in teammates:
@@ -406,12 +410,56 @@ def race_qualy_h2h(d_1, start=1950, end=3000):
                                     qualy_result[year][d_2] = []
                                 if driver is not None:
                                     qualy_result[year][d_2].append(driver)
-        return d1_points, d2_points
 
-    d1_points, d2_points = process_drivers(total_races, 'Race', d1_points, d2_points)
-    process_drivers(qualys, 'Qualy', d1_points, d2_points)
+                            df_data['Driver'] = d_1
+                            df_data['Rival'] = d_2
+                            df_data['Team'] = team
+                            df_data['Year'] = [year]
+                            df_data['Round'] = [round_id]
+                            df_data['Result'] = [1 if driver == d_1 else (0 if driver == d_2 else None)]
+                            df_data['Reason'] = np.nan
+                            df_to_append = pd.DataFrame(df_data)
+                            dataframe = dataframe._append(df_to_append)
+                            df_data = {}
+                        else:
+                            df_data['Driver'] = d_1
+                            df_data['Rival'] = d_2
+                            df_data['Team'] = team
+                            df_data['Year'] = [year]
+                            df_data['Round'] = round_id
+                            df_data['Result'] = np.nan
+                            df_data['Reason'] = f"At least one of the drivers {'did not finish' if race_type == 'Race' else 'was DSQ'}"
+                            df_to_append = pd.DataFrame(df_data)
+                            dataframe = dataframe._append(df_to_append)
+                            df_data = {}
+                    else:
+                        df_data['Driver'] = d_1
+                        df_data['Rival'] = d_2
+                        df_data['Team'] = team
+                        df_data['Year'] = [year]
+                        df_data['Round'] = round_id
+                        df_data['Result'] = np.nan
+                        df_data['Reason'] = f'{d_2} drove multiple cars'
+                        df_to_append = pd.DataFrame(df_data)
+                        dataframe = dataframe._append(df_to_append)
+                        df_data = {}
+            elif len(race[race['fullName'] == d_1]) > 1:
+                df_data['Driver'] = d_1
+                df_data['Rival'] = np.nan
+                df_data['Team'] = np.nan
+                df_data['Year'] = [year]
+                df_data['Round'] = [round_id]
+                df_data['Result'] = np.nan
+                df_data['Reason'] = f'{d_1} drove multiple cars'
+                df_to_append = pd.DataFrame(df_data)
+                dataframe = dataframe._append(df_to_append)
+                df_data = {}
+        return d1_points, d2_points, dataframe
 
-    def print_results(data):
+    d1_points, d2_points, race_h2h = process_drivers(total_races, 'Race', d1_points, d2_points, race_h2h)
+    _, _, qualy_h2h = process_drivers(qualys, 'Qualy', d1_points, d2_points, qualy_h2h)
+
+    def print_results(data, type):
         driver_ahead = 0
         teammate_ahead = 0
         for year, results in data.items():
@@ -440,11 +488,18 @@ def race_qualy_h2h(d_1, start=1950, end=3000):
         try:
             print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
         except:
-            print('No data')
+            print(f'No {type} data for {d_1}')
 
-    print_results(race_result)
-    print_results(qualy_result)
+    print_results(race_result, 'race')
+    print_results(qualy_result, 'qualy')
 
+    def update_csv(path, new_data):
+        existing_df = pd.read_csv(path)
+        combined_df = pd.concat([existing_df, new_data], ignore_index=True)
+        final_df = combined_df.drop_duplicates(subset=['Driver', 'Year', 'Round'], keep='first')
+        final_df.to_csv(path, index=False)
+    update_csv('../resources/csv/race_h2h.csv', race_h2h)
+    update_csv('../resources/csv/qualy_h2h.csv', qualy_h2h)
 
 def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
     """
