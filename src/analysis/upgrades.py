@@ -2,10 +2,10 @@ import pandas as pd
 from matplotlib import ticker, pyplot as plt
 
 from src.plots.plots import get_handels_labels, get_font_properties, title_and_labels
-from src.variables.team_colors import team_colors_2023
+from src.variables.team_colors import team_colors_2023, team_colors
 
 
-def plot_upgrades(scope=None):
+def plot_upgrades(year, scope=None):
     """
        Plot the upgrades for a season
 
@@ -15,6 +15,7 @@ def plot_upgrades(scope=None):
    """
 
     upgrades = pd.read_csv('../resources/csv/Upgrades.csv', sep='|')
+    upgrades = upgrades[upgrades['Year'] == year]
     all_races_ordered = upgrades[upgrades['Round'] != 1].sort_values('Round')['Race'].unique()
     if scope is not None:
         upgrades = upgrades[upgrades['Reason'] == scope]
@@ -30,7 +31,7 @@ def plot_upgrades(scope=None):
     # Reindex the crosstab to include all rounds, filling with previous valid value or 0 if none
     cumulative_sum = ct.reindex(columns=all_races_ordered, fill_value=0).fillna(method='ffill', axis=1)
     cumulative_sum = cumulative_sum.cumsum(axis=1)
-    ordered_colors = [team_colors_2023[team] for team in cumulative_sum.index]
+    ordered_colors = [team_colors[year][team] for team in cumulative_sum.index]
     transposed = cumulative_sum.transpose()
     last_values = transposed.iloc[-1].values
     font = get_font_properties('Fira Sans', 12)
@@ -40,7 +41,7 @@ def plot_upgrades(scope=None):
     else:
         scope += ' '
 
-    ax = transposed.plot(figsize=(10, 12), marker='o', color=ordered_colors, markersize=7, lw=3)
+    ax = transposed.plot(figsize=(10, 10), marker='o', color=ordered_colors, markersize=7.25, lw=4)
 
     title_and_labels(plt, f'Cumulative {scope}Upgrades for Each Team', 28,
                      'Races', 18, 'Number of Upgrades', 18, 0.5)

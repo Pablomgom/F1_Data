@@ -104,7 +104,7 @@ def qualy_results(session, optimal=False):
     plt.show()
 
 
-def qualy_diff(year, round=None):
+def qualy_diff(year, round=None, session='Q'):
     """
        Plot the qualy time diff between 2 teams
 
@@ -121,7 +121,7 @@ def qualy_diff(year, round=None):
     delta_diff = {}
     for i in range(len(schedule)):
         qualy_delta_diffs = {}
-        session = fastf1.get_session(year, i + 1 if round is None else round, 'Q')
+        session = fastf1.get_session(year, i + 1 if round is None else round, session)
         session.load(telemetry=True)
         session_names.append(session.event['Location'].split('-')[0])
         from src.utils.utils import call_function_from_module
@@ -159,7 +159,7 @@ def qualy_diff(year, round=None):
                     delta_diff[t] = [v]
                 else:
                     delta_diff[t].append(v)
-        except QualyException:
+        except (QualyException):
             teams = session.laps['Team'].unique()
             for t in teams:
                 if t not in delta_diff:
@@ -259,7 +259,7 @@ def qualy_margin(circuit, start=1950, end=2050, order='Descending'):
 
 def percentage_qualy_ahead(start=2001, end=2024):
     ergast = My_Ergast()
-    circuits = ['suzuka']
+    circuits = ['miami']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:
@@ -317,7 +317,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
 
     def process_times(year, q, full_data, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year, d1, d2):
         diff = round(d1_time - d2_time, 3)
-        if abs(diff) < 1000:
+        if abs(diff) < 10:
             d1_pos = full_data[full_data['fullName'] == d1]['position'].loc[0]
             d2_pos = full_data[full_data['fullName'] == d2]['position'].loc[0]
             display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos)
@@ -356,16 +356,12 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
         if d1_time > d2_time:
             faster_driver = code_2
             slowest_driver = code_1
-            best_pos = d2_pos
-            worst_pos = d1_pos
         else:
             faster_driver = code_1
             slowest_driver = code_2
-            best_pos = d1_pos
-            worst_pos = d2_pos
 
         print(
-            f'{faster_driver} (P{best_pos}) {abs(diff):.3f}s faster than {slowest_driver} (P{worst_pos}) '
+            f'{faster_driver} {abs(diff):.3f}s faster than {slowest_driver} '
             f'in {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")}{session_info}')
 
     qualys = My_Ergast().get_qualy_results(list(range(start, end))).content

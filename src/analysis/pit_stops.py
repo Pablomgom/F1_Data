@@ -135,29 +135,25 @@ def dhl_pitstops(year, groupBy='Driver', round=None, points=False):
 
 
 def fastest_pit_stop_by_team(year):
-
     pitstops = pd.read_csv('../resources/csv/Pit_stops.csv', sep=',')
     pitstops = pitstops[pitstops['Year'] == year]
+    pitstops = pitstops[pitstops['Time'] <= 4]
     fastest_pitstops = pitstops.groupby(['Team', 'Race_Name', 'Race_ID'])['Time'].min().reset_index()
-    races = pitstops.sort_values(by='Race_ID')['Race_Name'].unique()
-    teams = fastest_pitstops['Team'].unique()
+    races_df = pitstops[['Race_ID', 'Race_Name']].drop_duplicates().sort_values(by='Race_ID')
 
-    # for team, deltas in mean_delta_by_team.items():
-    #     deltas_array = np.array(deltas)
-    #     not_nan_indices = ~np.isnan(deltas_array)
-    #     plt.plot(np.array(session_names)[not_nan_indices], deltas_array[not_nan_indices],
-    #              label=team, marker='o', color=team_colors_2023.get(team), markersize=7, linewidth=3)
+    fig, ax1 = plt.subplots(figsize=(10, 8))
+    for t in fastest_pitstops['Team'].unique():
+        team_data = fastest_pitstops[fastest_pitstops['Team'] == t]
+        team_data = races_df.merge(team_data, on='Race_Name', how='left')
+        x = team_data['Race_Name']
+        y = team_data['Time']
+        plt.plot(x, y, label=t, marker='o', linestyle='-', color=team_colors[year].get(t, '#000000'), markersize=10,
+                 linewidth=2)
+        plt.plot(x, y, marker='o', linestyle='', color=team_colors[year].get(t, '#000000'),
+                 markersize=10)
 
-    fig, ax1 = plt.subplots(figsize=(12, 8))
 
-    for t in teams:
-        team_pit_stops = fastest_pitstops[fastest_pitstops['Team'] == t].sort_values(by='Race_ID')
-        team_races = set(team_pit_stops['Race_Name'])
-        team_races = [item for item in races if item in team_races]
-        plt.plot(team_races, team_pit_stops['Time'],
-                     label=t, marker='o', color=team_colors_2023.get(t), markersize=10, linewidth=4)
-
-    plt.title('FASTEST PIT STOP PER TEAM/RACE',
+    plt.title(f'FASTEST PIT STOP PER TEAM/RACE (ONLY LESS THAN 4s STOPS) IN {year}',
               font='Fira Sans', fontsize=22)
     plt.ylabel('Time (s)', font='Fira Sans', fontsize=16)
     plt.xticks(rotation=90, font='Fira Sans', fontsize=16)
@@ -166,7 +162,7 @@ def fastest_pit_stop_by_team(year):
     ax1.xaxis.grid(True, linestyle='--', alpha=0.2)
     plt.legend(bbox_to_anchor=(1.0, 0.7), fontsize='large')
     plt.tight_layout()
-    plt.savefig('../PNGs/FASTEST PIT STOP TEAM-RACE.png', dpi=450)
+    plt.savefig(f'../PNGs/FASTEST PIT STOP TEAM-RACE {year}.png', dpi=450)
     plt.show()
 
 

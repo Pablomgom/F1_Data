@@ -110,6 +110,8 @@ def get_funcs():
         'streak_without_wins': streak_without_wins,
         'track_limits': track_limits,
         'tyre_deg': tyre_deg,
+        'qualy_race_streaks': qualy_race_streaks,
+        'track_temps': track_temps,
         'help': help
     }
 

@@ -159,7 +159,7 @@ def long_runs_scatter(session, threshold=1.07):
                 'Driver': f'{d} ({len(driver_laps_filter)})',
                 'Laps': [driver_laps_filter['LapTime'].to_list()],
                 'Compound': [driver_laps_filter['Compound'].iloc[0]],
-                'Average': driver_laps_filter['LapTime'].mean(),
+                'Average': driver_laps_filter['LapTime'].median(),
                 'Top speeds': np.median(top_speeds),
                 'RPMs': stats.trim_mean(total_rpms, 0.10)
             })
@@ -325,7 +325,6 @@ def telemetry_lap(session, d1, lap):
     d1_lap = None
     for i in session.laps.pick_driver(d1).pick_lap(lap).iterlaps():
         d1_lap = i[1]
-    d1_lap = session.laps.pick_driver(d1).pick_fastest()
     d1_tel = d1_lap.get_telemetry()
     print(f'{d1_lap["LapTime"]}')
 
@@ -780,8 +779,9 @@ def get_fastest_data(session, fastest_lap=True):
                 else:
                     team = d_laps['Team'].values[0]
                     column = 'Top Speeds'
-                circuit_speed[driver] = top_speed
-                colors_dict[driver] = team
+                if top_speed != 0:
+                    circuit_speed[driver] = top_speed
+                    colors_dict[driver] = team
         except KeyError:
             print(f'No data for {driver}')
         print(circuit_speed)
@@ -913,7 +913,7 @@ def drs_efficiency(session):
         telemetry['DRS'] = telemetry['DRS'].replace(10, 8)
         drs_zones = telemetry['DRS'].diff().fillna(0)
         check_zones = drs_zones[drs_zones != 0].values
-        if check_zones[0] == -4 and check_zones[1] == 4:
+        if check_zones[0] == -4 and check_zones[1] == 4 and len(check_zones) == 2:
             driver = fastest_lap['Driver']
             lap_number = fastest_lap['LapNumber'] - 1
             prev_lap = session.laps.pick_driver(driver).pick_lap(lap_number)
@@ -1127,11 +1127,27 @@ def race_simulation_test_day(session):
 
 
 def track_limits(session):
-
-    messages = session.race_control_messages[session.race_control_messages['Message'].str.contains('TRACK LIMITS')]
+    messages = session.race_control_messages[session.race_control_messages['Message'].str.contains('TRACK LIMITS AT')]
     messages['Driver'] = messages['Message'].str.extract(r'\((\w+)\)')
+    messages['Turn'] = messages['Message'].str.extract(r'TURN (\d+)').astype(int)
     messages['Lap'] = messages['Message'].str.extract(r'LAP (\d+)').astype(int)
     messages = messages.sort_values(by=['Driver', 'Lap'])
-    final_output = messages.apply(lambda x: f"{x['Driver']}: LAP {x['Lap']}", axis=1).tolist()
+    final_output = messages.apply(lambda x: f"{x['Driver']}: LAP {x['Lap']} TURN {x['Turn']}", axis=1).tolist()
     for line in final_output:
         print(line)
+
+
+def track_temps(session):
+    fig, ax = plt.subplots(figsize=(8, 8), dpi=150)
+    time = session.weather_data['Time']
+    track_temp = session.weather_data['TrackTemp']
+    plt.plot(time, track_temp, color='orange', linewidth=2)
+    plt.grid(True, linestyle='--', alpha=0.3)
+    plt.title('Track Temperature Over Time', font='Fira Sans', fontsize=24)
+    plt.xlabel('Time', font='Fira Sans', fontsize=18)
+    plt.ylabel('Temperature (ºC)', font='Fira Sans', fontsize=18)
+    plt.tight_layout()
+    plt.savefig(f'../PNGs/Track Temperature Over Time {session.event.year} {str(session.event.Country).upper()} '
+                f'{str(session.name).upper()}',
+                dpi=450)
+    plt.show()

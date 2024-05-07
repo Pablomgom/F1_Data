@@ -392,7 +392,7 @@ def wins_per_year(start=2001, end=2024, top_10=True, historical_drivers=False, v
 
 def laps_led(start, end):
     laps_led = pd.read_csv('../resources/csv/Laps_led.csv')
-    laps_led = laps_led[(laps_led['Season']) >= start & (laps_led['Season'] <= end)]
+    laps_led = laps_led[(laps_led['Season'] >= start) & (laps_led['Season'] <= end)]
     grouped_laps = laps_led.groupby('Driver')['Laps'].sum().reset_index().sort_values(by='Laps', ascending=False)
     total_laps = laps_led['Laps'].sum()
     grouped_laps['Rank'] = grouped_laps['Laps'].rank(method='min', ascending=False)
@@ -502,7 +502,7 @@ def difference_second_team():
 
 def difference_P2():
     ergast = My_Ergast()
-    qualys = ergast.get_qualy_results([i for i in range(2014, 2024)]).content
+    qualys = ergast.get_qualy_results([i for i in range(2014, 2025)]).content
     delta_diff = {}
     for q in qualys:
         col = 'q3'
@@ -555,8 +555,6 @@ def team_gap_to_next_or_fastest(team, start=2014, end=2024):
                 team_data = q[(~pd.isna(q[s])) & (q['constructorName'] == team)]
                 if len(team_data) > 0:
                     teams = q.sort_values(by=s, ascending=True)['constructorName'].values
-                    team_order = get_team_order(teams)
-                    team_order_race = get_team_order(r['constructorName'].values)
                     fastest_from_team = team_data[s].loc[0].total_seconds()
                     rivals = q[(~pd.isna(q[s])) & (q['constructorName'] != team)]
                     rivals = rivals.sort_values(by=s, ascending=True)

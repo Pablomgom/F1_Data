@@ -498,6 +498,7 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
         combined_df = pd.concat([existing_df, new_data], ignore_index=True)
         final_df = combined_df.drop_duplicates(subset=['Driver', 'Year', 'Round'], keep='first')
         final_df.to_csv(path, index=False)
+        print(f'New data stored in {path}: {len(final_df) - len(existing_df)}')
     update_csv('../resources/csv/race_h2h.csv', race_h2h)
     update_csv('../resources/csv/qualy_h2h.csv', qualy_h2h)
 
@@ -552,4 +553,60 @@ def driver_results_per_year(driver, start=1900, end=2100):
         medal = get_medal(result)
         print(f'{medal}From {grid_pos} to {result} in the {race_name}')
     print(f'\nPositions gained (excluding DNFs): {positions_gained}')
+
+
+def qualy_race_streaks(driver, session='qualy', win=True):
+
+    races = pd.read_csv('../resources/ergast_data/races.csv')
+    if session == 'qualy':
+        all_qualys = pd.read_csv('../resources/csv/qualy_h2h.csv')
+    else:
+        all_qualys = pd.read_csv('../resources/csv/race_h2h.csv')
+    all_qualys = all_qualys[all_qualys['Driver'] == driver]
+    qualys = all_qualys[~pd.isna(all_qualys['Result'])]
+    qualys = qualys.reset_index(drop=True)
+    qualys['Round_diff'] = qualys.index + 1
+    qualys['diff'] = qualys['Result'].diff()
+    qualys.loc[(qualys['Round_diff'] == 1) & (qualys['Result'] == 1), 'diff'] = 1
+    qualys.loc[(qualys['Round_diff'] == 1) & (qualys['Result'] == 0), 'diff'] = 0
+    qualys = qualys[qualys['diff'].isin([-1, 1])]
+    qualys['Finish_round'] = qualys['Round'].shift(-1)
+    qualys['Finish_year'] = qualys['Year'].shift(-1)
+    qualys['Streak number'] = qualys['Round_diff'].shift(-1) - qualys['Round_diff']
+    qualys = qualys[qualys['diff'] == (1 if win else -1)]
+    valid_sessions = all_qualys[~pd.isna(all_qualys['Result'])]
+    qualys.loc[pd.isna(qualys['Streak number']), 'Streak number'] = len(valid_sessions) - qualys['Round_diff'] + 1
+    qualys = qualys[~pd.isna(qualys['Streak number'])].sort_values(by=['Streak number', 'Year', 'Round'], ascending=[False, True, True])
+    for index, row in qualys.iterrows():
+        year_start = row['Year']
+        round_start = row['Round']
+        streak_number = int(row['Streak number'])
+        try:
+            year_finish = int(row['Finish_year'])
+            round_finish = int(row['Finish_round']) - 1
+        except:
+            year_finish = all_qualys['Year'].max()
+            round_finish = all_qualys[all_qualys['Year'] == year_finish]['Round'].max()
+
+        if round_finish == 0:
+            prev_year_data = (valid_sessions[valid_sessions['Year'] < year_finish]
+                                    .sort_values(by=['Year', 'Round'], ascending=[False, False]))
+            year_finish = prev_year_data['Year'].loc[0]
+            round_finish = prev_year_data['Round'].loc[0]
+
+        start_race = races[(races['year'] == year_start) & (races['round'] == round_start)]['raceName'].loc[0]
+        if streak_number != 1:
+            if win:
+                finish_race = races[(races['year'] == year_finish) & (races['round'] == round_finish)]['raceName'].loc[0]
+            else:
+                finish_race = (races[(races['year'] <= year_finish) &
+                                    ~((races['year'] == year_finish) & (races['round'] > round_finish))]
+                                    .sort_values(by=['year', 'round'], ascending=[False, False]).reset_index(drop=True)['raceName'].loc[0])
+            print(f'{streak_number}: From {year_start} {start_race.replace("Grand Prix", "GP")} '
+                           f'to {year_finish} {finish_race.replace("Grand Prix", "GP")}')
+        else:
+            print(f'{streak_number}: {year_start} {start_race.replace("Grand Prix", "GP")}')
+
+
+
 

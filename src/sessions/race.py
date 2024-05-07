@@ -5,7 +5,9 @@ from matplotlib.ticker import FuncFormatter
 from openpyxl.styles import PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 import matplotlib.patheffects as path_effects
-from tabulate import tabulate
+import statsmodels.api as sm
+from statsmodels.robust.norms import HuberT
+from statsmodels.robust.robust_linear_model import RLM
 
 from src.ergast_api.my_ergast import My_Ergast
 from src.exceptions import race_same_team_exceptions
@@ -252,8 +254,9 @@ def race_pace_top_10(session, threshold=1.07):
     drivers = set(session.laps['Driver'])
     total_laps = pd.DataFrame()
     for d in drivers:
-        d_laps = pd.DataFrame(session.laps.pick_driver(d).pick_quicklaps(threshold).pick_wo_box())
-        total_laps = total_laps._append(d_laps)
+        if d not in ['STR', 'BOT']:
+            d_laps = pd.DataFrame(session.laps.pick_driver(d).pick_quicklaps(threshold).pick_wo_box())
+            total_laps = total_laps._append(d_laps)
     total_laps = total_laps.groupby(['Driver', 'Team'])['LapTime'].mean().reset_index()
     total_laps['FastestLapTime'] = total_laps.groupby('Team')['LapTime'].transform(min)
     total_laps['IsFastest'] = total_laps['LapTime'] == total_laps['FastestLapTime']
@@ -547,7 +550,7 @@ def race_distance(session, top=10):
     plt.show()
 
 
-def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
+def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, session='R'):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
     fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
     schedule = [1] if round_id is not None else schedule
@@ -555,13 +558,13 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False):
     total_laps_d2 = []
     all_comparisons = {}
     for i in range(len(schedule)):
-        session = fastf1.get_session(year, i + 1 if round_id is None else round_id, 'R')
+        session = fastf1.get_session(year, i + 1 if round_id is None else round_id, session)
         session.load()
         fuel_data_session = i + 1 if round_id is None else round_id
         race_fuel_factor = fuel_factors[(fuel_factors['Round'] == fuel_data_session) &
                                         (fuel_factors['Year'] == year)]['FuelFactor'][0]
         if pd.isna(race_fuel_factor):
-            race_fuel_factor = 0.07159325297758017
+            race_fuel_factor = 0.06
         print(f'FUEL FACTOR: {race_fuel_factor}')
         loops = 1
         if all_teams:
@@ -716,13 +719,16 @@ def fuel_correct_factor(year, session_id=None):
         session_fuel_correct_factor = []
         drivers = session.laps['Driver'].unique()
         for d in drivers:
+            if d == 'VER':
+                a = 1
             laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps()
             laps = laps[laps['Compound'].isin(tyres)]
             stints = laps.groupby(['Stint', 'Compound'])['Compound'].value_counts().reset_index()
             for t in tyres:
                 stint_tyre = stints[stints['Compound'] == t]
                 if len(stint_tyre) > 1:
-                    stint_numbers = stint_tyre['Stint'].values[0:2]
+                    stint_data = laps.groupby(['Stint', 'Compound']).agg(Laps=('Compound', 'size')).reset_index()
+                    stint_numbers = stint_data[stint_data['Compound'] == t].sort_values(by='Laps', ascending=False)['Stint'].values[0:2]
                     stint_1 = pd.DataFrame(laps[laps['Stint'] == stint_numbers[0]])[
                         ['Driver', 'TyreLife', 'LapNumber', 'LapTime']]
                     stint_2 = pd.DataFrame(laps[laps['Stint'] == stint_numbers[1]])[
@@ -797,7 +803,6 @@ def driver_fuel_corrected_laps(session, driver):
     laps['LapTime'] = laps['LapTime'].dt.total_seconds()
     laps['FuelCorrected'] = laps['LapTime'] - race_fuel_factor * (session.total_laps - laps['LapNumber'])
     # laps['FuelCorrected'] = pd.to_timedelta(laps['FuelCorrected'], unit='s')
-    laps = laps[laps['Compound'] == 'HARD']
     laps = laps.reset_index(drop=True)
     color_dict = {
         'HARD': 'white',
@@ -925,7 +930,7 @@ def race_diff_v2(year, round=None, save=False):
 def percentage_race_ahead(start=2001, end=2024):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['suzuka']
+    circuits = ['miami']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:
@@ -1146,11 +1151,21 @@ def tyre_deg(session):
     race_fuel_factor = fuel_factors[(fuel_factors['Round'] == round_id) &
                                     (fuel_factors['Year'] == year)]['FuelFactor'][0]
 
-    deg_evo = pd.DataFrame(columns=['Driver', 'Compound', 'Stint', 'LapTime', 'EvoCorrected', 'Evo'])
+    deg_evo = pd.DataFrame(columns=['Driver', 'Compound', 'Stint', 'LapTime', 'EvoCorrected', 'Deg_factor'])
 
     if pd.isna(race_fuel_factor):
         race_fuel_factor = 0.06
+    print(race_fuel_factor)
     drivers = set(session.laps['Driver'])
+
+    def remove_outliers_by_IQR(data, column_name):
+        Q1 = data[column_name].quantile(0.25)
+        Q3 = data[column_name].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        return data[(data[column_name] >= lower_bound) & (data[column_name] <= upper_bound)]
+
     for d in drivers:
         d_laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps()
         d_laps['EvoCorrected'] = (d_laps['LapTime'].dt.total_seconds() - race_fuel_factor *
@@ -1158,52 +1173,49 @@ def tyre_deg(session):
 
         stints = set(d_laps['Stint'].values)
         for s in stints:
-            stint_laps = d_laps[d_laps['Stint'] == s]
-            stint_laps['Evo'] = stint_laps['EvoCorrected'].diff()
-            df_to_append = pd.DataFrame(stint_laps[['Driver', 'Compound', 'Stint', 'LapTime', 'EvoCorrected', 'Evo']])
-            deg_evo = deg_evo._append(df_to_append)
+            stint_laps = d_laps[d_laps['Stint'] == s].sort_values(by='LapNumber', ascending=True)
+            df_to_append = pd.DataFrame(stint_laps[['Driver', 'Compound', 'Stint', 'LapTime', 'EvoCorrected']])
+            stint_laps_clean = remove_outliers_by_IQR(df_to_append, 'EvoCorrected')
+            if len(stint_laps_clean) >= 10:
+                X = sm.add_constant(np.arange(len(df_to_append)))  # Use lap index as predictor
+                y = df_to_append['EvoCorrected']
+                huber = RLM(y, X, M=sm.robust.norms.HuberT()).fit()
+                df_to_append.loc[df_to_append.index.isin(stint_laps_clean.index), 'Deg_factor'] = huber.params[1]
+                deg_evo = deg_evo._append(df_to_append)
 
-    def filter_by_iqr(x):
-        Q1 = x.quantile(0.3)
-        Q3 = x.quantile(0.8)
-        IQR = Q3 - Q1
-        return x[(x >= (Q1 - 1.5 * IQR)) & (x <= (Q3 + 1.5 * IQR))]
-
-    filtered_iqr = deg_evo.groupby('Compound')['Evo'].transform(filter_by_iqr)
-    deg_evo['Evo_filtered'] = filtered_iqr
-    deg_evo = deg_evo.dropna(subset=['Evo_filtered'])
-    laps_per_driver_compound = deg_evo.groupby(['Driver', 'Compound']).size()
-    valid_groups = laps_per_driver_compound[laps_per_driver_compound >= 5].reset_index()[['Driver', 'Compound']]
-    deg_evo = pd.merge(deg_evo, valid_groups, how='inner', on=['Driver', 'Compound'])
-    deg_evo = deg_evo.groupby(['Compound', 'Driver'])['Evo_filtered'].mean().reset_index().sort_values(['Compound', 'Evo_filtered'])
-    for index, row in deg_evo.iterrows():
-        print(f'{row["Compound"]} - {row["Driver"]} - {row["Evo_filtered"]}')
+    deg_evo = deg_evo.groupby(['Compound', 'Driver', 'Stint'])['Deg_factor'].mean().reset_index()
+    deg_evo['Driver_Stint'] = deg_evo['Driver'] + ' (' + deg_evo['Stint'].astype(int).astype(str) + ')'
+    deg_evo = deg_evo.sort_values(by='Deg_factor', ascending=True)
 
     for tyre in ['HARD', 'MEDIUM', 'SOFT']:
         df_to_plot = deg_evo[deg_evo['Compound'] == tyre]
-        fix, ax = plt.subplots(figsize=(9, 8))
-        bars = plt.bar(df_to_plot['Driver'], df_to_plot['Evo_filtered'])
-        colors = [driver_colors.get(year).get(i) for i in df_to_plot['Driver']]
-        round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.050, linewidth=4)
-        annotate_bars(bars, ax, 0.01, 14, text_annotate='default', ceil_values=False, round=2,
-                      y_negative_offset=-0.01, annotate_zero=False, negative_offset=0)
+        if len(df_to_plot) > 0:
+            fix, ax = plt.subplots(figsize=(9, 9))
+            bars = plt.bar(df_to_plot['Driver_Stint'], df_to_plot['Deg_factor'])
+            colors = [driver_colors.get(year).get(i) for i in df_to_plot['Driver']]
+            round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.050, linewidth=4)
+            annotate_bars(bars, ax, 0.002, 11, text_annotate='default', ceil_values=False, round=2,
+                          y_negative_offset=-0.01, annotate_zero=False, negative_offset=0)
 
-        plt.title(f'TYRE DEG WITH THE {tyre.upper()} COMPOUND', font='Fira Sans', fontsize=24)
-        plt.ylabel('Average time loss per lap (s)', font='Fira Sans', fontsize=20)
-        plt.xticks(rotation=90, font='Fira Sans', fontsize=18)
-        plt.yticks(font='Fira Sans', fontsize=16)
-        plt.ylim(bottom=min(df_to_plot['Evo_filtered']) - 0.05, top=max(df_to_plot['Evo_filtered']) + 0.05)
-        color_index = 0
-        for label in ax.get_xticklabels():
-            label.set_color('white')
-            label.set_fontsize(16)
-            for_color = colors[color_index]
-            if for_color == '#ffffff':
-                for_color = '#FF7C7C'
-            label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=for_color)])
-            color_index += 1
-        ax.yaxis.grid(True, linestyle='--', alpha=0.5)
-        plt.tight_layout()
-        plt.savefig(f'../PNGs/TYRE DEG WITH THE {tyre.upper()} COMPOUND.png', dpi=450)
-        plt.show()
+            plt.title(f'TYRE DEG WITH THE {tyre.upper()} COMPOUND', font='Fira Sans', fontsize=24)
+            plt.ylabel('Average time loss per lap (s)', font='Fira Sans', fontsize=20)
+            plt.xticks(rotation=90, font='Fira Sans', fontsize=18)
+            plt.yticks(font='Fira Sans', fontsize=16)
+            plt.ylim(bottom=min(df_to_plot['Deg_factor']) - 0.05, top=max(df_to_plot['Deg_factor']) + 0.05)
+            color_index = 0
+            for label in ax.get_xticklabels():
+                label_text = label.get_text()
+                if len(label_text) > 3:
+                    label.set_text(label_text[:3])
+                label.set_color('white')
+                label.set_fontsize(16)
+                for_color = colors[color_index]
+                if for_color == '#ffffff':
+                    for_color = '#FF7C7C'
+                label.set_path_effects([path_effects.withStroke(linewidth=2, foreground=for_color)])
+                color_index += 1
+            ax.yaxis.grid(True, linestyle='--', alpha=0.5)
+            plt.tight_layout()
+            plt.savefig(f'../PNGs/TYRE DEG WITH THE {tyre.upper()} COMPOUND.png', dpi=450)
+            plt.show()
 

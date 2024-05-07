@@ -54,7 +54,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, sav
                     session = fastf1.get_session(prev_year, circuit, type)
                     print(f'{i}: {type}')
                 else:
-                    session = fastf1.get_session(year, i + 1, type)
+                    session = fastf1.get_session(year, 'Suzuka', type)
                 session.load()
                 prev_session = session
                 teams = set(session.laps['Team'].values)
@@ -273,13 +273,20 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         relevant_years_data['adjusted_similarity_score'] = adjusted_distances
         similar_tracks = relevant_years_data.sort_values(by='adjusted_similarity_score')
         if current_year - 1 in similar_tracks['Year'].values:
-            previous_year_track = similar_tracks[similar_tracks['Year'] == current_year - 1].iloc[0]
+            previous_year_track = similar_tracks[similar_tracks['Year'] == current_year - 1].iloc[1]
             current_year_similar_tracks = similar_tracks[similar_tracks['Year'] == current_year].head(top_n)
             final_similar_tracks = pd.concat([current_year_similar_tracks, previous_year_track.to_frame().T])
         else:
             final_similar_tracks = similar_tracks.head(top_n)
 
-        return final_similar_tracks
+        last_three_sessions = historical_data.sort_values(by=['Year', 'Session'], ascending=[False, False]).head(top_n)
+        combined_results = pd.concat([final_similar_tracks, last_three_sessions])
+        distances = euclidean_distances(combined_results[track_features], target_features)
+        recency_factor = 1 / (current_year - combined_results['Year'] + 1)
+        adjusted_distances = distances.flatten() * recency_factor
+        combined_results['adjusted_similarity_score'] = adjusted_distances
+
+        return combined_results
 
     def calculate_additional_features(similar_tracks, teams, track_features, predict_data, current_year=year):
         calculated_features = {}
@@ -361,71 +368,16 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     plt.show()
 
 
-def performance_by_turns(session):
-    teams = set(session.laps['Team'])
-    turns = session.get_circuit_info().corners[['Number', 'Distance']]
-    circuit_data = pd.DataFrame(session.laps.pick_fastest().get_telemetry()[['X', 'Y', 'Throttle', 'Distance']])
-    dx = np.diff(circuit_data['X'])
-    dy = np.diff(circuit_data['Y'])
-    angles = np.arctan2(dy, dx)
-    angle_changes = np.abs(np.diff(np.unwrap(angles)))
-    angle_change_threshold = 0.04
-    straight_segments = angle_changes < angle_change_threshold
-    straight_segments_with_start = np.insert(straight_segments, 0, [True, True])
-    window_size = 10
-    kernel = np.ones(window_size) / window_size
-    smoothed_segments = np.convolve(straight_segments_with_start, kernel, mode='same')
-    threshold = 0.5
-    straight_segments_with_start_s = smoothed_segments > threshold
-    change_indices = np.where(np.diff(straight_segments_with_start_s))[0] + 1
-    all_indices = np.concatenate(([0], change_indices, [straight_segments_with_start_s.size]))
-    segment_lengths = np.diff(all_indices)
-    for i, (start, length) in enumerate(zip(all_indices[:-1], segment_lengths), 1):
-        if straight_segments_with_start_s[start] == False and length < 10:
-            if (i == 1 or straight_segments_with_start_s[all_indices[i - 2]] == True) and (
-                    i == len(segment_lengths) or straight_segments_with_start_s[all_indices[i]] == True):
-                straight_segments_with_start_s[start:start + length] = True
-
-    for i in range(len(straight_segments_with_start_s)):
-        if circuit_data['Throttle'].reset_index(drop=True)[i] != 100:
-            straight_segments_with_start_s[i] = False
-
-    plt.figure(figsize=(10, 6))
-    for i in range(len(circuit_data) - 1):
-        if straight_segments_with_start_s[i]:
-            plt.plot(circuit_data['X'].iloc[i:i + 2], circuit_data['Y'].iloc[i:i + 2], 'g-')
-        else:
-            plt.plot(circuit_data['X'].iloc[i:i + 2], circuit_data['Y'].iloc[i:i + 2], 'r-')
-
-    plt.grid(True)
-    plt.axis('equal')
-    # plt.show()
-
-    straight_points = np.where(straight_segments_with_start_s)[0]
-    diffs = np.diff(straight_points)
-    breaks = np.where(diffs > 1)[0] + 1
-    segments = np.split(straight_points, breaks)
-
-    filtered_segments = []
-    for segment in segments:
-        if len(segment) > 25:  # Check if the segment length is more than 10
-            trimmed_segment = segment[8:-2]  # Remove first and last 5 elements
-            filtered_segments.append(trimmed_segment)
-
-    segment_distances = []
-
-    for segment in filtered_segments:
-        if len(segment) > 0:
-            first_last_distances = (
-            circuit_data['Distance'].iloc[segment[0]], circuit_data['Distance'].iloc[segment[-1]])
-            segment_distances.append(first_last_distances)
-
-    turns_speeed = pd.DataFrame(columns=['Turn', 'Team', 'Driver', 'Speed'])
+def performance_by_turns(session, track):
+    year = session.event.year
+    drivers = set(session.laps['Driver'])
+    turns = pd.read_csv('../resources/csv/Turn_analysis.csv')
+    turns = turns[turns['Track'] == track]
+    turn_names = turns['Name'].values
     turns_time = pd.DataFrame(columns=['Turn', 'Team', 'Driver', 'Time'])
-    straight_zone_data = pd.DataFrame(columns=['Team', 'Driver', 'Time'])
-    for t in teams:
-        team_lap = session.laps.pick_team(t).pick_fastest()
-        driver = team_lap['Driver']
+    for d in drivers:
+        team_lap = session.laps.pick_driver(d).pick_fastest()
+        team = team_lap['Team']
         team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
         new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 50000)
         interpolated_data = {'Distance': new_distance}
@@ -437,80 +389,34 @@ def performance_by_turns(session):
                 interpolated_data[column] = cs(new_distance)
         team_tel = pd.DataFrame(interpolated_data)
 
-        max_distance = max(team_tel['Distance'])
-        for index, row in turns.iterrows():
-            turn_distance = row[1]
-            start_point = max(0, turn_distance - 25)
-            end_point = min(max_distance, turn_distance + 25)
-            start_time = np.interp(start_point, team_tel['Distance'], team_tel['Time'])
-            end_time = np.interp(end_point, team_tel['Distance'], team_tel['Time'])
+        for index, turn in turns.iterrows():
+            start_time = np.interp(turn['Start'], team_tel['Distance'], team_tel['Time'])
+            end_time = np.interp(turn['End'], team_tel['Distance'], team_tel['Time'])
+            total_time = end_time - start_time
+            turn_data = pd.DataFrame([[turn['Name'], team, d, total_time]], columns=turns_time.columns)
+            turns_time = pd.concat([turns_time, turn_data], ignore_index=True)
 
-            lower_bound = turn_distance - 30
-            upper_bound = turn_distance + 30
-            range_df = team_tel[(team_tel['Distance'] >= lower_bound) & (team_tel['Distance'] <= upper_bound)]
-            min_speed_value = stats.trim_mean(range_df['Speed'], 0.03)
-
-            turn_data = pd.DataFrame([[row[0], t, driver, min_speed_value]], columns=turns_speeed.columns)
-            turns_speeed = pd.concat([turns_speeed, turn_data], ignore_index=True)
-            time_delta = end_time - start_time
-            team_turn_data = pd.DataFrame([[row[0], t, driver, time_delta]], columns=turns_time.columns)
-            turns_time = pd.concat([turns_time, team_turn_data], ignore_index=True)
-
-        for straight_zone in segment_distances:
-            start = straight_zone[0]
-            end = straight_zone[1]
-            start_time = np.interp(start, team_tel['Distance'], team_tel['Time'])
-            end_time = np.interp(end, team_tel['Distance'], team_tel['Time'])
-            time_delta = end_time - start_time
-            team_straight_data = pd.DataFrame([[t, driver, time_delta]], columns=straight_zone_data.columns)
-            straight_zone_data = pd.concat([straight_zone_data, team_straight_data], ignore_index=True)
-
-    speed_dict = {'Low': 140, 'Medium': 210}
-    turns_speeed_category = turns_speeed.groupby('Turn')['Speed'].median().reset_index()
-    turns_speeed_category = turns_speeed_category.rename(columns={'Speed': 'Median Speed Turn'})
-
-    def categorize_speed(speed):
-        if speed < speed_dict['Low']:
-            return 'Low'
-        elif speed < speed_dict['Medium']:
-            return 'Medium'
-        else:
-            return 'High'
-
-    turns_speeed_category['Category'] = turns_speeed_category['Median Speed Turn'].apply(categorize_speed)
-    turns_speeed = pd.merge(turns_speeed, turns_speeed_category, on='Turn', how='inner')
-    turns_exceptions = pd.read_csv('../resources/csv/Turns_exceptions.csv')
-    location = session.event.Location
-    year = session.event.year
-    turns_exceptions = turns_exceptions[turns_exceptions['Year'] == year]
-    turns_exceptions = turns_exceptions[turns_exceptions['Track'] == location]
-    turns_speeed_filtered = pd.merge(turns_speeed, turns_exceptions, on='Turn', how='left', indicator=True)
-    turns_speeed_filtered = turns_speeed_filtered[turns_speeed_filtered['_merge'] == 'left_only']
-    print(turns_speeed_filtered['Turn'].drop_duplicates())
-    turns_speeed_filtered = (turns_speeed_filtered.groupby(['Team', 'Category'])['Speed'].median().reset_index()
-                             .sort_values(['Category', 'Speed'], ascending=[True, False]))
-    print(turns_speeed_filtered)
-
-    unique_categories = turns_speeed_filtered['Category'].unique()
-    dfs_by_category = {}
-    for category in unique_categories:
-        dfs_by_category[category] = turns_speeed_filtered[turns_speeed_filtered['Category'] == category]
-
-    for category in unique_categories:
-        df_to_plot = dfs_by_category[category]
+    fastest_entries_index = turns_time.groupby(['Turn', 'Team'])['Time'].idxmin()
+    turns_time = turns_time.loc[fastest_entries_index]
+    turns_time['Time Difference'] = turns_time['Time'] - turns_time.groupby('Turn')['Time'].transform(min)
+    for name in turn_names:
+        df_to_plot = turns_time[turns_time['Turn'] == name].sort_values(by='Time Difference').reset_index(drop=True)
+        print(name)
+        for index, row in df_to_plot.iterrows():
+            print(f'{index + 1}: {row["Team"]} (+{row["Time Difference"]:.3f}s)')
         fix, ax = plt.subplots(figsize=(9, 8))
-        bars = plt.bar(df_to_plot['Team'], df_to_plot['Speed'])
-        colors = [team_colors_2024.get(i) for i in df_to_plot['Team']]
+        bars = plt.bar(df_to_plot['Team'], df_to_plot['Time Difference'])
+        colors = [team_colors[year].get(i) for i in df_to_plot['Team']]
         round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.1, linewidth=4)
-        annotate_bars(bars, ax, 0.1, 14, text_annotate='default', ceil_values=False, round=2,
+        annotate_bars(bars, ax, 0.01, 14, text_annotate='+{height}s', ceil_values=False, round=3,
                       y_negative_offset=0.04, annotate_zero=False, negative_offset=0)
 
-        plt.title(f'PERFORMANCE IN {category.upper()} SPEED CORNERS', font='Fira Sans', fontsize=24)
+        plt.title(f'PERFORMANCE IN {track.upper()} - {name.upper()}', font='Fira Sans', fontsize=24)
         plt.xlabel('Team', font='Fira Sans', fontsize=20)
-        plt.ylabel('Average speed', font='Fira Sans', fontsize=20)
+        plt.ylabel('Diff to fastest (s)', font='Fira Sans', fontsize=20)
         plt.xticks(rotation=90, font='Fira Sans', fontsize=18)
         plt.yticks(font='Fira Sans', fontsize=16)
-        plt.ylim(bottom=min(df_to_plot['Speed']) - 5, top=max(df_to_plot['Speed']) + 5)
+        plt.ylim(bottom=0, top=max(df_to_plot['Time Difference']) + 0.5)
         color_index = 0
         for label in ax.get_xticklabels():
             label.set_color('white')
@@ -522,5 +428,5 @@ def performance_by_turns(session):
             color_index += 1
         ax.yaxis.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
-        plt.savefig(f'../PNGs/PERFORMANCE IN {category.upper()} SPEED CORNERS.png', dpi=450)
+        plt.savefig(f'../PNGs/PERFORMANCE IN {track.upper()} - {name}.png', dpi=450)
         plt.show()

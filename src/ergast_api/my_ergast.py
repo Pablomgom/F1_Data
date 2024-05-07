@@ -166,7 +166,7 @@ class My_Ergast:
         pos_counter = 1
         fastest_lap = None
         for line in data_lines:
-            columns = line.split("//")
+            columns = line.split("\t")
             if have_country:
                 country = f'{get_country_names(columns[2 - offset])}'
             else:

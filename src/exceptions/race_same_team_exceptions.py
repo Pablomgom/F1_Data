@@ -20,6 +20,21 @@ def Red_Bull_Racing_2018(round, max_laps=0):
 def Red_Bull_Racing_2019(round, max_laps=0):
     return 0, max_laps
 
+def Renault_2019(round, max_laps=0):
+    return 0, max_laps
+
+def Toro_Rosso_2019(round, max_laps=0):
+    return 0, max_laps
+
+def Haas_F1_Team_2019(round, max_laps=0):
+    return 0, max_laps
+
+def Williams_2019(round, max_laps=0):
+    return 0, max_laps
+
+
+def Alfa_Romeo_Racing_2019(round, max_laps=0):
+    return 0, max_laps
 
 def Red_Bull_Racing_2020(round, max_laps=0):
     return 0, max_laps
@@ -189,6 +204,10 @@ def Aston_Martin_2024(round, max_laps=0):
 
 
 def McLaren_2024(round, max_laps=0):
+    if round == 5:
+        max_laps = 26
+    if round == 6:
+        max_laps = 40
     return 0, max_laps
 
 

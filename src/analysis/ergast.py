@@ -425,7 +425,7 @@ def comebacks_in_circuit(circuit, start=1950, end=2050):
             race.loc[:, 'ogGrid'] = race['grid']
             race.loc[:, 'grid'] = race['grid'].replace(0, len(race))
             race.loc[:, 'posChange'] = race['grid'] - race['position']
-            top_3 = sorted(set(race['posChange'].values), reverse=True)[:3]
+            top_3 = sorted(set(race['posChange'].values), reverse=True)
             for v in top_3:
                 comeback = race[race['posChange'] == v]
                 for i in range(len(comeback)):

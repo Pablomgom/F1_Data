@@ -133,7 +133,7 @@ def race_qualy_avg_metrics(year, session='Q', predict=False, mode=None):
     plt.show()
 
 
-def points_per_year(team, mode='team', point_system=2010, start=2014, end=2024):
+def points_per_year(team, mode='team', point_system=2010, start=2014, end=2050, round=None):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
     points_dict = {year: [] for year in range(start, end)}
@@ -141,16 +141,38 @@ def points_per_year(team, mode='team', point_system=2010, start=2014, end=2024):
     col = 'constructorName' if mode == 'team' else 'fullName'
     for race in r.content:
         race_year = race['year'].loc[0]
-        race = race[race[col] == team]
-        positions = race['position'].values
-        total_points_race = 0
-        for p in positions:
-            total_points_race += points_positions.get(p, 0)
-        points_dict[race_year].append(total_points_race)
+        current_round = race['round'].loc[0]
+        if round is None or current_round <= round:
+            race = race[race[col] == team]
+            positions = race['position'].values
+            total_points_race = 0
+            for p in positions:
+                total_points_race += points_positions.get(p, 0)
+            points_dict[race_year].append(total_points_race)
 
     mean_results = {key: np.mean(value) for key, value in points_dict.items()}
-    ordered_results = dict(sorted(mean_results.items(), key=lambda item: item[1], reverse=True))
+    ordered_points = dict(sorted(mean_results.items(), key=lambda item: item[1], reverse=True))
+    ordered_years = dict(sorted(mean_results.items(), key=lambda item: item[0], reverse=False))
     rank = 1
+    print('--------- MEAN ORDERED BY POINTS ---------')
+    for k, v in ordered_points.items():
+        print(f'{rank} - {k}: {v:.2f}')
+        rank += 1
+
+
+    print('--------- MEAN ORDERED BY YEARS ---------')
+    for k, v in ordered_years.items():
+        print(f'{k}: {v:.2f}')
+
+
+    total_points = {key: np.sum(value) for key, value in points_dict.items()}
+    ordered_results = dict(sorted(total_points.items(), key=lambda item: item[1], reverse=True))
+    ordered_years = dict(sorted(total_points.items(), key=lambda item: item[0], reverse=False))
+    rank = 1
+    print('--------- TOTAL ORDERED BY POINTS ---------')
     for k, v in ordered_results.items():
         print(f'{rank} - {k}: {v:.2f}')
         rank += 1
+    print('--------- TOTAL ORDERED BY YEAR ---------')
+    for k, v in ordered_years.items():
+        print(f'{k}: {v:.2f}')
