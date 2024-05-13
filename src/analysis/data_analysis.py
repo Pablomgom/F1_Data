@@ -54,7 +54,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, sav
                     session = fastf1.get_session(prev_year, circuit, type)
                     print(f'{i}: {type}')
                 else:
-                    session = fastf1.get_session(year, 'Suzuka', type)
+                    session = fastf1.get_session(year, 'Miami', type)
                 session.load()
                 prev_session = session
                 teams = set(session.laps['Team'].values)
@@ -248,19 +248,6 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
                 ADJUSTED R2: {adjusted_r2}
         """)
 
-    # coefficients = best_lasso.coef_
-    # for target_index in range(coefficients.shape[0]):
-    #     target_coefficients = coefficients[target_index, :]
-    #     coefficients_series = pd.Series(target_coefficients,
-    #                                     index=[c for c in predict_data.columns if c not in cols_to_predict and c not in ['Track', 'Session']])
-    #     plt.figure(figsize=(14, 12))
-    #     coefficients_series.plot(kind='bar')
-    #     plt.title(f'Feature Importance for Target {target_index + 1}')
-    #     plt.xlabel('Feature')
-    #     plt.ylabel('Coefficient Magnitude')
-    #     plt.tight_layout()
-    #     plt.show()
-
     prev_year_data = circuit_data[(circuit_data['Year'] == year - 1) & (circuit_data['Track'] == track)]
     if len(prev_year_data) == 0:
         raise Exception('No data for that year/track combination')
@@ -272,20 +259,23 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         adjusted_distances = distances.flatten() * recency_factor
         relevant_years_data['adjusted_similarity_score'] = adjusted_distances
         similar_tracks = relevant_years_data.sort_values(by='adjusted_similarity_score')
+        similar_tracks['recency_factor'] = 1
         if current_year - 1 in similar_tracks['Year'].values:
-            previous_year_track = similar_tracks[similar_tracks['Year'] == current_year - 1].iloc[1]
+            previous_year_track = similar_tracks[similar_tracks['Year'] == current_year - 1].iloc[0]
             current_year_similar_tracks = similar_tracks[similar_tracks['Year'] == current_year].head(top_n)
             final_similar_tracks = pd.concat([current_year_similar_tracks, previous_year_track.to_frame().T])
         else:
             final_similar_tracks = similar_tracks.head(top_n)
 
         last_three_sessions = historical_data.sort_values(by=['Year', 'Session'], ascending=[False, False]).head(top_n)
+        max_session = max(last_three_sessions['Session'])
+        last_three_sessions['recency_factor'] = (1 * (max_session - last_three_sessions['Session']))**2
         combined_results = pd.concat([final_similar_tracks, last_three_sessions])
         distances = euclidean_distances(combined_results[track_features], target_features)
         recency_factor = 1 / (current_year - combined_results['Year'] + 1)
         adjusted_distances = distances.flatten() * recency_factor
         combined_results['adjusted_similarity_score'] = adjusted_distances
-
+        combined_results['adjusted_similarity_score'] = combined_results['adjusted_similarity_score'] * combined_results['recency_factor']
         return combined_results
 
     def calculate_additional_features(similar_tracks, teams, track_features, predict_data, current_year=year):
@@ -294,7 +284,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         circuit_recent_data['year_weight'] = circuit_recent_data['Year'].apply(
             lambda x: 0.26666 if x == current_year else 0.2)
 
-        max_score = circuit_recent_data['adjusted_similarity_score'].max()
+        max_score = circuit_recent_data['adjusted_similarity_score'].mean()
         circuit_recent_data['weight'] = 1 / (circuit_recent_data['adjusted_similarity_score'] + max_score)
         circuit_recent_data['final_weight'] = circuit_recent_data['weight'] * circuit_recent_data['year_weight']
 

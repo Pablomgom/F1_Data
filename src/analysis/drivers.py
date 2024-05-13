@@ -486,12 +486,13 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
                 print(printed_line)
                 printed_line = ''
         try:
-            print(f'Percentage ahead: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
+            print(f'{type.upper()} H2H: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
         except:
             print(f'No {type} data for {d_1}')
 
-    print_results(race_result, 'race')
     print_results(qualy_result, 'qualy')
+    print_results(race_result, 'race')
+
 
     def update_csv(path, new_data):
         existing_df = pd.read_csv(path)
