@@ -1,4 +1,3 @@
-import csv
 import sys
 from time import sleep
 
@@ -6,21 +5,11 @@ import fastf1
 import traceback
 
 import pandas as pd
-import pdfminer
-import pdfplumber
 from fastf1.plotting import setup_mpl
 from fastf1.ergast import Ergast
 from matplotlib import pyplot as plt
 
-import src.utils.utils
-from src.analysis.drivers import race_qualy_h2h
-from src.awards.awards import awards_2023
-from src.db.db import Database
-from src.ergast_api.my_ergast import My_Ergast
 from src.menu.menu import get_funcs
-import requests
-from bs4 import BeautifulSoup
-import os
 
 from src.utils.utils import parse_args, is_session_first_arg
 
@@ -68,88 +57,6 @@ if __name__ == '__main__':
 #
 #
 
-    # def extract_information(full_text):
-    #     if full_text:
-    #         data = {
-    #             "Date": None,
-    #             "No / Driver": None,
-    #             "Fact": None,
-    #             "Offence": None,
-    #             "Decision": None,
-    #             "Reason": None
-    #         }
-    #         text_lines = full_text.split('\n')
-    #         decision_start = -1
-    #         reason_end = -1
-    #         reason_text = ""
-    #
-    #         for i, line in enumerate(text_lines):
-    #             if 'Date' in line:
-    #                 data['Date'] = line.split('Date')[-1].strip()
-    #             if 'Fact' in line:
-    #                 data['Fact'] = line.split('Fact')[-1].strip()
-    #             if 'Offence' in line:
-    #                 data['Offence'] = line.split('Offence')[-1].strip()
-    #             if 'Infringment' in line:
-    #                 data['Offence'] = line.split('Infringment')[-1].strip()
-    #             if 'Infringement' in line:
-    #                 data['Offence'] = line.split('Infringement')[-1].strip()
-    #             if 'No / Driver' in line:
-    #                 data['No / Driver'] = line.split('No / Driver')[-1].strip()
-    #             if 'Decision' in line:
-    #                 decision_start = i
-    #             if 'Reason' in line:
-    #                 reason_end = i  # Stop before this line
-    #                 reason_text = line.split('Reason')[-1].strip()
-    #                 break  # Assuming Reason is the last field to capture
-    #
-    #         if decision_start != -1 and reason_end != -1:
-    #             # Capture everything between Decision and Reason
-    #             data['Decision'] = "\n".join(text_lines[decision_start:reason_end]).strip().replace('Decision ', '')
-    #
-    #         # Find last period in the remaining text after 'Reason'
-    #         last_period = full_text.rfind('.')
-    #         if last_period != -1:
-    #             data['Reason'] = full_text[full_text.find(reason_text):last_period + 1].strip()
-    #
-    #         return data
-    #     return None
-    #
-    # base_url = 'https://www.fia.com'
-    # page_url = base_url + '/documents/championships/fia-formula-one-world-championship-14/season/season-2024-2043'
-    # csv_file_path = 'output_data.csv'
-    # fieldnames = ['Date', 'No / Driver', 'Fact', 'Offence', 'Decision', 'Reason']
-    # base_df = pd.DataFrame(columns=fieldnames)
-    # response = requests.get(page_url)
-    # soup = BeautifulSoup(response.text, 'html.parser')
-    # links = soup.find_all('a', href=True)
-    # file_links = [base_url + link['href'] if link['href'].startswith('/') else link['href'] for link in links if
-    #               '.pdf' in link['href'].lower()]
-    #
-    # download_dir = 'downloaded_files'
-    # os.makedirs(download_dir, exist_ok=True)
-    # for file_link in file_links:
-    #     filename = file_link.split('/')[-1]
-    #     print(filename)
-    #     if 'Decision' in filename or 'Offence' in filename or 'Infringement' in filename or 'Infringment' in filename:
-    #         response = requests.get(file_link)
-    #         file_path = os.path.join(download_dir, filename)
-    #         with open(file_path, 'wb') as file:
-    #             file.write(response.content)
-    #         try:
-    #             with pdfplumber.open(file_path) as pdf:
-    #                 full_text = ''.join(page.extract_text() for page in pdf.pages if page.extract_text())
-    #                 info = extract_information(full_text)
-    #                 if info:
-    #                     print("Writing row:", info)
-    #                     if not pd.isna(info['No / Driver']):
-    #                         df_to_append = pd.DataFrame([info])
-    #                         base_df = base_df._append(df_to_append, ignore_index=True)
-    #         except pdfminer.pdfparser.PDFSyntaxError:
-    #             print(f'{filename} not avilable')
-
-    # Print completion message
-    # print("Download completed. Files containing 'Decision' are saved.")
 
     while True:
         func = input(f"Enter the function name (or 'exit' to quit) [{previous_input}]: ")
