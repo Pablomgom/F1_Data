@@ -317,10 +317,10 @@ def get_retirements_per_driver(driver, start=1950, end=2100):
     values = top_N.values
 
     wedges, texts, autotexts = ax.pie(values, autopct=autopct_generator(values),
-                                       labels=['' for _ in labels],
-                                       wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors,
-                                       textprops={"color": "black", "ha": "center"},
-                                       radius=1.25)
+                                      labels=['' for _ in labels],
+                                      wedgeprops={'linewidth': 1, 'edgecolor': 'white'}, colors=colors,
+                                      textprops={"color": "black", "ha": "center"},
+                                      radius=1.25)
 
     for autotext in autotexts:
         autotext.set_fontsize(12)
@@ -428,7 +428,8 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
                             df_data['Year'] = [year]
                             df_data['Round'] = round_id
                             df_data['Result'] = np.nan
-                            df_data['Reason'] = f"At least one of the drivers {'did not finish' if race_type == 'Race' else 'was DSQ'}"
+                            df_data[
+                                'Reason'] = f"At least one of the drivers {'did not finish' if race_type == 'Race' else 'was DSQ'}"
                             df_to_append = pd.DataFrame(df_data)
                             dataframe = dataframe._append(df_to_append)
                             df_data = {}
@@ -486,13 +487,13 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
                 print(printed_line)
                 printed_line = ''
         try:
-            print(f'{type.upper()} H2H: {driver_ahead/(driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
+            print(
+                f'{type.upper()} H2H: {driver_ahead / (driver_ahead + teammate_ahead) * 100:.2f}% ({driver_ahead}/{driver_ahead + teammate_ahead})')
         except:
             print(f'No {type} data for {d_1}')
 
     print_results(qualy_result, 'qualy')
     print_results(race_result, 'race')
-
 
     def update_csv(path, new_data):
         existing_df = pd.read_csv(path)
@@ -500,8 +501,16 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
         final_df = combined_df.drop_duplicates(subset=['Driver', 'Year', 'Round'], keep='first')
         final_df.to_csv(path, index=False)
         print(f'New data stored in {path}: {len(final_df) - len(existing_df)}')
+
     update_csv('../resources/csv/race_h2h.csv', race_h2h)
     update_csv('../resources/csv/qualy_h2h.csv', qualy_h2h)
+
+
+def update_results(year, round):
+    drivers = set(My_Ergast().get_race_results([year], round).content[0]['fullName'].values)
+    for d in drivers:
+        race_qualy_h2h(d, start=year)
+
 
 def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
     """
@@ -535,7 +544,6 @@ def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
 
 
 def driver_results_per_year(driver, start=1900, end=2100):
-
     races = My_Ergast().get_race_results([i for i in range(start, end)])
     positions_gained = 0
     for r in races.content:
@@ -557,7 +565,6 @@ def driver_results_per_year(driver, start=1900, end=2100):
 
 
 def qualy_race_streaks(driver, session='qualy', win=True):
-
     races = pd.read_csv('../resources/ergast_data/races.csv')
     if session == 'qualy':
         all_qualys = pd.read_csv('../resources/csv/qualy_h2h.csv')
@@ -577,7 +584,8 @@ def qualy_race_streaks(driver, session='qualy', win=True):
     qualys = qualys[qualys['diff'] == (1 if win else -1)]
     valid_sessions = all_qualys[~pd.isna(all_qualys['Result'])]
     qualys.loc[pd.isna(qualys['Streak number']), 'Streak number'] = len(valid_sessions) - qualys['Round_diff'] + 1
-    qualys = qualys[~pd.isna(qualys['Streak number'])].sort_values(by=['Streak number', 'Year', 'Round'], ascending=[False, True, True])
+    qualys = qualys[~pd.isna(qualys['Streak number'])].sort_values(by=['Streak number', 'Year', 'Round'],
+                                                                   ascending=[False, True, True])
     for index, row in qualys.iterrows():
         year_start = row['Year']
         round_start = row['Round']
@@ -591,23 +599,20 @@ def qualy_race_streaks(driver, session='qualy', win=True):
 
         if round_finish == 0:
             prev_year_data = (valid_sessions[valid_sessions['Year'] < year_finish]
-                                    .sort_values(by=['Year', 'Round'], ascending=[False, False]))
+                              .sort_values(by=['Year', 'Round'], ascending=[False, False]))
             year_finish = prev_year_data['Year'].loc[0]
             round_finish = prev_year_data['Round'].loc[0]
 
         start_race = races[(races['year'] == year_start) & (races['round'] == round_start)]['raceName'].loc[0]
         if streak_number != 1:
             if win:
-                finish_race = races[(races['year'] == year_finish) & (races['round'] == round_finish)]['raceName'].loc[0]
+                finish_race = races[(races['year'] == year_finish) & (races['round'] == round_finish)]['raceName'].loc[
+                    0]
             else:
                 finish_race = (races[(races['year'] <= year_finish) &
-                                    ~((races['year'] == year_finish) & (races['round'] > round_finish))]
-                                    .sort_values(by=['year', 'round'], ascending=[False, False]).reset_index(drop=True)['raceName'].loc[0])
+                                     ~((races['year'] == year_finish) & (races['round'] > round_finish))]
+                .sort_values(by=['year', 'round'], ascending=[False, False]).reset_index(drop=True)['raceName'].loc[0])
             print(f'{streak_number}: From {year_start} {start_race.replace("Grand Prix", "GP")} '
-                           f'to {year_finish} {finish_race.replace("Grand Prix", "GP")}')
+                  f'to {year_finish} {finish_race.replace("Grand Prix", "GP")}')
         else:
             print(f'{streak_number}: {year_start} {start_race.replace("Grand Prix", "GP")}')
-
-
-
-

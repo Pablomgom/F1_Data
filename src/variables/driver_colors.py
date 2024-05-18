@@ -28,6 +28,31 @@ driver_colors_2010 = {
     'Jarno Trulli': '#006F62',  # Lotus Racing
 }
 
+
+driver_colors_2022 = {
+    'BOT': '#900000',
+    'ZHO': '#900000',
+    'TSU': '#1e3d61',
+    'RIC': '#eeb370',
+    'GAS': '#1e3d61',
+    'OCO': '#FF69B4',
+    'ALO': '#FF69B4',
+    'VET': '#006f62',
+    'STR': '#006f62',
+    'LEC': '#dc0000',
+    'SAI': '#dc0000',
+    'MAG': '#ffffff',
+    'MSC': '#ffffff',
+    'NOR': '#eeb370',
+    'HAM': '#00d2be',
+    'RUS': '#00d2be',
+    'VER': '#0600ef',
+    'PER': '#0600ef',
+    'ALB': '#005aff',
+    'LAT': '#005aff'}
+
+
+
 driver_colors_2023 = {
     'BOT': '#900000',
     'ZHO': '#900000',
@@ -83,6 +108,7 @@ driver_colors_2024 = {
 
 
 driver_colors = {
+    2022: driver_colors_2022,
     2023: driver_colors_2023,
     2024: driver_colors_2024
 }

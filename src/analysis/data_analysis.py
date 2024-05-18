@@ -366,26 +366,28 @@ def performance_by_turns(session, track):
     turn_names = turns['Name'].values
     turns_time = pd.DataFrame(columns=['Turn', 'Team', 'Driver', 'Time'])
     for d in drivers:
-        team_lap = session.laps.pick_driver(d).pick_fastest()
-        team = team_lap['Team']
-        team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
-        new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 50000)
-        interpolated_data = {'Distance': new_distance}
-        team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
+        for index, lap in session.laps.pick_driver(d).iterlaps():
+            team_lap = lap
+            team = team_lap['Team']
+            team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
+            new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 50000)
+            interpolated_data = {'Distance': new_distance}
+            team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
+            try:
+                for column in team_tel.columns:
+                    if column != 'Distance':
+                        cs = CubicSpline(team_tel['Distance'], team_tel[column])
+                        interpolated_data[column] = cs(new_distance)
+                team_tel = pd.DataFrame(interpolated_data)
 
-        for column in team_tel.columns:
-            if column != 'Distance':
-                cs = CubicSpline(team_tel['Distance'], team_tel[column])
-                interpolated_data[column] = cs(new_distance)
-        team_tel = pd.DataFrame(interpolated_data)
-
-        for index, turn in turns.iterrows():
-            start_time = np.interp(turn['Start'], team_tel['Distance'], team_tel['Time'])
-            end_time = np.interp(turn['End'], team_tel['Distance'], team_tel['Time'])
-            total_time = end_time - start_time
-            turn_data = pd.DataFrame([[turn['Name'], team, d, total_time]], columns=turns_time.columns)
-            turns_time = pd.concat([turns_time, turn_data], ignore_index=True)
-
+                for index, turn in turns.iterrows():
+                    start_time = np.interp(turn['Start'], team_tel['Distance'], team_tel['Time'])
+                    end_time = np.interp(turn['End'], team_tel['Distance'], team_tel['Time'])
+                    total_time = end_time - start_time
+                    turn_data = pd.DataFrame([[turn['Name'], team, d, total_time]], columns=turns_time.columns)
+                    turns_time = pd.concat([turns_time, turn_data], ignore_index=True)
+            except ValueError:
+                print(f'No valid lap for {d}')
     fastest_entries_index = turns_time.groupby(['Turn', 'Team'])['Time'].idxmin()
     turns_time = turns_time.loc[fastest_entries_index]
     turns_time['Time Difference'] = turns_time['Time'] - turns_time.groupby('Turn')['Time'].transform(min)
@@ -406,7 +408,7 @@ def performance_by_turns(session, track):
         plt.ylabel('Diff to fastest (s)', font='Fira Sans', fontsize=20)
         plt.xticks(rotation=90, font='Fira Sans', fontsize=18)
         plt.yticks(font='Fira Sans', fontsize=16)
-        plt.ylim(bottom=0, top=max(df_to_plot['Time Difference']) + 0.5)
+        plt.ylim(bottom=0, top=max(df_to_plot['Time Difference']) + 0.1)
         color_index = 0
         for label in ax.get_xticklabels():
             label.set_color('white')

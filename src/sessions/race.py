@@ -225,7 +225,7 @@ def tyre_strategies(session):
     plt.legend(handles=patches.values(), bbox_to_anchor=(0.5, -0.1),
                prop=get_font_properties('Fira Sans', 'large'), loc='upper center', ncol=2)
 
-    plt.title(session.event.OfficialEventName, font='Fira Sans', fontsize=18)
+    plt.title(f'TYRE STRATEGIES IN {session.event.Location.upper()}', font='Fira Sans', fontsize=26)
     plt.xlabel("Lap Number", font='Fira Sans', fontsize=14)
     plt.grid(False)
     ax.invert_yaxis()
@@ -550,15 +550,17 @@ def race_distance(session, top=10):
     plt.show()
 
 
-def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, session='R'):
+def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, session_type='R', number_rounds=None):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
     fuel_factors = pd.read_csv('../resources/csv/Fuel_factor.csv')
     schedule = [1] if round_id is not None else schedule
+    schedule = schedule if number_rounds is None else [i for i in range(number_rounds)]
     total_laps_d1 = []
     total_laps_d2 = []
     all_comparisons = {}
+    sessions_names = []
     for i in range(len(schedule)):
-        session = fastf1.get_session(year, i + 1 if round_id is None else round_id, session)
+        session = fastf1.get_session(year, i + 1 if round_id is None else round_id, session_type)
         session.load()
         fuel_data_session = i + 1 if round_id is None else round_id
         race_fuel_factor = fuel_factors[(fuel_factors['Round'] == fuel_data_session) &
@@ -583,12 +585,18 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, sess
                 team_d1 = session.laps.pick_driver(d1)['Team'].unique()[0]
                 team_d2 = session.laps.pick_driver(d2)['Team'].unique()[0]
                 from src.utils.utils import call_function_from_module
-                min_laps_d1, max_laps_d1 = call_function_from_module(race_same_team_exceptions,
-                                                                     f"{team_d1.replace(' ', '_')}_{year}",
-                                                                     i + 1 if round_id is None else round_id, session.total_laps)
-                min_laps_d2, max_laps_d2 = call_function_from_module(race_same_team_exceptions,
-                                                                     f"{team_d2.replace(' ', '_')}_{year}",
-                                                                     i + 1 if round_id is None else round_id, session.total_laps)
+                try:
+                    min_laps_d1, max_laps_d1 = call_function_from_module(race_same_team_exceptions,
+                                                                         f"{team_d1.replace(' ', '_')}_{year}",
+                                                                         i + 1 if round_id is None else round_id, session.total_laps)
+                    min_laps_d2, max_laps_d2 = call_function_from_module(race_same_team_exceptions,
+                                                                         f"{team_d2.replace(' ', '_')}_{year}",
+                                                                         i + 1 if round_id is None else round_id, session.total_laps)
+                except AttributeError:
+                    min_laps_d1 = 0
+                    max_laps_d1 = session.total_laps
+                    min_laps_d2 = 0
+                    max_laps_d2 = session.total_laps
                 min_laps = max(min_laps_d1, min_laps_d2, 1)
                 max_laps = min(max_laps_d1, max_laps_d2, len(session.laps.pick_driver(d1)), len(session.laps.pick_driver(d2)))
                 d1_laps = session.laps.pick_driver(d1)[min_laps:max_laps].pick_quicklaps().pick_wo_box()
@@ -605,7 +613,7 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, sess
                 total_laps_d1.extend(pd.to_timedelta(comparable_laps['EvoCorrected D1'], unit='s'))
                 total_laps_d2.extend(pd.to_timedelta(comparable_laps['EvoCorrected D2'], unit='s'))
                 if len(comparable_laps) > 0:
-
+                    sessions_names.append(session.event.Location)
                     sorted_laps_d1 = comparable_laps.sort_values(by='EvoCorrected D1')['EvoCorrected D1'].drop_duplicates()
                     sorted_laps_d2 = comparable_laps.sort_values(by='EvoCorrected D2')['EvoCorrected D2'].drop_duplicates()
                     trim_percent = 0.05
@@ -636,6 +644,7 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, sess
     path_to_save = f'../resources/race_pace/{year}/'
     file_name = f"Round - {round_id}" if all_teams else f"{d1} VS. {d2}"
     full_path = f'{path_to_save}/{file_name}.xlsx'
+    session_name_index = 0
     with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
         for sheet_name, df, in all_comparisons.items():
             df = df[['Driver 1', 'LapNumber D1', 'EvoCorrected D1', 'Compound', 'TyreLife',
@@ -653,7 +662,8 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, sess
             orange_fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
             yellow_fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
             white_fill = PatternFill(start_color='FFFFFF', end_color='FFFFFF', fill_type='solid')
-            compound_color = {'MEDIUM': yellow_fill, 'HARD': white_fill, 'SOFT': red_fill}
+            green_fill = PatternFill(start_color='32CD32', end_color='32CD32', fill_type='solid')
+            compound_color = {'MEDIUM': yellow_fill, 'HARD': white_fill, 'SOFT': red_fill, 'INTERMEDIATE': green_fill}
             for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
                 for cell in row:
                     if row[-1].value == 'Yes':
@@ -667,7 +677,8 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, sess
             else:
                 message = f'{d2} FASTER BY'
 
-            print(f'{message} {abs(time_diff):.3f}s')
+            print(f'{message} {abs(time_diff):.3f}s in {sessions_names[session_name_index]}')
+            session_name_index += 1
 
             worksheet.cell(row=1, column=worksheet.max_column + 2, value=f"{d1} Average Time")
             worksheet.cell(row=2, column=worksheet.max_column, value=f"{d2} Average Time")
@@ -703,9 +714,11 @@ def race_pace_between_drivers(year, d1, d2, round_id=None, all_teams=False, sess
 
         median = statistics.median(race_differences)
         mean = statistics.mean(race_differences)
+        trim_mean = stats.trim_mean(race_differences, 0.05)
         print(race_differences)
         print(f'MEDIAN DIFF {d1 if median < 0 else d2} FASTER: {median}')
         print(f'MEAN DIFF {d1 if mean < 0 else d2} FASTER: {mean}')
+        print(f'TRIM MEAN DIFF {d1 if trim_mean < 0 else d2} FASTER: {trim_mean}')
 
 def fuel_correct_factor(year, session_id=None):
     schedule = fastf1.get_event_schedule(year, include_testing=False)
@@ -719,8 +732,6 @@ def fuel_correct_factor(year, session_id=None):
         session_fuel_correct_factor = []
         drivers = session.laps['Driver'].unique()
         for d in drivers:
-            if d == 'VER':
-                a = 1
             laps = session.laps.pick_driver(d).pick_wo_box().pick_quicklaps()
             laps = laps[laps['Compound'].isin(tyres)]
             stints = laps.groupby(['Stint', 'Compound'])['Compound'].value_counts().reset_index()

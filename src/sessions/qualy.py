@@ -335,21 +335,17 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
             d1_time, d2_time = s_data[s_data['fullName'] == d1][s].iloc[0].total_seconds(), \
                 s_data[s_data['fullName'] == d2][s].iloc[0].total_seconds()
             diff = round(d1_time - d2_time, 3)
-            if year in ('2003', '2004', '2005'):
-                s_print = 'Q2'
-            else:
-                s_print = s
             if abs(diff) < 5:
                 positions = q.sort_values(by=s, ascending=True).reset_index(drop=True)
                 d1_pos = positions[positions['fullName'] == d1].index[0] + 1
                 d2_pos = positions[positions['fullName'] == d2].index[0] + 1
-                display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos, s_print)
+                display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos, s)
                 total_laps_d1.append(d1_time)
                 total_laps_d2.append(d2_time)
                 delta_per_year.setdefault((year, d2), []).append(diff)
                 break
             else:
-                print(f'No data for {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")} {s_print.upper()}')
+                print(f'No data for {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")} {s.upper()}')
 
     def display_time_comparison(year, q, d1_time, d2_time, diff, code_1, code_2, d1_pos, d2_pos, session=None):
         session_info = f" in {session.upper()}" if session else ""
@@ -372,7 +368,6 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
 
     for q in qualys:
         year = q['year'].iloc[0]
-        race = q['round'].iloc[0]
         team_data = q[q['fullName'] == d1]
         if len(team_data) != 1:
             continue

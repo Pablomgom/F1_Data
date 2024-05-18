@@ -112,6 +112,7 @@ def get_funcs():
         'tyre_deg': tyre_deg,
         'qualy_race_streaks': qualy_race_streaks,
         'track_temps': track_temps,
+        'update_results': update_results,
         'help': help
     }
 
