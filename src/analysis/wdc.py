@@ -286,7 +286,7 @@ def proccess_season_data(data, drivers, driver_points, system):
 
     driver_points = {driver: 0 for driver in drivers}
     for round_data in data:  # Exclude the last item for the special case
-        for driver, pos in round_data[round_data['fullName'].isin(drivers)][['fullName', 'position']].values:
+        for driver, pos in round_data[round_data['familyName'].isin(drivers)][['familyName', 'position']].values:
             if pos in system:
                 driver_points[driver] += system[pos]
 
@@ -304,7 +304,7 @@ def simulate_season_different_psystem(year, system):
 
     ergast = Ergast()
     race_data = ergast.get_race_results(season=year, limit=1000).content
-    drivers = set([code for df in race_data for code in df['fullName'].values])
+    drivers = set([code for df in race_data for code in df['familyName'].values])
     driver_points = {}
     for driver in drivers:
         driver_points[driver] = 0
@@ -322,7 +322,7 @@ def simulate_qualy_championship(year, system):
    """
 
     qualy_data = My_Ergast().get_qualy_results([year]).content
-    drivers = set([code for df in qualy_data for code in df['fullName'].values])
+    drivers = set([code for df in qualy_data for code in df['familyName'].values])
     driver_points = {}
     for driver in drivers:
         driver_points[driver] = 0

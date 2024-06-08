@@ -43,7 +43,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, sav
     if prev_year is None:
         add_round = 0
     else:
-        add_round = 1
+        add_round = 2
 
     for i in range(0, rounds + add_round):
         prev_session = None
@@ -54,7 +54,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, sav
                     session = fastf1.get_session(prev_year, circuit, type)
                     print(f'{i}: {type}')
                 else:
-                    session = fastf1.get_session(year, 'Miami', type)
+                    session = fastf1.get_session(year, 'Monaco', type)
                 session.load()
                 prev_session = session
                 teams = set(session.laps['Team'].values)
@@ -253,36 +253,30 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         raise Exception('No data for that year/track combination')
 
     def find_similar_tracks(target_features, historical_data, track_features, top_n=3, current_year=year):
-        relevant_years_data = historical_data[historical_data['Year'].isin([current_year, current_year - 1])]
-        distances = euclidean_distances(relevant_years_data[track_features], target_features)
-        recency_factor = 1 / (current_year - relevant_years_data['Year'] + 1)
-        adjusted_distances = distances.flatten() * recency_factor
-        relevant_years_data['adjusted_similarity_score'] = adjusted_distances
-        similar_tracks = relevant_years_data.sort_values(by='adjusted_similarity_score')
-        similar_tracks['recency_factor'] = 1
-        if current_year - 1 in similar_tracks['Year'].values:
-            previous_year_track = similar_tracks[similar_tracks['Year'] == current_year - 1].iloc[0]
-            current_year_similar_tracks = similar_tracks[similar_tracks['Year'] == current_year].head(top_n)
-            final_similar_tracks = pd.concat([current_year_similar_tracks, previous_year_track.to_frame().T])
-        else:
-            final_similar_tracks = similar_tracks.head(top_n)
+        # relevant_years_data = historical_data[historical_data['Year'].isin([current_year])]
+        # distances = euclidean_distances(relevant_years_data[track_features], target_features)
+        # recency_factor = 1 / (current_year - relevant_years_data['Year'] + 1)
+        # adjusted_distances = distances.flatten() * recency_factor
+        # relevant_years_data['adjusted_similarity_score'] = adjusted_distances
+        # similar_tracks = relevant_years_data.sort_values(by='adjusted_similarity_score')
+        # similar_tracks['recency_factor'] = 1
+        # final_similar_tracks = similar_tracks.head(top_n)
 
         last_three_sessions = historical_data.sort_values(by=['Year', 'Session'], ascending=[False, False]).head(top_n)
         max_session = max(last_three_sessions['Session'])
-        last_three_sessions['recency_factor'] = (1 * (max_session - last_three_sessions['Session']))**2
-        combined_results = pd.concat([final_similar_tracks, last_three_sessions])
+        # combined_results = pd.concat([final_similar_tracks, last_three_sessions])
+        combined_results = last_three_sessions
         distances = euclidean_distances(combined_results[track_features], target_features)
         recency_factor = 1 / (current_year - combined_results['Year'] + 1)
         adjusted_distances = distances.flatten() * recency_factor
         combined_results['adjusted_similarity_score'] = adjusted_distances
-        combined_results['adjusted_similarity_score'] = combined_results['adjusted_similarity_score'] * combined_results['recency_factor']
         return combined_results
 
     def calculate_additional_features(similar_tracks, teams, track_features, predict_data, current_year=year):
         calculated_features = {}
         circuit_recent_data = pd.merge(predict_data, similar_tracks, 'inner', ['Year', 'Track'])
         circuit_recent_data['year_weight'] = circuit_recent_data['Year'].apply(
-            lambda x: 0.26666 if x == current_year else 0.2)
+            lambda x: 1)
 
         max_score = circuit_recent_data['adjusted_similarity_score'].mean()
         circuit_recent_data['weight'] = 1 / (circuit_recent_data['adjusted_similarity_score'] + max_score)
@@ -366,14 +360,14 @@ def performance_by_turns(session, track):
     turn_names = turns['Name'].values
     turns_time = pd.DataFrame(columns=['Turn', 'Team', 'Driver', 'Time'])
     for d in drivers:
-        for index, lap in session.laps.pick_driver(d).iterlaps():
-            team_lap = lap
-            team = team_lap['Team']
-            team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
-            new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 50000)
-            interpolated_data = {'Distance': new_distance}
-            team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
+        for index, lap in session.laps.pick_driver(d).pick_not_deleted().iterlaps():
             try:
+                team_lap = lap
+                team = team_lap['Team']
+                team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
+                new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 50000)
+                interpolated_data = {'Distance': new_distance}
+                team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
                 for column in team_tel.columns:
                     if column != 'Distance':
                         cs = CubicSpline(team_tel['Distance'], team_tel[column])
@@ -399,8 +393,8 @@ def performance_by_turns(session, track):
         fix, ax = plt.subplots(figsize=(9, 8))
         bars = plt.bar(df_to_plot['Team'], df_to_plot['Time Difference'])
         colors = [team_colors[year].get(i) for i in df_to_plot['Team']]
-        round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.1, linewidth=4)
-        annotate_bars(bars, ax, 0.01, 14, text_annotate='+{height}s', ceil_values=False, round=3,
+        round_bars(bars, ax, colors, color_1=None, color_2=None, y_offset_rounded=0.03, corner_radius=0.08, linewidth=4)
+        annotate_bars(bars, ax, 0.003, 14, text_annotate='+{height}s', ceil_values=False, round=3,
                       y_negative_offset=0.04, annotate_zero=False, negative_offset=0)
 
         plt.title(f'PERFORMANCE IN {track.upper()} - {name.upper()}', font='Fira Sans', fontsize=24)

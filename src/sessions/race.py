@@ -254,7 +254,7 @@ def race_pace_top_10(session, threshold=1.07):
     drivers = set(session.laps['Driver'])
     total_laps = pd.DataFrame()
     for d in drivers:
-        if d not in ['STR', 'BOT']:
+        if d not in ['N']:
             d_laps = pd.DataFrame(session.laps.pick_driver(d).pick_quicklaps(threshold).pick_wo_box())
             total_laps = total_laps._append(d_laps)
     total_laps = total_laps.groupby(['Driver', 'Team'])['LapTime'].mean().reset_index()
@@ -941,7 +941,7 @@ def race_diff_v2(year, round=None, save=False):
 def percentage_race_ahead(start=2001, end=2024):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['miami']
+    circuits = ['villeneuve']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:

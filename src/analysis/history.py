@@ -458,22 +458,22 @@ def victories_per_driver_team(start=2014, end=2024):
 
 def difference_q1():
     ergast = My_Ergast()
-    qualys = ergast.get_qualy_results([i for i in range(2014, 2024)]).content
+    qualys = ergast.get_qualy_results([i for i in range(2014, 2025)]).content
     delta_diff = {}
     for q in qualys:
         q = q[~pd.isna(q['q1'])]
         year = q["year"].loc[0]
         min_time = min(q['q1'])
         max_time = max(q['q1'])
-        delta = (max_time - min_time) / min_time
+        delta = ((max_time - min_time) / min_time) * 100
         if year not in delta_diff:
             delta_diff[year] = [delta]
         else:
             delta_diff[year].append(delta)
     for y, d in delta_diff.items():
         print(f'{y}: '
-              f'MEDIAN: {round(statistics.median(d), 3)}'
-              f' MEAN: {round(statistics.mean(d), 3)}')
+              f'MEDIAN: {round(statistics.median(d), 2)}%'
+              f' MEAN: {round(statistics.mean(d), 2)}%')
 
 
 def difference_second_team():
@@ -616,7 +616,7 @@ def avg_position_season(season):
     for r in races.content:
         for index, row in r.iterrows():
             status = row['status']
-            name = row['fullName']
+            name = row['familyName']
             if status == 'Finished' or '+' in status:
                 position = row['position']
                 if name not in positions_dict:

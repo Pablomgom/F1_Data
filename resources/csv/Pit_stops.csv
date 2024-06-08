@@ -965,3 +965,36 @@ Pos,Team,Driver,Time,Lap,Points,Race_ID,Year,Race_Name
 26,Haas,Magnussen,9.85,28,,6,2024,Miami
 27,McLaren,Piastri,10.70,40,,6,2024,Miami
 28,Haas,Magnussen,11.05,31,,6,2024,Miami
+1,Red Bull,Perez,2.09,37,25,7,2024,Imola
+2,Mercedes,Hamilton,2.12,27,18,7,2024,Imola
+3,McLaren,Piastri,2.24,23,15,7,2024,Imola
+4,Mercedes,Russell,2.28,52,12,7,2024,Imola
+5,Aston Martin,Alonso,2.36,40,10,7,2024,Imola
+6,RB,Tsunoda,2.37,12,8,7,2024,Imola
+7,Mercedes,Russell,2.41,21,,7,2024,Imola
+8,Aston Martin,Stroll,2.43,37,6,7,2024,Imola
+9,McLaren,Norris,2.46,22,4,7,2024,Imola
+10,Alpine,Ocon,2.51,25,2,7,2024,Imola
+11,Williams,Albon,2.55,9,1,7,2024,Imola
+12,Haas,Hulkenberg,2.57,13,,7,2024,Imola
+13,Alpine,Gasly,2.63,8,,7,2024,Imola
+14,Sauber,Zhou,2.64,33,,7,2024,Imola
+15,Red Bull,Verstappen,2.69,24,,7,2024,Imola
+16,Aston Martin,Alonso,2.70,59,,7,2024,Imola
+17,Sauber,Bottas,2.71,8,,7,2024,Imola
+18,RB,Ricciardo,2.75,11,,7,2024,Imola
+19,Ferrari,Sainz,2.79,27,,7,2024,Imola
+20,Ferrari,Leclerc,2.81,25,,7,2024,Imola
+21,Alpine,Gasly,3.07,30,,7,2024,Imola
+22,Haas,Magnussen,3.48,37,,7,2024,Imola
+23,Williams,Sargeant,3.57,31,,7,2024,Imola
+24,Aston Martin,Alonso,3.84,7,,7,2024,Imola
+25,Williams,Albon,3.96,28,,7,2024,Imola
+26,Williams,Albon,4.21,8,,7,2024,Imola
+1,Red Bull,Verstappen,2.10,53,25,8,2024,Monaco
+2,Aston Martin,Stroll,2.37,44,18,8,2024,Monaco
+3,Sauber,Zhou,2.51,72,15,8,2024,Monaco
+4,Mercedes,Hamilton,2.55,52,12,8,2024,Monaco
+5,Sauber,Bottas,2.56,16,10,8,2024,Monaco
+6,Williams,Sargeant,2.66,59,8,8,2024,Monaco
+7,Aston Martin,Stroll,5.37,50,,8,2024,Monaco

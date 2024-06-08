@@ -4,7 +4,8 @@ import fastf1
 import numpy as np
 import pandas as pd
 from fastf1.core import Laps
-from fastf1.ergast import Ergast
+from datetime import timedelta
+
 from matplotlib import pyplot as plt
 from fastf1 import utils, plotting
 from pyod.models.knn import KNN
@@ -15,7 +16,8 @@ from src.ergast_api.my_ergast import My_Ergast
 from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
-from src.utils.utils import append_duplicate_number, create_rounded_barh_custom, create_rounded_barh, format_timedelta
+from src.utils.utils import append_duplicate_number, create_rounded_barh_custom, create_rounded_barh, format_timedelta, \
+    string_to_timedelta
 from src.variables.team_colors import team_colors_2023, team_colors
 from scipy import stats
 
@@ -104,7 +106,7 @@ def qualy_results(session, optimal=False):
     plt.show()
 
 
-def qualy_diff(year, round=None, session='Q'):
+def qualy_diff(year, round=None, max_rounds=None, session_type='Q'):
     """
        Plot the qualy time diff between 2 teams
 
@@ -118,10 +120,11 @@ def qualy_diff(year, round=None, session='Q'):
     session_names = []
     schedule = fastf1.get_event_schedule(year, include_testing=False)
     schedule = [1] if round is not None else schedule
+    schedule = [i for i in range(0, max_rounds)] if max_rounds is not None else schedule
     delta_diff = {}
     for i in range(len(schedule)):
         qualy_delta_diffs = {}
-        session = fastf1.get_session(year, i + 1 if round is None else round, session)
+        session = fastf1.get_session(year, i + 1 if round is None else round, session_type)
         session.load(telemetry=True)
         session_names.append(session.event['Location'].split('-')[0])
         from src.utils.utils import call_function_from_module
@@ -169,11 +172,11 @@ def qualy_diff(year, round=None, session='Q'):
 
     session_names = append_duplicate_number(session_names)
 
-    fig, ax1 = plt.subplots(figsize=(12, 10))
+    fig, ax1 = plt.subplots(figsize=(10, 10))
     plt.rcParams["font.family"] = "Fira Sans"
     for team, deltas in delta_diff.items():
         plt.plot(session_names, deltas, label=team, marker='o',
-                 color=team_colors_2023.get(team), markersize=7, linewidth=3)
+                 color=team_colors[year].get(team), markersize=10, linewidth=4.5)
 
         for i, delta in enumerate(deltas):
             if np.isnan(delta):
@@ -183,15 +186,15 @@ def qualy_diff(year, round=None, session='Q'):
                 if prev_index is not None and next_index is not None:
                     plt.plot([session_names[prev_index], session_names[next_index]],
                              [deltas[prev_index], deltas[next_index]],
-                             color=team_colors_2023.get(team), linewidth=1.25, linestyle='--')
+                             color=team_colors[year].get(team), linewidth=1.25, linestyle='--')
 
     plt.gca().invert_yaxis()
-    plt.legend(loc='lower right', fontsize='large')
+    plt.legend(loc='lower left', fontsize='medium')
     plt.title(f'{year} AVERAGE QUALY DIFF PER CIRCUIT', font='Fira Sans', fontsize=24)
     plt.ylabel('Percentage time difference (%)', font='Fira Sans', fontsize=20)
     plt.xlabel('Circuit', font='Fira Sans', fontsize=20)
     ax1.yaxis.grid(True, linestyle='--')
-    ax1.xaxis.grid(True, linestyle='--', alpha=0.2)
+    ax1.xaxis.grid(True, linestyle='--')
     plt.xticks(rotation=90, fontsize=15, fontname='Fira Sans')
     plt.yticks(fontsize=15, fontname='Fira Sans')
     plt.tight_layout()
@@ -257,9 +260,9 @@ def qualy_margin(circuit, start=1950, end=2050, order='Descending'):
         print(f'{r[0]}: {m[1]}')
 
 
-def percentage_qualy_ahead(start=2001, end=2024):
+def percentage_qualy_ahead(start=2001, end=2050):
     ergast = My_Ergast()
-    circuits = ['miami']
+    circuits = ['villeneuve']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:
@@ -361,6 +364,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
             f'in {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")}{session_info}')
 
     qualys = My_Ergast().get_qualy_results(list(range(start, end))).content
+    exceptions = pd.read_csv('../resources/csv/Qualy_exceptions.csv')
     delta_per_year = {}
     teammates_per_year = {}
     sessions = ['q3', 'q2', 'q1']
@@ -368,6 +372,8 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
 
     for q in qualys:
         year = q['year'].iloc[0]
+        race_round = q['round'].iloc[0]
+        race_name= q['raceName'].iloc[0]
         team_data = q[q['fullName'] == d1]
         if len(team_data) != 1:
             continue
@@ -375,17 +381,38 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
         team = team_data['constructorName'].iloc[0]
         teammates = q[q['constructorName'] == team].query("fullName != @d1")['fullName'].values
 
-        for d2 in teammates:
-            teammates_per_year.setdefault(year, []).append(d2)
-            full_data = q[q['fullName'].isin([d1, d2])]
+        for team_mate in teammates:
+            teammates_per_year.setdefault(year, []).append(team_mate)
+            full_data = q[q['fullName'].isin([d1, team_mate])].copy(deep=True)
             comparison_years = set(range(1950, 1996)) | {2005}
+            qualy_exc = exceptions[(exceptions['Year'] == year) & (exceptions['Round'] == race_round)]
+            qualy_exc = pd.merge(full_data, qualy_exc, left_on='fullName', right_on='Driver', how='inner')
+            if len(qualy_exc) > 0:
+                if qualy_exc['OmitQualy'].loc[0]:
+                    print(f'{qualy_exc["Reason"].loc[0]} in {year} {race_name}')
+                    continue
+                else:
+                    max_session = qualy_exc['Max_session'].loc[0]
+                    driver = qualy_exc['Driver'].loc[0]
+                    manual_time = string_to_timedelta(qualy_exc["Time"].loc[0])
+                    delete = True
+                    for ses in sessions:
+                        if ses == max_session:
+                            delete = False
+                        if delete:
+                            full_data.loc[:, ses] = pd.NaT
+                    text = ''
+                    if isinstance(manual_time, timedelta):
+                        full_data.loc[full_data['fullName'] == driver, max_session] = manual_time
+                        text = f'{qualy_exc["Time"].loc[0]} reinstated'
+                    print(f'{qualy_exc["Reason"].loc[0]} {text} - {year} {race_name}')
 
             if year in comparison_years:
-                d1_time, d2_time = get_min_times(full_data, d1, d2)
+                d1_time, d2_time = get_min_times(full_data, d1, team_mate)
                 process_times(year, q, full_data, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year,
-                              d1, d2)
+                              d1, team_mate)
             else:
-                process_sessions(year, q, full_data, d1, d2, sessions, total_laps_d1, total_laps_d2, delta_per_year)
+                process_sessions(year, q, full_data, d1, team_mate, sessions, total_laps_d1, total_laps_d2, delta_per_year)
 
     for y, d in delta_per_year.items():
         trunc_mean = stats.trim_mean(d, 0.1)

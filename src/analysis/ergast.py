@@ -311,7 +311,7 @@ def laps_completed(year):
         count += 1
 
 
-def winning_positions_per_circuit(circuit, start=1950, end=2024):
+def winning_positions_per_circuit(circuit, start=1950, end=2050):
     """
     Return the winning positions from each year for a circuit
     :param circuit: circuit
@@ -340,6 +340,10 @@ def winning_positions_per_circuit(circuit, start=1950, end=2024):
         for v in values:
             print(v)
 
+    positions_dict = dict(sorted(positions_dict.items(), reverse=False))
+    for key, values in positions_dict.items():
+        print(f'FROM P{key}: {len(values)} times')
+
 
 def q3_appearances(year):
     ergast = My_Ergast()
@@ -347,10 +351,10 @@ def q3_appearances(year):
     drivers_dict = {}
     different_drivers = []
     for qualy in q.content:
-        q_drivers = qualy['fullName'].values
+        q_drivers = qualy['familyName'].values
         different_drivers.extend(q_drivers)
         for d in q_drivers:
-            qualy_data = qualy[qualy['fullName'] == d]
+            qualy_data = qualy[qualy['familyName'] == d]
             position = qualy_data['position'].loc[0]
             q3_time = qualy_data['q3'].loc[0]
             if position <= 10 or not pd.isna(q3_time):

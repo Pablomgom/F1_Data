@@ -39,8 +39,7 @@ def avg_driver_position(driver, team, year, session='Q'):
         drivers = []
         for gp in data.content:
             for d in gp['driverCode']:
-                if d not in ['LAW', 'DEV']:
-                    drivers.append(d)
+                drivers.append(d)
         drivers_array = set(drivers)
         drivers = {d: [] for d in drivers_array}
         race_count = 0
@@ -540,7 +539,7 @@ def get_driver_results_circuit(driver, circuit, start=1950, end=2100):
                 position = 'P' + str(position)
             team = results['constructorName'].values[0]
             medal = get_medal(position)
-            print(f'{medal}{year}: From P{grid} to {position} with {team}')
+            print(f'{medal}{year}: From P{grid} to {position} ({team})')
 
 
 def driver_results_per_year(driver, start=1900, end=2100):

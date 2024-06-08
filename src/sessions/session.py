@@ -262,18 +262,19 @@ def session_diff_last_year(year, round_id, prev_year, session='Q'):
 
     for team in teams_to_plot:
         fast_current = current.laps.pick_team(team).pick_fastest()['LapTime']
-        current_top_speed = max(current.laps.pick_team(team).pick_fastest().telemetry['Speed'])
+        # current_top_speed = max(current.laps.pick_team(team).pick_fastest().telemetry['Speed'])
         if team == 'Kick Sauber':
             team_prev = 'Alfa Romeo'
         elif team == 'RB':
             team_prev = 'AlphaTauri'
         else:
             team_prev = team
+
         fast_prev = previous.laps.pick_team(team_prev).pick_fastest()['LapTime']
-        prev_top_speed = max(previous.laps.pick_team(team_prev).pick_fastest().telemetry['Speed'])
+        # prev_top_speed = max(previous.laps.pick_team(team_prev).pick_fastest().telemetry['Speed'])
         delta_time = fast_current.total_seconds() - fast_prev.total_seconds()
         delta_times.append(round(delta_time, 3))
-        print(f'{team} {current_top_speed - prev_top_speed}')
+        # print(f'{team} {current_top_speed - prev_top_speed}')
         color = team_colors.get(year)[team]
         colors.append(color)
 
@@ -656,7 +657,7 @@ def fastest_by_point(session, team_1, team_2, scope='Team', lap=None):
     plt.show()
 
 
-def track_dominance(session, team_1, team_2):
+def track_dominance(session, team_1, team_2, mode='T'):
     """
        Plot the track dominance of 2 teams in their fastest laps
 
@@ -665,10 +666,13 @@ def track_dominance(session, team_1, team_2):
        team_1 (str): Team 1
        team_2 (str): Team 2
     """
-
-    lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
+    if mode == 'T':
+        lap_team_1 = session.laps.pick_team(team_1).pick_fastest()
+        lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
+    else:
+        lap_team_1 = session.laps.pick_driver(team_1).pick_fastest()
+        lap_team_2 = session.laps.pick_driver(team_2).pick_fastest()
     tel_team_1 = lap_team_1.telemetry
-    lap_team_2 = session.laps.pick_team(team_2).pick_fastest()
     delta_time, ref_tel, compare_tel = utils.delta_time(lap_team_1, lap_team_2)
     final_value = ((lap_team_2['LapTime'] - lap_team_1['LapTime']).total_seconds())
     year = session.date.year
@@ -681,7 +685,7 @@ def track_dominance(session, team_1, team_2):
 
     delta_time = adjust_to_final(delta_time, final_value)
     delta_time = delta_time.reset_index(drop=True)
-    num_stretches = 30
+    num_stretches = 25
     stretch_len = len(delta_time) // num_stretches
     stretched_delta_time = []
 
@@ -720,8 +724,12 @@ def track_dominance(session, team_1, team_2):
 
         return smoothed_data
 
-    color_t1 = team_colors.get(year).get(team_1)
-    color_t2 = team_colors.get(year).get(team_2)
+    if mode == 'T':
+        color_t1 = team_colors.get(year).get(team_1)
+        color_t2 = team_colors.get(year).get(team_2)
+    else:
+        color_t1 = 'red'
+        color_t2 = 'blue'
     segments = smooth_data(track, window_size=7)
     segments = rotate(segments, session.get_circuit_info().rotation / 180 * np.pi)
     colors = [color_t1 if value == 0 else color_t2 for value in delta_time_team]
@@ -763,6 +771,10 @@ def get_fastest_data(session, fastest_lap=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    # drivers.remove('ZHO')
+    # drivers.remove('MAG')
+    # drivers.remove('PER')
+    # drivers.remove('HUL')
     year = session.date.year
     circuit_speed = {}
     colors_dict = {}
@@ -782,7 +794,7 @@ def get_fastest_data(session, fastest_lap=True):
                 if top_speed != 0:
                     circuit_speed[driver] = top_speed
                     colors_dict[driver] = team
-        except KeyError:
+        except (KeyError, ValueError):
             print(f'No data for {driver}')
         print(circuit_speed)
 
@@ -1004,6 +1016,7 @@ def get_fastest_sectors(session, average=False):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
+    # drivers.remove('ZHO')
     year = session.date.year
     sector_times = pd.DataFrame(columns=['Sector1Time', 'Sector2Time', 'Sector3Time', 'Color'])
     for driver in drivers:

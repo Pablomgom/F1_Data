@@ -5,30 +5,7 @@ import pandas as pd
 
 from src.ergast_api.ergast_struct import ergast_struct
 from src.exceptions.pit_stops_exceptions import filter_pit_stops
-from src.utils.utils import get_country_names
-
-
-def string_to_timedelta(time_str, convert=True):
-    try:
-        time_parts = time_str.replace('+', '').split(':')
-        if convert:
-            time_parts[1] = time_parts[1].ljust(6, '0')
-        if len(time_parts) == 3:
-            hours = int(time_parts[0])
-            minutes = int(time_parts[1])
-            seconds, milliseconds = map(float, time_parts[2].split('.'))
-            return timedelta(hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds)
-        elif len(time_parts) == 2:
-            minutes = int(time_parts[0])
-            seconds, milliseconds = map(float, time_parts[1].split('.'))
-            return timedelta(minutes=minutes, seconds=seconds, milliseconds=milliseconds)
-        elif len(time_parts) == 1:
-            seconds, milliseconds = map(float, time_parts[0].split('.'))
-            return timedelta(seconds=seconds, milliseconds=milliseconds)
-        else:
-            print('Fecha con formato chungo')
-    except:
-        return pd.NaT
+from src.utils.utils import get_country_names, string_to_timedelta
 
 
 def load_csv(csv, is_qualy=True):
