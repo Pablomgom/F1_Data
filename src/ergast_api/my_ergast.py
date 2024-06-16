@@ -104,7 +104,8 @@ class My_Ergast:
         results = pd.merge(results, self.status, on='statusId', how='inner')
         results = pd.merge(results, self.circuits, on='circuitId', how='inner')
         results['fastestLapTime'] = results['fastestLapTime'].apply(string_to_timedelta)
-        results['totalRaceTime'] = results['totalRaceTime'].apply(string_to_timedelta)
+        results['totalRaceTime'] = None
+        results['driverCurrentNumber'] = None
         results['rank'] = None
         results['fastestLapSpeed'] = None
         results['fullName'] = results['givenName'] + ' ' + results['familyName']

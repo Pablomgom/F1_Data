@@ -328,3 +328,39 @@ def simulate_qualy_championship(year, system):
         driver_points[driver] = 0
     system = point_systems[system]
     proccess_season_data(qualy_data, drivers, driver_points, system)
+
+
+
+def worst_drivers(year, point_system=2010, sample_dict=None):
+
+
+    races = My_Ergast().get_race_results([year])
+    dict_poins = point_systems.get(point_system)
+    wdc_dict = {}
+    for r in races.content:
+        r = r.sort_values(by='position', ascending=False).reset_index(drop=True)
+        for index, row in r.iterrows():
+            position = index + 1
+            driver = row['familyName']
+            if position in dict_poins:
+                points = dict_poins[position]
+                if driver in wdc_dict:
+                    wdc_dict[driver] += points
+                else:
+                    wdc_dict[driver] = points
+            else:
+                if driver not in wdc_dict:
+                    wdc_dict[driver] = 0
+
+    sorted_dict = dict(sorted(wdc_dict.items(), key=lambda item: item[1], reverse=True))
+
+    rank = 1
+    prev_value = None
+
+    for idx, (key, value) in enumerate(sorted_dict.items(), start=1):
+        if value != prev_value:
+            rank = idx
+        print(f"{rank} - {key}: {value}")
+        prev_value = value
+
+

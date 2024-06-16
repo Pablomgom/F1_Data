@@ -31,29 +31,29 @@ if __name__ == '__main__':
 
 
 #     data = """
-# 1	1	Monaco Charles Leclerc	Ferrari	1:11.584	1:10.825	1:10.270	1
-# 2	16	Australia Oscar Piastri	McLaren-Mercedes	1:11.500	1:10.756	1:10.424	2
-# 3	55	Spain Carlos Sainz	Ferrari	1:11.543	1:11.075	1:10.518	3
-# 4	11	United Kingdom Lando Norris	McLaren-Mercedes	1:11.760	1:10.732	1:10.542	4
-# 5	4	United Kingdom George Russell	Mercedes	1:11.492	1:10.929	1:10.543	5
-# 6	81	Netherlands Max Verstappen	Red Bull Racing-Honda RBPT	1:11.711	1:10.745	1:10.567	6
-# 7	63	United Kingdom Lewis Hamilton	Mercedes	1:11.528	1:11.056	1:10.621	7
-# 8	44	Japan Yuki Tsunoda	RB-Honda RBPT	1:11.852	1:11.106	1:10.858	8
-# 9	27	Thailand Alexander Albon	Williams-Mercedes	1:11.623	1:11.216	1:10.858	9
-# 10	22	France Pierre Gasly	Alpine-Renault	1:11.714	1:10.896	1:11.311	10
-# 11	18	France Esteban Ocon	Alpine-Renault	1:11.887	1:11.285	N/A	11
-# 12	10	Germany Nico Hülkenberg	Haas-Ferrari	1:11.876	1:11.440	N/A	12
-# 13	31	Australia Daniel Ricciardo	RB-Honda RBPT	1:11.785	1:11.482	N/A	13
-# 14	23	Canada Lance Stroll	Aston Martin Aramco-Mercedes	1:11.728	1:11.563	N/A	14
-# 15	14	Denmark Kevin Magnussen	Haas-Ferrari	1:11.832	1:11.440	N/A	15
-# 16	77	Spain Fernando Alonso	Aston Martin Aramco-Mercedes	1:12.019	N/A	N/A	16
-# 17	2	United States Logan Sargeant	Williams-Mercedes	1:12.020	N/A	N/A	17
-# 18	3	Mexico Sergio Pérez	Red Bull Racing-Honda RBPT	1:12.060	N/A	N/A	18
-# 19	20	Finland Valtteri Bottas	Kick Sauber-Ferrari	1:12.512	N/A	N/A	19
-# 20	24	China Guanyu Zhou	Kick Sauber-Ferrari	1:13.028	N/A	N/A	20
+# 1	63	United Kingdom George Russell	Mercedes	1:13.013	1:11.742	1:12.000	11
+# 2	1	Netherlands Max Verstappen	Red Bull Racing-Honda RBPT	1:12.360	1:12.549	1:12.000	21
+# 3	4	United Kingdom Lando Norris	McLaren-Mercedes	1:12.959	1:12.201	1:12.021	3
+# 4	81	Australia Oscar Piastri	McLaren-Mercedes	1:12.907	1:12.462	1:12.103	4
+# 5	3	Australia Daniel Ricciardo	RB-Honda RBPT	1:13.240	1:12.572	1:12.178	5
+# 6	14	Spain Fernando Alonso	Aston Martin Aramco-Mercedes	1:13.117	1:12.635	1:12.228	6
+# 7	44	United Kingdom Lewis Hamilton	Mercedes	1:12.851	1:11.979	1:12.280	7
+# 8	22	Japan Yuki Tsunoda	RB-Honda RBPT	1:12.748	1:12.303	1:12.414	8
+# 9	18	Canada Lance Stroll	Aston Martin Aramco-Mercedes	1:13.088	1:12.659	1:12.701	9
+# 10	23	Thailand Alexander Albon	Williams-Mercedes	1:12.896	1:12.485	1:12.976	10
+# 11	16	Monaco Charles Leclerc	Ferrari	1:13.107	1:12.691	N/A	11
+# 12	55	Spain Carlos Sainz	Ferrari	1:13.038	1:12.728	N/A	12
+# 13	2	United States Logan Sargeant	Williams-Mercedes	1:13.063	1:12.736	N/A	13
+# 14	20	Denmark Kevin Magnussen	Haas-Ferrari	1:13.217	1:12.916	N/A	14
+# 15	10	France Pierre Gasly	Alpine-Renault	1:13.289	1:12.940	N/A	15
+# 16	11	Mexico Sergio Pérez	Red Bull Racing-Honda RBPT	1:13.326	N/A	N/A	16
+# 17	77	Finland Valtteri Bottas	Kick Sauber-Ferrari	1:13.366	N/A	N/A	17
+# 18	31	France Esteban Ocon	Alpine-Renault	1:13.435	N/A	N/A	202
+# 19	27	Germany Nico Hülkenberg	Haas-Ferrari	1:13.978	N/A	N/A	18
+# 20	24	China Guanyu Zhou	Kick Sauber-Ferrari	1:14.292	N/A	N/A	19
 # """
 #
-#     My_Ergast().insert_qualy_data(2024, 8, data,
+#     My_Ergast().insert_qualy_data(2024, 9, data,
 #                                   offset=0, character_sep='-', have_country=True, number=1)
 
 

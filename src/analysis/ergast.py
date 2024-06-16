@@ -258,6 +258,29 @@ def compare_my_ergast_teammates(driver, start=1950, end=2100, specific_driver=No
                     if can_append:
                         can_append = False
 
+    s = my_ergast.get_sprint_results([i for i in range(start, end)])
+
+    for race in s.content:
+        driver_data = race[race['fullName'] == driver]
+        if len(driver_data) == 1:
+            team = driver_data['constructorName'].values[0]
+            team_data = race[race['constructorName'] == team]
+            team_data = team_data[team_data['fullName'] != driver]
+            for t in team_data['fullName'].values:
+                teammate_data = team_data[team_data['fullName'] == t]
+                if len(teammate_data) == 1 and (specific_driver is None or (specific_driver is not None and specific_driver == t)):
+                    d_points = driver_data['points'].values[0]
+                    t_points = teammate_data['points'].values[0]
+                    # POINT FINISHES
+                    if d_points > 0:
+                        d_data[5] += 1
+                    if t_points > 0:
+                        t_data[5] += 1
+                    # TOTAL POINTS
+                    d_data[7] += d_points
+                    t_data[7] += t_points
+
+
     for i, category in enumerate(
             ["QUALY H2H", "POLES", "RACE H2H", "VICTORIES", "PODIUMS", "POINT FINISHES", "DNFs", "POINTS"]):
         total = d_data[i] + t_data[i]

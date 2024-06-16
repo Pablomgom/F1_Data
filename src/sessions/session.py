@@ -771,10 +771,11 @@ def get_fastest_data(session, fastest_lap=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
-    # drivers.remove('ZHO')
-    # drivers.remove('MAG')
-    # drivers.remove('PER')
-    # drivers.remove('HUL')
+    drivers.remove('SAI')
+    drivers.remove('ALB')
+    drivers.remove('LEC')
+    drivers.remove('SAR')
+    drivers.remove('PER')
     year = session.date.year
     circuit_speed = {}
     colors_dict = {}

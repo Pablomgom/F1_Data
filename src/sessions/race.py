@@ -938,10 +938,10 @@ def race_diff_v2(year, round=None, save=False):
     plt.show()
 
 
-def percentage_race_ahead(start=2001, end=2024):
+def percentage_race_ahead(start=2001, end=2100, year_drivers=None):
     ergast = My_Ergast()
     races = ergast.get_race_results([i for i in range(start, end)]).content
-    circuits = ['villeneuve']
+    circuits = ['catalunya']
     drivers_dict = {}
     for r in races:
         if len(r[r['circuitRef'].isin(circuits)]) > 0:
@@ -971,10 +971,22 @@ def percentage_race_ahead(start=2001, end=2024):
             print(f'{r["year"].loc[0]}: {r["circuitName"].loc[0]}')
     final_dict = {}
     h2h_dict = {}
+
+    if year_drivers is not None:
+        valid_drivers = []
+        drivers = My_Ergast().get_qualy_results([year_drivers])
+        for d in drivers.content:
+            valid_drivers.extend(d['fullName'].values)
+
     for d, w in drivers_dict.items():
         percentage = round((sum(w) / len(w)) * 100, 2)
-        final_dict[d] = percentage
-        h2h_dict[d] = f'({sum(w)}/{len(w)})'
+        if year_drivers is not None:
+            if d in valid_drivers:
+                final_dict[d] = percentage
+                h2h_dict[d] = f'({sum(w)}/{len(w)})'
+        else:
+            final_dict[d] = percentage
+            h2h_dict[d] = f'({sum(w)}/{len(w)})'
 
     final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
     for d, w in final_dict.items():

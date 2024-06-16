@@ -31,7 +31,8 @@ def qualy_results(session, optimal=False):
 
     """
 
-    drivers = pd.unique(session.laps['Driver'])
+    drivers = pd.unique(session.laps['Driver']).tolist()
+    # drivers.remove('ZHO')
     list_fastest_laps = list()
     optimal_data = pd.DataFrame(columns=['LapTime', 'Team', 'Driver'])
     for drv in drivers:
@@ -260,9 +261,9 @@ def qualy_margin(circuit, start=1950, end=2050, order='Descending'):
         print(f'{r[0]}: {m[1]}')
 
 
-def percentage_qualy_ahead(start=2001, end=2050):
+def percentage_qualy_ahead(start=2001, end=2050, year_drivers=None):
     ergast = My_Ergast()
-    circuits = ['villeneuve']
+    circuits = ['catalunya']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:
@@ -291,10 +292,22 @@ def percentage_qualy_ahead(start=2001, end=2050):
             print(f'{q["year"].loc[0]}: {q["circuitName"].loc[0]}')
     final_dict = {}
     h2h_dict = {}
+
+    if year_drivers is not None:
+        valid_drivers = []
+        drivers = My_Ergast().get_qualy_results([year_drivers])
+        for d in drivers.content:
+            valid_drivers.extend(d['fullName'].values)
+
     for d, w in drivers_dict.items():
         percentage = round((sum(w) / len(w)) * 100, 2)
-        final_dict[d] = percentage
-        h2h_dict[d] = f'({sum(w)}/{len(w)})'
+        if year_drivers is not None:
+            if d in valid_drivers:
+                final_dict[d] = percentage
+                h2h_dict[d] = f'({sum(w)}/{len(w)})'
+        else:
+            final_dict[d] = percentage
+            h2h_dict[d] = f'({sum(w)}/{len(w)})'
 
     final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
     for d, w in final_dict.items():
@@ -510,3 +523,60 @@ def avg_qualy_pos_dif(driver):
 
     print(f'If the value is less than 0, {driver} has a better average qualy position.')
     print(f'If the value is greater than 0, {driver} has a worst average qualy position.')
+
+
+def total_driver_qualy_h2h(driver, start=1950, end=2100):
+
+    qualys = My_Ergast().get_qualy_results([i for i in range(start, end)]).content
+    driver_code = ''
+    h2h_dict = {}
+    for q in qualys:
+        q = q[q['Valid']]
+        driver_pos = q[q['fullName'] == driver]
+        if len(driver_pos) == 1:
+            driver_code = driver_pos['driverCode'].loc[0]
+            driver_pos = driver_pos['position'].loc[0]
+            drivers_ahead = q[q['position'] < driver_pos]['driverCode'].values
+            for d in drivers_ahead:
+                if d not in h2h_dict:
+                    h2h_dict[d] = [0]
+                else:
+                    h2h_dict[d].append(0)
+
+            drivers_behind = q[q['position'] > driver_pos]['driverCode'].values
+            for d in drivers_behind:
+                if d not in h2h_dict:
+                    h2h_dict[d] = [1]
+                else:
+                    h2h_dict[d].append(1)
+
+    sorted_drivers = sorted(h2h_dict.items(), key=lambda item: (item[1].count(0) / len(item[1]), len(item[1])), reverse=True)
+    for d, h in sorted_drivers:
+        driver_win = sum(h)
+        driver_loss = len(h) - sum(h)
+        percentage_loss = (driver_win / len(h)) * 100
+        if percentage_loss < 50:
+            label = '🔴'
+        elif percentage_loss > 50:
+            label = '🟢'
+        else:
+            label = '🟠'
+        print(f'{label}{driver_code} {driver_win} - {driver_loss} {d} ({percentage_loss:.2f}%)')
+
+
+def check_qualy_track_limits(year):
+
+    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    for i in range(len(schedule)):
+        session = fastf1.get_session(year, i + 1, 'Q')
+        try:
+            session.load()
+            for q in range(0,3):
+                q_data = session.laps.split_qualifying_sessions()[q]
+                session_laps = pd.DataFrame(q_data[q_data['Deleted']])
+                for index, row in session_laps.iterrows():
+                    lap_time = format_timedelta(row['LapTime'])
+                    driver = row['Driver']
+                    print(f'{driver} in round {i + 1} - Q{q + 1} {lap_time}')
+        except:
+            print(f'No data for {i + 1}')

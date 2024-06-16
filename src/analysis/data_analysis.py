@@ -43,7 +43,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, sav
     if prev_year is None:
         add_round = 0
     else:
-        add_round = 2
+        add_round = 1
 
     for i in range(0, rounds + add_round):
         prev_session = None
@@ -54,7 +54,7 @@ def cluster_circuits(year, rounds, prev_year=None, circuit=None, clusters=3, sav
                     session = fastf1.get_session(prev_year, circuit, type)
                     print(f'{i}: {type}')
                 else:
-                    session = fastf1.get_session(year, 'Monaco', type)
+                    session = fastf1.get_session(year, i + 1, type)
                 session.load()
                 prev_session = session
                 teams = set(session.laps['Team'].values)
@@ -252,7 +252,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
     if len(prev_year_data) == 0:
         raise Exception('No data for that year/track combination')
 
-    def find_similar_tracks(target_features, historical_data, track_features, top_n=3, current_year=year):
+    def find_similar_tracks(target_features, historical_data, track_features, top_n=4, current_year=year):
         # relevant_years_data = historical_data[historical_data['Year'].isin([current_year])]
         # distances = euclidean_distances(relevant_years_data[track_features], target_features)
         # recency_factor = 1 / (current_year - relevant_years_data['Year'] + 1)
@@ -268,7 +268,7 @@ def predict_race_pace(year=2024, track='Bahrain', session='R'):
         combined_results = last_three_sessions
         distances = euclidean_distances(combined_results[track_features], target_features)
         recency_factor = 1 / (current_year - combined_results['Year'] + 1)
-        adjusted_distances = distances.flatten() * recency_factor
+        adjusted_distances = distances.flatten()**1.25 * recency_factor
         combined_results['adjusted_similarity_score'] = adjusted_distances
         return combined_results
 
@@ -363,23 +363,27 @@ def performance_by_turns(session, track):
         for index, lap in session.laps.pick_driver(d).pick_not_deleted().iterlaps():
             try:
                 team_lap = lap
-                team = team_lap['Team']
-                team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
-                new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 50000)
-                interpolated_data = {'Distance': new_distance}
-                team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
-                for column in team_tel.columns:
-                    if column != 'Distance':
-                        cs = CubicSpline(team_tel['Distance'], team_tel[column])
-                        interpolated_data[column] = cs(new_distance)
-                team_tel = pd.DataFrame(interpolated_data)
+                out_lap = lap['PitOutTime']
+                if pd.isna(out_lap):
+                    team = team_lap['Team']
+                    team_tel = pd.DataFrame(team_lap.get_telemetry()[['Distance', 'Speed', 'Time', 'Throttle']])
+                    new_distance = np.linspace(team_tel['Distance'].min(), team_tel['Distance'].max(), 5000)
+                    interpolated_data = {'Distance': new_distance}
+                    team_tel['Time'] = team_tel['Time'].transform(lambda x: x.total_seconds())
+                    for column in team_tel.columns:
+                        if column != 'Distance':
+                            cs = CubicSpline(team_tel['Distance'], team_tel[column])
+                            interpolated_data[column] = cs(new_distance)
+                    team_tel = pd.DataFrame(interpolated_data)
 
-                for index, turn in turns.iterrows():
-                    start_time = np.interp(turn['Start'], team_tel['Distance'], team_tel['Time'])
-                    end_time = np.interp(turn['End'], team_tel['Distance'], team_tel['Time'])
-                    total_time = end_time - start_time
-                    turn_data = pd.DataFrame([[turn['Name'], team, d, total_time]], columns=turns_time.columns)
-                    turns_time = pd.concat([turns_time, turn_data], ignore_index=True)
+                    for index, turn in turns.iterrows():
+                        start_time = np.interp(turn['Start'], team_tel['Distance'], team_tel['Time'])
+                        end_time = np.interp(turn['End'], team_tel['Distance'], team_tel['Time'])
+                        total_time = end_time - start_time
+                        turn_data = pd.DataFrame([[turn['Name'], team, d, total_time]], columns=turns_time.columns)
+                        turns_time = pd.concat([turns_time, turn_data], ignore_index=True)
+                else:
+                    print('OUT LAP')
             except ValueError:
                 print(f'No valid lap for {d}')
     fastest_entries_index = turns_time.groupby(['Turn', 'Team'])['Time'].idxmin()

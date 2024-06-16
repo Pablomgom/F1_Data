@@ -113,6 +113,9 @@ def get_funcs():
         'qualy_race_streaks': qualy_race_streaks,
         'track_temps': track_temps,
         'update_results': update_results,
+        'total_driver_qualy_h2h': total_driver_qualy_h2h,
+        'check_qualy_track_limits': check_qualy_track_limits,
+        'worst_drivers': worst_drivers,
         'help': help
     }
 
