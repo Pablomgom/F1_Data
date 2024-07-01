@@ -298,7 +298,7 @@ def session_diff_last_year(year, round_id, prev_year, session='Q'):
 
     round_bars(bars, ax, colors, y_offset_rounded=0, linewidth=3.75)
     annotate_bars(bars, ax, 0.01, 14, '+{height}s',
-                  ceil_values=False, round=3, y_negative_offset=-0.075)
+                  ceil_values=False, round=3, y_negative_offset=-0.055)
 
     plt.axhline(0, color='white', linewidth=4)
     plt.grid(axis='y', linestyle='--', linewidth=0.7, color='gray')
@@ -771,11 +771,11 @@ def get_fastest_data(session, fastest_lap=True):
     fastf1.plotting.setup_mpl(misc_mpl_mods=False)
     drivers = session.laps['Driver'].groupby(session.laps['Driver']).size()
     drivers = drivers.reset_index(name='Count')['Driver'].to_list()
-    drivers.remove('SAI')
-    drivers.remove('ALB')
-    drivers.remove('LEC')
-    drivers.remove('SAR')
-    drivers.remove('PER')
+    # drivers.remove('SAI')
+    # drivers.remove('ALB')
+    # drivers.remove('LEC')
+    # drivers.remove('SAR')
+    # drivers.remove('PER')
     year = session.date.year
     circuit_speed = {}
     colors_dict = {}

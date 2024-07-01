@@ -402,6 +402,7 @@ def results_from_grid_position(driver, start=1950, end=2050, grid=1):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
     finish_positions = Counter()
+    total_races = 0
     winners = Counter()
     for race in r.content:
         pole = race[race['grid'] == grid]
@@ -417,9 +418,10 @@ def results_from_grid_position(driver, start=1950, end=2050, grid=1):
             winners[winner['fullName'].iloc[0]] += 1
             medal = get_medal(finish_pos)
             print(f'{medal}{pole["year"].values[0]} {pole["raceName"].values[0]}: From P{grid} to {finish_pos}')
+            total_races += 1
 
     for pos, count in sorted(finish_positions.items(), key=lambda x: x[1], reverse=True):
-        print(f'{pos}: {count} times')
+        print(f'{pos}: {count}/{total_races} - {(count/total_races)*100:.2f}%')
 
     for pos, count in sorted(winners.items(), key=lambda x: x[1], reverse=True):
         print(f'{pos}: {count} times')
@@ -471,7 +473,7 @@ def comebacks_in_circuit(circuit, start=1950, end=2050):
                 print(f'{key} places - {v}')
 
 
-def driver_grid_winning_positions(driver, start=1950, end=2024):
+def driver_grid_winning_positions(driver, start=1950, end=2100):
     ergast = My_Ergast()
     r = ergast.get_race_results([i for i in range(start, end)])
     grid_positions = Counter()

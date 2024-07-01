@@ -42,14 +42,14 @@ def avg_driver_position(driver, team, year, session='Q'):
                 drivers.append(d)
         drivers_array = set(drivers)
         drivers = {d: [] for d in drivers_array}
-        race_count = 0
         for gp in data.content:
             for d in drivers_array:
                 gp_data = gp[gp['driverCode'] == d]
                 if len(gp_data) > 0:
-                    pos = gp_data['position'].values[0]
-                    drivers[d].append(pos)
-            race_count += 1
+                    is_valid = gp_data['Valid'].loc[0]
+                    if is_valid:
+                        pos = gp_data['position'].values[0]
+                        drivers[d].append(pos)
         avg_grid = {}
         for key, pos_array in drivers.items():
             mean_pos = round(np.mean(pos_array), 2)
@@ -363,6 +363,23 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
     race_h2h = pd.DataFrame(columns=['Driver', 'Rival', 'Team', 'Year', 'Round', 'Result', 'Reason'])
     qualy_h2h = pd.DataFrame(columns=['Driver', 'Rival', 'Team', 'Year', 'Round', 'Result', 'Reason'])
 
+    def modify_dict(data_dict, driver, rival, team, year, round, result, reason, dataframe):
+
+        data_dict['Driver'] = driver
+        data_dict['Rival'] = rival
+        data_dict['Team'] = team
+        data_dict['Year'] = [year]
+        data_dict['Round'] = [round]
+        data_dict['Result'] = [result]
+        data_dict['Reason'] = reason
+        df_to_append = pd.DataFrame(data_dict)
+        dataframe = dataframe._append(df_to_append)
+        df_data = {}
+
+        return df_data, dataframe
+
+
+
     def process_drivers(array, race_type, d1_points, d2_points, dataframe):
         for race in array:
             df_data = {'Driver': d_1}
@@ -410,50 +427,28 @@ def race_qualy_h2h(d_1, start=1950, end=2100):
                                 if driver is not None:
                                     qualy_result[year][d_2].append(driver)
 
-                            df_data['Driver'] = d_1
-                            df_data['Rival'] = d_2
-                            df_data['Team'] = team
-                            df_data['Year'] = [year]
-                            df_data['Round'] = [round_id]
-                            df_data['Result'] = [1 if driver == d_1 else (0 if driver == d_2 else None)]
-                            df_data['Reason'] = np.nan
-                            df_to_append = pd.DataFrame(df_data)
-                            dataframe = dataframe._append(df_to_append)
-                            df_data = {}
+                            df_data, dataframe = modify_dict(df_data, d_1, d_2, team, year, round_id,
+                                                        1 if driver == d_1 else (0 if driver == d_2 else None), np.nan,
+                                                        dataframe)
                         else:
-                            df_data['Driver'] = d_1
-                            df_data['Rival'] = d_2
-                            df_data['Team'] = team
-                            df_data['Year'] = [year]
-                            df_data['Round'] = round_id
-                            df_data['Result'] = np.nan
-                            df_data[
-                                'Reason'] = f"At least one of the drivers {'did not finish' if race_type == 'Race' else 'was DSQ'}"
-                            df_to_append = pd.DataFrame(df_data)
-                            dataframe = dataframe._append(df_to_append)
-                            df_data = {}
+
+                            df_data, dataframe = modify_dict(df_data, d_1, d_2, team, year, round_id,
+                                                        np.nan,
+                                                        f"At least one of the drivers {'did not finish' if race_type == 'Race' else 'was DSQ'}",
+                                                        dataframe)
                     else:
-                        df_data['Driver'] = d_1
-                        df_data['Rival'] = d_2
-                        df_data['Team'] = team
-                        df_data['Year'] = [year]
-                        df_data['Round'] = round_id
-                        df_data['Result'] = np.nan
-                        df_data['Reason'] = f'{d_2} drove multiple cars'
-                        df_to_append = pd.DataFrame(df_data)
-                        dataframe = dataframe._append(df_to_append)
-                        df_data = {}
+
+                        df_data, dataframe = modify_dict(df_data, d_1, d_2, team, year, round_id,
+                                                         np.nan,
+                                                         f'{d_2} drove multiple cars',
+                                                         dataframe)
+
             elif len(race[race['fullName'] == d_1]) > 1:
-                df_data['Driver'] = d_1
-                df_data['Rival'] = np.nan
-                df_data['Team'] = np.nan
-                df_data['Year'] = [year]
-                df_data['Round'] = [round_id]
-                df_data['Result'] = np.nan
-                df_data['Reason'] = f'{d_1} drove multiple cars'
-                df_to_append = pd.DataFrame(df_data)
-                dataframe = dataframe._append(df_to_append)
-                df_data = {}
+
+                df_data, dataframe = modify_dict(df_data, d_1, np.nan, np.nan, year, round_id,
+                                                 np.nan,
+                                                 f'{d_1} drove multiple cars',
+                                                 dataframe)
         return d1_points, d2_points, dataframe
 
     d1_points, d2_points, race_h2h = process_drivers(total_races, 'Race', d1_points, d2_points, race_h2h)

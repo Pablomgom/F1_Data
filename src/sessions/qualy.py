@@ -17,7 +17,7 @@ from src.exceptions import qualy_by_year
 from src.exceptions.custom_exceptions import QualyException
 from src.plots.plots import rounded_top_rect, round_bars, annotate_bars
 from src.utils.utils import append_duplicate_number, create_rounded_barh_custom, create_rounded_barh, format_timedelta, \
-    string_to_timedelta
+    string_to_timedelta, custom_trim_mean
 from src.variables.team_colors import team_colors_2023, team_colors
 from scipy import stats
 
@@ -263,7 +263,7 @@ def qualy_margin(circuit, start=1950, end=2050, order='Descending'):
 
 def percentage_qualy_ahead(start=2001, end=2050, year_drivers=None):
     ergast = My_Ergast()
-    circuits = ['catalunya']
+    circuits = ['red_bull_ring']
     qualy = ergast.get_qualy_results([i for i in range(start, end)]).content
     drivers_dict = {}
     for q in qualy:
@@ -311,7 +311,7 @@ def percentage_qualy_ahead(start=2001, end=2050, year_drivers=None):
 
     final_dict = dict(sorted(final_dict.items(), key=lambda item: item[1], reverse=True))
     for d, w in final_dict.items():
-        print(f'{d}: {w:.2f}% {h2h_dict[d]}')
+        print(f'{d.split(" ", 1)[1]}: {w:.2f}% {h2h_dict[d]}')
 
 
 def qualy_diff_teammates(d1, start=1900, end=3000):
@@ -331,6 +331,11 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
         d2_time = get_min_value(full_data[full_data['fullName'] == d2]).total_seconds()
         return d1_time, d2_time
 
+    def get_percentage_diff(d1, d2):
+        difference = d2 - d1
+        percentage_difference = (difference / d2) * 100
+        return -percentage_difference
+
     def process_times(year, q, full_data, d1_time, d2_time, total_laps_d1, total_laps_d2, delta_per_year, d1, d2):
         diff = round(d1_time - d2_time, 3)
         if abs(diff) < 10:
@@ -340,6 +345,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
             total_laps_d1.append(d1_time)
             total_laps_d2.append(d2_time)
             delta_per_year.setdefault((year, d2), []).append(diff)
+            delta_per_year_percentage.setdefault((year, d2), []).append(get_percentage_diff(d1_time, d2_time))
         else:
             print(f'No data for {year} {q["raceName"].iloc[0].replace("Grand Prix", "GP")} - {d2}')
 
@@ -358,6 +364,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
                 display_time_comparison(year, q, d1_time, d2_time, diff, d1, d2, d1_pos, d2_pos, s)
                 total_laps_d1.append(d1_time)
                 total_laps_d2.append(d2_time)
+                delta_per_year_percentage.setdefault((year, d2), []).append(get_percentage_diff(d1_time, d2_time))
                 delta_per_year.setdefault((year, d2), []).append(diff)
                 break
             else:
@@ -379,6 +386,7 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
     qualys = My_Ergast().get_qualy_results(list(range(start, end))).content
     exceptions = pd.read_csv('../resources/csv/Qualy_exceptions.csv')
     delta_per_year = {}
+    delta_per_year_percentage = {}
     teammates_per_year = {}
     sessions = ['q3', 'q2', 'q1']
     total_laps_d1, total_laps_d2 = [], []
@@ -428,9 +436,12 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
                 process_sessions(year, q, full_data, d1, team_mate, sessions, total_laps_d1, total_laps_d2, delta_per_year)
 
     for y, d in delta_per_year.items():
-        trunc_mean = stats.trim_mean(d, 0.1)
+        trunc_mean = custom_trim_mean(d, 0.1)
+        percentage_mean = custom_trim_mean(delta_per_year_percentage[y], 0.1)
         print(
-            f'{"🔴" if trunc_mean > 0 else "🟢"}{y[0]}: {abs(trunc_mean):.3f}s {"faster" if trunc_mean < 0 else "slower"} than {y[1]}')
+            f'{"🔴" if trunc_mean > 0 else "🟢"}{y[0]}: {abs(trunc_mean):.3f}s '
+            f'{"faster" if trunc_mean < 0 else "slower"} than {y[1]} '
+            f'({percentage_mean:.2f}%)')
 
     for y, d in delta_per_year.items():
         mean = np.mean(d)
@@ -439,12 +450,13 @@ def qualy_diff_teammates(d1, start=1900, end=3000):
 
     total_difference = []
     for l1, l2 in zip(total_laps_d1, total_laps_d2):
-        delta_diff = (l1 - l2) / ((l1 + l2) / 2) * 100
-        total_difference.append(delta_diff)
+        difference = l2 - l1
+        percentage_difference = (difference / l2) * 100
+        total_difference.append(-percentage_difference)
 
     median = statistics.median(total_difference)
     mean = statistics.mean(total_difference)
-    trunc_mean = stats.trim_mean(total_difference, 0.1)
+    trunc_mean = custom_trim_mean(total_difference, 0.1)
     print(f'MEDIAN DIFF {d1 if median < 0 else "TEAMMATE"} FASTER: {median:.3f}%')
     print(f'MEAN DIFF {d1 if mean < 0 else "TEAMMATE"} FASTER: {mean:.3f}%')
     print(f'TRUNC DIFF {d1 if trunc_mean < 0 else "TEAMMATE"} FASTER: {trunc_mean:.3f}%')
@@ -534,16 +546,16 @@ def total_driver_qualy_h2h(driver, start=1950, end=2100):
         q = q[q['Valid']]
         driver_pos = q[q['fullName'] == driver]
         if len(driver_pos) == 1:
-            driver_code = driver_pos['driverCode'].loc[0]
+            driver_code = driver_pos['familyName'].loc[0]
             driver_pos = driver_pos['position'].loc[0]
-            drivers_ahead = q[q['position'] < driver_pos]['driverCode'].values
+            drivers_ahead = q[q['position'] < driver_pos]['familyName'].values
             for d in drivers_ahead:
                 if d not in h2h_dict:
                     h2h_dict[d] = [0]
                 else:
                     h2h_dict[d].append(0)
 
-            drivers_behind = q[q['position'] > driver_pos]['driverCode'].values
+            drivers_behind = q[q['position'] > driver_pos]['familyName'].values
             for d in drivers_behind:
                 if d not in h2h_dict:
                     h2h_dict[d] = [1]

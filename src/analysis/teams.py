@@ -97,7 +97,7 @@ def race_qualy_avg_metrics(year, session='Q', mode=None):
     if session == 'Q':
         ax.invert_yaxis()
     plt.tight_layout()  # Adjusts the plot layout for better visibility
-    plt.savefig(f'../PNGs/AVERAGE POINTS {year}.png', dpi=450)
+    plt.savefig(f'../PNGs/AVERAGE METRICS {year} - {session}.png', dpi=450)
     plt.show()
 
 

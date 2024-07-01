@@ -31,8 +31,6 @@ def dhl_pitstops(year, groupBy='Driver', round=None, points=False):
     if round is None:
         if points:
             max_round = pitstops['Race_ID'].max()
-            print(
-                pitstops[pitstops['Race_ID'] == max_round].groupby('Team')['Points'].sum().sort_values(ascending=False))
             pitstops = pitstops.groupby('Team')['Points'].sum()
         else:
             pitstops = pitstops.groupby(groupBy)['Time'].median()
@@ -43,15 +41,15 @@ def dhl_pitstops(year, groupBy='Driver', round=None, points=False):
         pitstops = pitstops.sort_values(by='Points', ascending=False)
         color_data = [i for i in pitstops['Team']]
         for c_data in color_data:
-            colors.append(team_colors_2023[c_data])
+            colors.append(team_colors[year][c_data])
         plot_size = (10, 9)
-        annotate_fontsize = 16
+        annotate_fontsize = 26
         y_offset_rounded = -10
         y_offset_annotate = 1
         title = f'{year} DHL PIT STOPS POINTS'
         y_label = 'Points'
         round = 0
-        linewidth = 1.75
+        linewidth = 3.75
     else:
         pitstops = pitstops.sort_values(by='Time', ascending=True)
         pitstops['Time'] = pitstops['Time'].round(2)
@@ -120,7 +118,7 @@ def dhl_pitstops(year, groupBy='Driver', round=None, points=False):
     lightened_colors = [lighten_color(i) for i in colors]
     for label in ax1.get_xticklabels():
         label.set_color('black')
-        label.set_fontsize(18)
+        label.set_fontsize(16)
         label.set_rotation(-25)
         label.set_path_effects([path_effects.withStroke(linewidth=5, foreground=lightened_colors[color_index])])
         color_index += 1
@@ -147,10 +145,10 @@ def fastest_pit_stop_by_team(year):
         team_data = races_df.merge(team_data, on='Race_Name', how='left')
         x = team_data['Race_Name']
         y = team_data['Time']
-        plt.plot(x, y, label=t, marker='o', linestyle='-', color=team_colors[year].get(t, '#000000'), markersize=10,
-                 linewidth=2)
+        plt.plot(x, y, label=t, marker='o', linestyle='-', color=team_colors[year].get(t, '#000000'), markersize=7.5,
+                 linewidth=4.25)
         plt.plot(x, y, marker='o', linestyle='', color=team_colors[year].get(t, '#000000'),
-                 markersize=10)
+                 markersize=7.5)
 
 
     plt.title(f'FASTEST PIT STOP PER TEAM/RACE (ONLY LESS THAN 4s STOPS) IN {year}',
@@ -190,7 +188,7 @@ def pitstops_per_year(year):
 
 
 
-def pitstops_pirelli_era():
+def pitstops_pirelli_era(end=2025):
 
     ergast = My_Ergast()
     pitstops_ergast = ergast.get_pit_stops([i for i in range(2011, 2023)]).content
@@ -207,13 +205,14 @@ def pitstops_pirelli_era():
             pit_stop_dict[year].append(mean_pit_stops_race)
 
     mean_pit_stops = []
-    years = [i for i in range(2011, 2024)]
+    years = [i for i in range(2011, end)]
     for y, p in pit_stop_dict.items():
         mean_pit_stops.append(statistics.mean(p))
 
-    pitstops_2023 = pd.read_csv('../resources/csv/Pit_stops.csv', sep=',')
-    pitstops_2023 = pitstops_2023[pitstops_2023['Year'] == 2023].sort_values(by='Race_ID')
-    mean_pit_stops.append((pitstops_2023.groupby('Race_ID').size()/20).mean())
+    pitstops_dhl = pd.read_csv('../resources/csv/Pit_stops.csv', sep=',')
+    for i in range(2023, end):
+        pitstops_year= pitstops_dhl[pitstops_dhl['Year'] == i].sort_values(by='Race_ID')
+        mean_pit_stops.append((pitstops_year.groupby('Race_ID').size()/20).mean())
 
     fig, ax = plt.subplots(figsize=(9, 8))
     bars = plt.bar(years, mean_pit_stops)
@@ -224,7 +223,7 @@ def pitstops_pirelli_era():
     plt.title('Average pit stops per driver/season in the Pirelli era', font='Fira Sans', fontsize=24)
     plt.xlabel('Year', font='Fira Sans', fontsize=20)
     plt.ylabel('Average pit stops per driver', font='Fira Sans', fontsize=20)
-    plt.xticks([i for i in range(2011, 2024)], rotation=35, font='Fira Sans', fontsize=18)
+    plt.xticks(years, rotation=35, font='Fira Sans', fontsize=18)
     plt.yticks(font='Fira Sans', fontsize=16)
     ax.yaxis.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()

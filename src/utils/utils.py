@@ -375,3 +375,58 @@ def string_to_timedelta(time_str, convert=True):
             print('Fecha con formato chungo')
     except:
         return pd.NaT
+
+
+def custom_trim_mean(a, proportiontocut, axis=0):
+    """Return mean of array after trimming distribution from both tails.
+
+    If `proportiontocut` = 0.1, slices off 'leftmost' and 'rightmost' 10% of
+    scores. The input is sorted before slicing. Slices off less if proportion
+    results in a non-integer slice index (i.e., conservatively slices off
+    `proportiontocut` ).
+
+    Parameters
+    ----------
+    a : array_like
+        Input array.
+    proportiontocut : float
+        Fraction to cut off of both tails of the distribution.
+    axis : int or None, optional
+        Axis along which the trimmed means are computed. Default is 0.
+        If None, compute over the whole array `a`.
+
+    Returns
+    -------
+    trim_mean : ndarray
+        Mean of trimmed array.
+
+    See Also
+    --------
+    trimboth
+    tmean : Compute the trimmed mean ignoring values outside given `limits`.
+
+    """
+    a = np.asarray(a)
+
+    if a.size == 0:
+        return np.nan
+
+    if axis is None:
+        a = a.ravel()
+        axis = 0
+
+    nobs = a.shape[axis]
+    lowercut = int(proportiontocut * nobs)
+    uppercut = nobs - lowercut
+    if (lowercut > uppercut):
+        raise ValueError("Proportion too big.")
+
+    atmp = np.partition(a, (lowercut, uppercut - 1), axis)
+
+    sl = [slice(None)] * atmp.ndim
+    sl[axis] = slice(lowercut, uppercut)
+    deleted_lowercut = atmp[0:lowercut]
+    deleted_uppercut = atmp[uppercut:len(atmp)]
+    # print(f'DELETED LOWERCUT: {deleted_lowercut}')
+    # print(f'DELETED UPPERCUT: {deleted_uppercut}')
+    return np.mean(atmp[tuple(sl)], axis=axis)

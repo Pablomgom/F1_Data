@@ -116,6 +116,7 @@ def get_funcs():
         'total_driver_qualy_h2h': total_driver_qualy_h2h,
         'check_qualy_track_limits': check_qualy_track_limits,
         'worst_drivers': worst_drivers,
+        'winner_lapping_teammates': winner_lapping_teammates,
         'help': help
     }
 

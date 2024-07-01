@@ -1040,3 +1040,45 @@ Pos,Team,Driver,Time,Lap,Points,Race_ID,Year,Race_Name
 40,Red Bull,Perez,12.31,25,,9,2024,Canada
 41,Ferrari,Leclerc,24.19,28,,9,2024,Canada
 42,Sauber,Zhou,42.26,44,,9,2024,Canada
+1,Red Bull,Verstappen,1.92,17,25,10,2024,Barcelona
+2,Red Bull,Perez,2.00,31,18,10,2024,Barcelona
+3,Alpine,Ocon,2.03,13,15,10,2024,Barcelona
+4,Ferrari,Leclerc,2.05,47,12,10,2024,Barcelona
+5,Mercedes,Hamilton,2.21,43,10,10,2024,Barcelona
+6,Ferrari,Sainz,2.23,15,8,10,2024,Barcelona
+7,Alpine,Gasly,2.24,38,6,10,2024,Barcelona
+8,Alpine,Ocon,2.27,37,,10,2024,Barcelona
+9,McLaren,Norris,2.28,23,4,10,2024,Barcelona
+10,Red Bull,Perez,2.28,49,,10,2024,Barcelona
+11,Mercedes,Hamilton,2.31,16,,10,2024,Barcelona
+12,Williams,Albon,2.45,43,2,10,2024,Barcelona
+13,RB,Tsunoda,2.46,27,1,10,2024,Barcelona
+14,RB,Ricciardo,2.53,42,,10,2024,Barcelona
+15,Ferrari,Sainz,2.54,36,,10,2024,Barcelona
+16,Aston Martin,Stroll,2.64,17,,10,2024,Barcelona
+17,Aston Martin,Alonso,2.65,19,,10,2024,Barcelona
+18,Red Bull,Perez,2.70,13,,10,2024,Barcelona
+19,RB,Tsunoda,2.74,9,,10,2024,Barcelona
+20,McLaren,Piastri,2.78,21,,10,2024,Barcelona
+21,RB,Tsunoda,2.78,44,,10,2024,Barcelona
+22,Red Bull,Verstappen,2.80,44,,10,2024,Barcelona
+23,Ferrari,Leclerc,2.82,24,,10,2024,Barcelona
+24,Sauber,Zhou,2.84,9,,10,2024,Barcelona
+25,RB,Ricciardo,2.86,16,,10,2024,Barcelona
+26,Haas,Hulkenberg,2.87,38,,10,2024,Barcelona
+27,Sauber,Bottas,3.02,11,,10,2024,Barcelona
+28,Mercedes,Russell,3.03,36,,10,2024,Barcelona
+29,Williams,Sargeant,3.04,14,,10,2024,Barcelona
+30,McLaren,Piastri,3.07,46,,10,2024,Barcelona
+31,Williams,Sargeant,3.08,34,,10,2024,Barcelona
+32,Aston Martin,Alonso,3.13,45,,10,2024,Barcelona
+33,Sauber,Bottas,3.16,28,,10,2024,Barcelona
+34,Haas,Hulkenberg,3.33,12,,10,2024,Barcelona
+35,McLaren,Norris,3.68,47,,10,2024,Barcelona
+36,Williams,Albon,3.74,18,,10,2024,Barcelona
+37,Haas,Magnussen,3.85,10,,10,2024,Barcelona
+38,Aston Martin,Stroll,3.92,37,,10,2024,Barcelona
+39,Sauber,Zhou,4.37,41,,10,2024,Barcelona
+40,Mercedes,Russell,5.37,15,,10,2024,Barcelona
+41,Alpine,Gasly,6.70,14,,10,2024,Barcelona
+42,Haas,Magnussen,9.02,29,,10,2024,Barcelona
